@@ -1,0 +1,31 @@
+# Secrets / local config
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.python-version
+
+# Node / MCP tooling
+node_modules/
+
+# Build / conversion artifacts
+*.log
+*.pdf
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Azure / tooling
+.azure/
+*.azd
