@@ -1,0 +1,88 @@
+<mxfile host="app.diagrams.net" modified="2026-07-19T00:00:00.000Z" agent="clm-microhack" version="24.0.0">
+  <diagram id="Architecture" name="Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="Architecture — Agentic CLM on Microsoft Foundry" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontStyle=1;fontSize=20;fontColor=#111111;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="820" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="found" value="Microsoft Foundry project" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1F3864;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontStyle=1;fontSize=14;fontColor=#1F3864;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="168" width="840" height="176" as="geometry"/>
+        </mxCell>
+        <mxCell id="ground" value="Grounding &amp;amp; tools" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#0078D4;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontStyle=1;fontSize=14;fontColor=#0078D4;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="840" height="132" as="geometry"/>
+        </mxCell>
+        <mxCell id="obs" value="Observability &amp;amp; governance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#495057;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontStyle=1;fontSize=14;fontColor=#495057;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="548" width="840" height="96" as="geometry"/>
+        </mxCell>
+        <mxCell id="user" value="👤  Contract Manager&lt;br&gt;Microsoft 365 Copilot / Teams" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C5F0F0;strokeColor=#0C8599;fontColor=#111111;fontSize=13;strokeWidth=1;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="74" width="320" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="orch" value="Orchestrator Agent&lt;br&gt;GPT-4.1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFE4FA;strokeColor=#0078D4;fontColor=#111111;fontSize=13;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="212" width="240" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="intake" value="Intake &amp;amp; Drafting&lt;br&gt;Claude Sonnet 4.5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EBDDF7;strokeColor=#7A4FB5;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="292" width="232" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="clause" value="Clause &amp;amp; Risk&lt;br&gt;Claude Sonnet 4.5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EBDDF7;strokeColor=#7A4FB5;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="356" y="292" width="232" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="renew" value="Obligation &amp;amp; Renewal&lt;br&gt;GPT-4o-mini" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFE4FA;strokeColor=#0078D4;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="630" y="292" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="iq" value="Foundry IQ&lt;br&gt;Azure AI Search" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#CFE4FA;strokeColor=#0078D4;fontColor=#111111;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="92" y="416" width="220" height="72" as="geometry"/>
+        </mxCell>
+        <mxCell id="sql" value="Azure SQL&lt;br&gt;contract status" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#CFE4FA;strokeColor=#0078D4;fontColor=#111111;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="360" y="416" width="200" height="72" as="geometry"/>
+        </mxCell>
+        <mxCell id="mcp" value="MCP server&lt;br&gt;draft_contract · analyze_contract" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8CC;strokeColor=#E8590C;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="612" y="420" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="appins" value="App Insights · Tracing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9ECEF;strokeColor=#495057;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="580" width="262" height="48" as="geometry"/>
+        </mxCell>
+        <mxCell id="evals" value="Evaluations · Content Safety" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9ECEF;strokeColor=#495057;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="580" width="282" height="48" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend" value="🟦 GPT    🟪 Claude    🟧 tools    · dashed = telemetry" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontStyle=1;fontSize=11;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="600" y="128" width="270" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="user_orch" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=1.5;startArrow=block;" edge="1" parent="1" source="user" target="orch">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="orch_intake" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=1.5;" edge="1" parent="1" source="orch" target="intake">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="orch_clause" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=1.5;" edge="1" parent="1" source="orch" target="clause">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="orch_renew" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=1.5;" edge="1" parent="1" source="orch" target="renew">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="intake_iq" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=1.5;" edge="1" parent="1" source="intake" target="iq">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="clause_iq" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=1.5;" edge="1" parent="1" source="clause" target="iq">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="renew_sql" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=1.5;" edge="1" parent="1" source="renew" target="sql">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="orch_mcp" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=1.5;" edge="1" parent="1" source="orch" target="mcp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="found_appins" value="traces" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8a8a8a;endArrow=open;dashed=1;fontColor=#555555;fontSize=11;exitX=0.35;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="found" target="appins">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="found_evals" value="scorecard" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8a8a8a;endArrow=open;dashed=1;fontColor=#555555;fontSize=11;exitX=0.65;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="found" target="evals">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="renew_user" value="proactive alert" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#D13438;endArrow=block;dashed=1;fontColor=#D13438;fontSize=11;fontStyle=1;exitX=1;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="renew" target="user">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

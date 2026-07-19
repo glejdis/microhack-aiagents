@@ -68,6 +68,9 @@ flowchart TB
 
 </details>
 
+> 📐 **Editable diagrams:** the architecture (above) and an end-to-end **[user journey](docs/diagrams/)**
+> are available as **draw.io** *and* **Excalidraw** sources in **[`docs/diagrams/`](docs/diagrams/)**.
+
 ### Multi-model fleet
 
 Anthropic **Claude is generally available in Microsoft Foundry** (model catalog **and** Foundry Agent
@@ -158,7 +161,7 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 ├── challenge-0/ … challenge-4/   # one folder per challenge (README + code)
 ├── challenge-5/              # bonus: safety, red-teaming & CI eval gate
 ├── images/                   # banner + rendered architecture diagram
-└── docs/                     # coach guide + marketing collateral
+└── docs/                     # coach guide + marketing collateral + editable diagrams
 ```
 
 > Generate images locally with `python scripts/make_banner.py` and

@@ -1,0 +1,52 @@
+<mxfile host="app.diagrams.net" modified="2026-07-19T00:00:00.000Z" agent="clm-microhack" version="24.0.0">
+  <diagram id="UserJourney" name="UserJourney">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="Contract Manager journey — Agentic CLM" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontStyle=1;fontSize=20;fontColor=#111111;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="700" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="persona" value="👤  Persona: Legal / Procurement contract manager at Contoso Global — drowning in intake, clause review &amp;amp; renewals." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F2F1;strokeColor=#8a8a8a;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="66" width="900" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="s0" value="&lt;b&gt;1 · Request a draft&lt;/b&gt;&lt;br&gt;&lt;br&gt;“Draft a mutual NDA with Acme, 2-yr term.”  Intake &amp;amp; Drafting (Claude) drafts from an approved template." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFE4FA;strokeColor=#0078D4;fontColor=#111111;fontSize=12;verticalAlign=top;align=left;spacingLeft=10;spacingRight=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="150" width="224" height="214" as="geometry"/>
+        </mxCell>
+        <mxCell id="s1" value="&lt;b&gt;2 · Check their draft&lt;/b&gt;&lt;br&gt;&lt;br&gt;Uploads Acme’s MSA. Clause &amp;amp; Risk (Claude) scores every clause against the Standard Clause Library and flags deviations." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EBDDF7;strokeColor=#7A4FB5;fontColor=#111111;fontSize=12;verticalAlign=top;align=left;spacingLeft=10;spacingRight=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="150" width="224" height="214" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="s0" target="s1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2" value="&lt;b&gt;3 · Ask, with citations&lt;/b&gt;&lt;br&gt;&lt;br&gt;“What’s our standard indemnity cap?”  Foundry IQ answers over the Contoso corpus — with sources." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C5F0F0;strokeColor=#0C8599;fontColor=#111111;fontSize=12;verticalAlign=top;align=left;spacingLeft=10;spacingRight=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="520" y="150" width="224" height="214" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="s1" target="s2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3" value="&lt;b&gt;4 · Review &amp;amp; sign off&lt;/b&gt;&lt;br&gt;&lt;br&gt;Reads the flags and citations, edits, approves. Human-in-the-loop — nothing is finalized without sign-off." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D3F9D8;strokeColor=#2F9E44;fontColor=#111111;fontSize=12;verticalAlign=top;align=left;spacingLeft=10;spacingRight=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="760" y="150" width="224" height="214" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="s2" target="s3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4" value="&lt;b&gt;5 · Track obligations&lt;/b&gt;&lt;br&gt;&lt;br&gt;Key dates captured. Obligation &amp;amp; Renewal (GPT-4o-mini) writes contract status to Azure SQL." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8CC;strokeColor=#E8590C;fontColor=#111111;fontSize=12;verticalAlign=top;align=left;spacingLeft=10;spacingRight=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="150" width="224" height="214" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="s3" target="s4">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="s5" value="&lt;b&gt;6 · Proactive alert&lt;/b&gt;&lt;br&gt;&lt;br&gt;60 days before expiry, Teams pings the manager. Renew or renegotiate in time — no missed auto-renewals." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDE7E9;strokeColor=#D13438;fontColor=#111111;fontSize=12;verticalAlign=top;align=left;spacingLeft=10;spacingRight=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="150" width="224" height="214" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="s4" target="s5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="trust" value="🔒  Under the hood, every step runs in one Microsoft Foundry project — traced (App Insights), scored by evaluations, and guarded by Content Safety." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF6FF;strokeColor=#0078D4;fontColor=#1F3864;fontSize=13;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="390" width="1424" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
