@@ -16,7 +16,7 @@ jobs:
           python-version: "3.11"
 
       - name: Byte-compile all challenge + shared code
-        run: python -m compileall -q src scripts challenge-0 challenge-1 challenge-2 challenge-3 challenge-4
+        run: python -m compileall -q src scripts challenge-0 challenge-1 challenge-2 challenge-3 challenge-4 challenge-5
 
       - name: Validate JSON + evaluation dataset
         run: |
