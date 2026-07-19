@@ -4,7 +4,7 @@ Build a **multi-model, multi-agent** contract assistant on **Microsoft Foundry**
 **Foundry IQ**, traced and evaluated, exposed as an **MCP server**, and published to **Microsoft 365
 Copilot & Teams** with proactive renewal alerts.
 
-> A 4.5-hour microhack · 5 challenges · code-first (Python) · GitHub Codespaces.
+> A 4.5-hour microhack · 5 challenges (+ optional bonus) · code-first (Python) · GitHub Codespaces.
 
 ---
 
@@ -83,6 +83,8 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
   **Claude-vs-GPT bake-off**.
 - **Multi-agent orchestration** — an orchestrator delegating to specialists.
 - **Publish** — ship the assistant to **M365 Copilot & Teams** and push **proactive alerts**.
+- **Responsible AI** *(bonus)* — red-team the agent, add Content Safety/PII guardrails, and gate
+  releases on a **quality + safety** check in CI.
 
 ---
 
@@ -95,6 +97,7 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 | [2](challenge-2/) | Observability, tracing & evaluation | Tracing · eval | 60 min |
 | [3](challenge-3/) | Clause & Risk agent + Orchestrator + MCP server | Orchestration · MCP | 60 min |
 | [4](challenge-4/) | Publish to M365 Copilot & Teams + proactive alerts | Publish · alerts | 60 min |
+| [5](challenge-5/) 🧪 | *Bonus:* Safety, Red-Teaming & Continuous Eval | Responsible AI · CI gate | optional |
 
 ## Suggested agenda (4.5h)
 
@@ -105,6 +108,9 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 | 12:30 – 13:30 | Lunch break |
 | 13:30 – 15:30 | Team hacking — Challenges 3, 4 |
 | 15:30 – 16:00 | Final discussion / wrap up |
+
+> 🧪 **Bonus [Challenge 5](challenge-5/)** (Safety, Red-Teaming & Continuous Eval) is optional — for
+> teams who finish early. It doesn't fit inside the 4.5h; tackle it if you have time or as follow-up.
 
 ---
 
@@ -136,6 +142,7 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 ├── scripts/                  # deploy, seed corpus, smoke test
 ├── data/                     # CLM corpus + evaluation dataset
 ├── challenge-0/ … challenge-4/   # one folder per challenge (README + code)
+├── challenge-5/              # bonus: safety, red-teaming & CI eval gate
 └── images/                   # architecture + per-challenge diagrams
 ```
 
