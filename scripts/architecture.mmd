@@ -1,0 +1,33 @@
+flowchart TB
+    user["User in Microsoft 365 Copilot / Teams"]
+    user <--> orch
+
+    subgraph Foundry["Microsoft Foundry project"]
+        orch["Orchestrator Agent<br/>(GPT-4.1)"]
+        intake["Intake & Drafting<br/>(Claude Sonnet 4.5)"]
+        clause["Clause & Risk<br/>(Claude Sonnet 4.5)"]
+        renew["Obligation & Renewal<br/>(GPT-4o-mini)"]
+        orch --> intake
+        orch --> clause
+        orch --> renew
+    end
+
+    subgraph Ground["Grounding & tools"]
+        iq[("Foundry IQ<br/>Azure AI Search")]
+        sql[("Azure SQL<br/>contract status")]
+        mcp["MCP server<br/>draft_contract · analyze_contract"]
+    end
+
+    intake --> iq
+    clause --> iq
+    renew --> sql
+    orch --> mcp
+
+    subgraph Obs["Observability & governance"]
+        ai["App Insights · Tracing"]
+        eval["Evaluations · Content Safety"]
+    end
+    Foundry -.traces.-> ai
+    Foundry -.scorecard.-> eval
+
+    renew -. "proactive alert" .-> user

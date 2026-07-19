@@ -1,3 +1,5 @@
+![Agentic AI Hacks · Contract Lifecycle Management](images/banner.png)
+
 # Agentic AI Hacks · Contract Lifecycle Management
 
 Build a **multi-model, multi-agent** contract assistant on **Microsoft Foundry** — grounded with
@@ -22,6 +24,11 @@ corpus, and proactively alert on renewals — all with **human sign-off and full
 ---
 
 ## Architecture
+
+![Architecture — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced and evaluated, published to Teams/M365 Copilot](images/architecture.png)
+
+<details>
+<summary>Mermaid source</summary>
 
 ```mermaid
 flowchart TB
@@ -58,6 +65,8 @@ flowchart TB
 
     renew -. "proactive alert" .-> user
 ```
+
+</details>
 
 ### Multi-model fleet
 
@@ -143,8 +152,11 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 ├── data/                     # CLM corpus + evaluation dataset
 ├── challenge-0/ … challenge-4/   # one folder per challenge (README + code)
 ├── challenge-5/              # bonus: safety, red-teaming & CI eval gate
-└── images/                   # architecture + per-challenge diagrams
+└── images/                   # banner + rendered architecture diagram
 ```
+
+> Generate images locally with `python scripts/make_banner.py` and
+> `mmdc -i scripts/architecture.mmd -o images/architecture.png -b white -s 3 -w 1600`.
 
 Each challenge README follows the same anatomy: **🎯 Objective · 🧭 Context · ✅ Tasks · ✔️ Success
 criteria · 🚀 Go Further · 🛠️ Troubleshooting · 🧠 Reflection**.
@@ -153,3 +165,27 @@ criteria · 🚀 Go Further · 🛠️ Troubleshooting · 🧠 Reflection**.
 
 > **Guardrail:** the agents assist Legal & Procurement — they draft, analyze, and recommend, but they
 > **do not give legal advice** and **never execute a contract**. A human always approves and signs.
+
+---
+
+## Contributing
+
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
+Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
+the rights to use your contribution. For details, visit [https://cla.opensource.microsoft.com](https://cla.opensource.microsoft.com).
+
+When you submit a pull request, a CLA bot will automatically determine whether you need to provide
+a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
+provided by the bot. You will only need to do this once across all repos using our CLA.
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+trademarks or logos is subject to and must follow
+[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/legal/intellectualproperty/trademarks/usage/general).
+Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
+Any use of third-party trademarks or logos are subject to those third-party's policies.
