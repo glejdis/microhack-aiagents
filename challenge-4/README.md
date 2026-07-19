@@ -3,6 +3,10 @@
 > **Duration:** 60 min (≈30 publish · ≈30 alerts) · **Prerequisites:** Challenge 3 complete with the
 > orchestrator kept (`orchestrator.py --keep`).
 
+> 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
+> implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
+> it works**, then take it further with **🚀 Go Further**. Stuck? The code *is* the answer key.
+
 ## 🎯 Objective
 
 Ship the **Orchestrator** to **Microsoft 365 Copilot & Teams** so people chat with it live, **and**

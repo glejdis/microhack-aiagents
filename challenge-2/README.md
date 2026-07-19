@@ -2,6 +2,10 @@
 
 > **Duration:** 60 min · **Prerequisites:** Challenge 1 complete (Intake & Drafting agent runs).
 
+> 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
+> implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
+> it works**, then take it further with **🚀 Go Further**. Stuck? The code *is* the answer key.
+
 ## 🎯 Objective
 
 Make the agent **observable** and **measurable**: end-to-end traces in Application Insights, an

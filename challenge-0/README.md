@@ -3,6 +3,11 @@
 > **Duration:** 30 min · **Prerequisites:** an Azure subscription (rights to create a Foundry
 > project and deploy GPT **and** Anthropic Claude models), a GitHub account.
 
+> 🧩 **How to use this challenge:** the provisioning is **scripted for you** (`azd up` or the
+> `scripts/deploy` script). **Run it, then confirm you understand what got created** — the Foundry
+> project, the three-model fleet, and the search index the later challenges build on. Stuck? The
+> scripts *are* the answer key.
+
 ## 🎯 Objective
 
 Stand up the full Foundry environment and seed the CLM corpus with **zero local install**, so the

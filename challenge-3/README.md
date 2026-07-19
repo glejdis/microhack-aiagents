@@ -3,6 +3,10 @@
 > **Duration:** 60 min · **Prerequisites:** Challenge 1 pattern understood (grounded agent), Ch2
 > optional but recommended (you'll see orchestration spans).
 
+> 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
+> implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
+> it works**, then take it further with **🚀 Go Further**. Stuck? The code *is* the answer key.
+
 ## 🎯 Objective
 
 Add the **2nd specialist** (Clause & Risk on Claude), stand up an **Orchestrator agent** (GPT-4.1)

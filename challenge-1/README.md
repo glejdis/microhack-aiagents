@@ -3,6 +3,10 @@
 > **Duration:** 60 min · **Prerequisites:** Challenge 0 complete (`.env` populated, corpus seeded,
 > smoke test green).
 
+> 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
+> implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
+> it works**, then take it further with **🚀 Go Further**. Stuck? The code *is* the answer key.
+
 ## 🎯 Objective
 
 Build the **Intake & Drafting agent** on **Anthropic Claude Sonnet 4.5** and make it: **grounded**

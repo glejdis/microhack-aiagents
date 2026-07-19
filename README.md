@@ -168,6 +168,10 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 Each challenge README follows the same anatomy: **🎯 Objective · 🧭 Context · ✅ Tasks · ✔️ Success
 criteria · 🚀 Go Further · 🛠️ Troubleshooting · 🧠 Reflection**.
 
+> **On "solutions":** each challenge folder ships a **complete, working reference implementation** —
+> there's no separate `solutions/` folder. The challenge is to **run it, understand *why* it works, and
+> extend it** (the 🚀 Go Further section), not to type it from a blank file. The code *is* the answer key.
+
 ---
 
 > **Guardrail:** the agents assist Legal & Procurement — they draft, analyze, and recommend, but they
