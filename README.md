@@ -134,10 +134,10 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 ## Getting started
 
 1. **Fork** this repo, then **Code → Codespaces → Create codespace**. The devcontainer installs
-   Python 3.11, Azure CLI, Node, and `requirements.txt` automatically.
-2. `az login`
-3. Do **[Challenge 0](challenge-0/)** to deploy resources and seed the corpus. The deploy script
-   autofills your `.env`.
+   Python 3.11, Azure CLI, `azd`, Node, and `requirements.txt` automatically.
+2. `az login` (and `azd auth login` if you use the `azd up` path)
+3. Do **[Challenge 0](challenge-0/)** to deploy resources and seed the corpus — provision with
+   **`azd up`** (Bicep in `infra/`) or the **`scripts/deploy`** script. Either autofills your `.env`.
 4. Work through Challenges 1 → 4.
 
 ---
@@ -147,8 +147,10 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 ```
 .
 ├── .devcontainer/            # Codespaces definition
+├── infra/                    # Bicep for `azd up` (main.bicep + resources.bicep)
+├── azure.yaml                # azd config (provision + write-.env hook)
 ├── src/clm_common/           # shared config + Foundry client helpers
-├── scripts/                  # deploy, seed corpus, smoke test
+├── scripts/                  # deploy, seed corpus, smoke test, write .env
 ├── data/                     # CLM corpus + evaluation dataset
 ├── challenge-0/ … challenge-4/   # one folder per challenge (README + code)
 ├── challenge-5/              # bonus: safety, red-teaming & CI eval gate

@@ -11,7 +11,8 @@ rest of the hack is pure agent-building.
 ## 🧭 Context
 
 Everything runs from **GitHub Codespaces** using the devcontainer in this repo (Python 3.11, Azure
-CLI, Node). A single deploy script provisions the Azure resources and autofills your `.env`:
+CLI, `azd`, Node). Provision the Azure resources one of two ways — **`azd up`** (Bicep, in `infra/`)
+or the **`scripts/deploy` script** — both autofill the same `.env`:
 
 - A **Foundry project** (AI Services account + project).
 - Three **model deployments** — `gpt-4.1`, `gpt-4o-mini`, and **`claude-sonnet-4-5`** (Claude is GA
@@ -30,14 +31,26 @@ CLI, Node). A single deploy script provisions the Azure resources and autofills 
    az account set --subscription "<your-subscription-id>"
    ```
 
-3. **Deploy resources** (choose a region that offers all three models — check the Foundry model
-   catalog; `swedencentral` is a good default):
+3. **Deploy resources** — choose a region that offers all three models (check the Foundry model
+   catalog; `swedencentral` is a good default). Pick **one** option:
+
+   **Option A — `azd up` (recommended, Bicep in `infra/`):**
+   ```bash
+   azd auth login
+   azd up          # prompts for an environment name + region, then provisions everything
+   ```
+   `azd up` deploys the Bicep in `infra/`, assigns the RBAC roles the later challenges need
+   (Azure AI Developer, Search + Storage data roles), creates the `clm-search` Foundry IQ
+   connection, and runs the `postprovision` hook (`scripts/write_env.py`) to write your `.env`.
+   To also provision Azure SQL: `azd env set DEPLOY_SQL true` and `azd env set SQL_ADMIN_PASSWORD '<StrongP@ssw0rd!>'` before `azd up`.
+
+   **Option B — deploy script (`az` CLI):**
    ```bash
    LOCATION=swedencentral ./scripts/deploy.sh          # add --with-sql to also provision Azure SQL
    ```
    > Windows (outside Codespaces): `./scripts/deploy.ps1` (`-WithSql` optional).
 
-   The script writes a populated **`.env`** at the repo root. Open it and confirm the values.
+   Either path writes a populated **`.env`** at the repo root. Open it and confirm the values.
 
 4. **Seed the corpus** (uploads `data/` to Blob + builds the `clm-corpus` search index):
    ```bash
@@ -69,7 +82,8 @@ Smoke test: ✅ PASS
 
 ## 🚀 Go Further
 
-- Provision with **Bicep** instead of the CLI script (see `infra/` as a stretch — not included).
+- Inspect the **Bicep** in `infra/` (`main.bicep` + `resources.bicep`) — it mirrors `deploy.sh` and
+  is what `azd up` runs. Try `azd provision --preview` to see a what-if before deploying.
 - Add **US Data Zone** deployment tiers for data-residency, or scope RBAC to a least-privilege role.
 - Deploy `claude-haiku-4-5` too and compare it against `gpt-4o-mini` for the renewal agent later.
 
