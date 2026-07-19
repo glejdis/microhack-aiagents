@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "clm-mcp": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["${workspaceFolder}/challenge-3/mcp_server/server.py"],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      }
+    }
+  }
+}
