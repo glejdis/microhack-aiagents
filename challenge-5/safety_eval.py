@@ -23,6 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-1"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-1" / "agents"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-2"))
 
 from clm_common.config import settings, DATA_DIR, credential  # noqa: E402

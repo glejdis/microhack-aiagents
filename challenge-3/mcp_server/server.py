@@ -20,7 +20,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-1"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "challenge-1"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "challenge-1" / "agents"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agents"))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402

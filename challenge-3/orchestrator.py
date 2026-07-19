@@ -21,6 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[0] / "agents"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-1"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-1" / "agents"))
 
 from clm_common.config import settings  # noqa: E402
 from clm_common.foundry import get_project_client, run_prompt  # noqa: E402
