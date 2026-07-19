@@ -30,12 +30,11 @@ jobs:
       - name: Check Markdown links
         uses: lycheeverse/lychee-action@v2
         with:
-          # Links inside fenced code blocks are skipped by default; mail links
-          # are excluded (unreliable to probe). 403/429 are accepted because
-          # some Microsoft pages bot-block or rate-limit crawlers.
+          # Links inside fenced code blocks and mail links are skipped by
+          # default. 403/429 are accepted because some Microsoft pages
+          # bot-block or rate-limit crawlers.
           args: >-
             --no-progress
-            --exclude-mail
             --accept 200,206,403,429
             --max-retries 3
             --retry-wait-time 5
