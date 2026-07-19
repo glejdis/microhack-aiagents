@@ -19,6 +19,9 @@ azure-storage-blob>=12.20.0
 azure-monitor-opentelemetry>=1.6.0
 opentelemetry-sdk>=1.27.0
 azure-ai-evaluation>=1.3.0
+# Bonus Challenge 5 (safety + AI Red Teaming Agent) needs the redteam extra
+# (pulls PyRIT). Install when doing Ch5:  pip install "azure-ai-evaluation[redteam]"
+# azure-ai-evaluation[redteam]>=1.3.0
 
 # --- Function tool: Azure SQL contract lookups ----------------------------
 pyodbc>=5.1.0
