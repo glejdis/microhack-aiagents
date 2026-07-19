@@ -121,6 +121,9 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 > 🧪 **Bonus [Challenge 5](challenge-5/)** (Safety, Red-Teaming & Continuous Eval) is optional — for
 > teams who finish early. It doesn't fit inside the 4.5h; tackle it if you have time or as follow-up.
 
+> 👩‍🏫 **Running this event?** See the **[Coach & Facilitator Guide](docs/coach-guide.md)** — before-the-day
+> checklist, run-of-show, per-challenge blockers & hints, and a reset/recovery playbook.
+
 ---
 
 ## Prerequisites
@@ -154,11 +157,13 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 ├── data/                     # CLM corpus + evaluation dataset
 ├── challenge-0/ … challenge-4/   # one folder per challenge (README + code)
 ├── challenge-5/              # bonus: safety, red-teaming & CI eval gate
-└── images/                   # banner + rendered architecture diagram
+├── images/                   # banner + rendered architecture diagram
+└── docs/                     # coach guide + marketing collateral
 ```
 
 > Generate images locally with `python scripts/make_banner.py` and
-> `mmdc -i scripts/architecture.mmd -o images/architecture.png -b white -s 3 -w 1600`.
+> `mmdc -i scripts/architecture.mmd -o images/architecture.png -b white -s 3 -w 1600`. Regenerate the
+> Teams app icons with `python scripts/make_icons.py`.
 
 Each challenge README follows the same anatomy: **🎯 Objective · 🧭 Context · ✅ Tasks · ✔️ Success
 criteria · 🚀 Go Further · 🛠️ Troubleshooting · 🧠 Reflection**.

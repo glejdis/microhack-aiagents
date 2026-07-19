@@ -7,13 +7,13 @@ this for you — use this template only if you sideload manually).
 ## Contents
 - `manifest.json` — Teams app manifest (v1.19). `${{MICROSOFT_APP_ID}}` is replaced with your Azure
   Bot's App (client) ID.
-- `color.png` (192×192) and `outline.png` (32×32, transparent) — **add your own icons** before
-  zipping. Placeholders are not included.
+- `color.png` (192×192) and `outline.png` (32×32, transparent) — **branded placeholder icons are
+  included**. Regenerate them with `python scripts/make_icons.py`, or drop in your own before zipping.
 
 ## Build the app package
 1. Replace `${{MICROSOFT_APP_ID}}` in `manifest.json` with your Bot's App ID (or let the toolkit do
    it).
-2. Add `color.png` and `outline.png` next to `manifest.json`.
+2. *(Optional)* swap the included `color.png` / `outline.png` for your own branding.
 3. Zip the three files (flat, no folder):
    ```bash
    cd challenge-4/manifest && zip ../clm-assistant.zip manifest.json color.png outline.png
