@@ -30,6 +30,10 @@ use.
 
 ## The scenario — Contoso Global
 
+<p align="center">
+  <img src="docs/diagrams/user-journey.svg" alt="User journey — a day in the life of a Contoso contract manager, from requesting a draft through review, citations, sign-off, obligation tracking, and a proactive renewal alert — all in one Microsoft Foundry project" width="100%">
+</p>
+
 This microhack uses a fictitious multinational, **Contoso Global**, but the scenario applies to any
 enterprise that manages contracts at scale. The points below illustrate the conceptual scenario.
 
