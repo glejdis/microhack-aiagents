@@ -66,8 +66,10 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 - **Point:** stand up the whole Foundry environment + seed the corpus with **zero local install**.
 - **Done when:** `python scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
   `gpt-4.1` **and** `claude-sonnet-4-5`) and the `clm-corpus` index shows documents in the portal.
-- **Two provisioning paths** — both write the same `.env`: **`azd up`** (Bicep in `challenge-0/infra/`) or
-  **`scripts/deploy.sh`** (`.ps1` on Windows). Let teams pick one; don't mix.
+- **Provisioning paths** — all produce the same resources and `.env`: **`azd up`** (Bicep in
+  `challenge-0/infra/`), **`scripts/deploy.sh`** (`.ps1` on Windows), or the one-click **Deploy to
+  Azure** button / `az deployment sub create` on `infra/azuredeploy.json` (then
+  `python scripts/write_env.py --deployment <name>` for `.env`). Let teams pick one; don't mix.
 - **Watch for:**
   - *Model deploy fails* → the model/version isn't in their region. Switch region (`eastus2`/`westus3`)
     or adjust the version in `deploy.sh`. **This is the single most common Ch0 blocker.**

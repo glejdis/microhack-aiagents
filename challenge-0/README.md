@@ -176,7 +176,43 @@ LOCATION=swedencentral ./scripts/deploy.sh          # add --with-sql to also pro
 
 </details>
 
-Either path writes a populated **`.env`** at the repo root. ⏱️ Provisioning takes ~5–10 minutes.
+<details>
+<summary><strong>Option C — one-click <em>Deploy to Azure</em> / plain ARM</strong> (<code>infra/azuredeploy.json</code> · no <code>azd</code>)</summary>
+
+Prefer a portal button or a pure `az` deploy with no `azd`? [`infra/azuredeploy.json`](./infra/azuredeploy.json)
+is a self-contained ARM template **compiled from the same Bicep** — it creates the same
+`rg-clm-microhack` resource group and resources.
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fglejdis%2Fmicrohack-aiagents%2Fmain%2Fchallenge-0%2Finfra%2Fazuredeploy.json)
+
+The button opens a **subscription-scoped** custom deployment — pick your subscription and
+region and it provisions everything (no resource-group picker; the template creates
+`rg-clm-microhack` itself). Or from the CLI:
+
+```bash
+az deployment sub create \
+  --name clm-microhack \
+  --location swedencentral \
+  --template-file challenge-0/infra/azuredeploy.json \
+  --parameters environmentName=clm-microhack location=swedencentral \
+               principalId=$(az ad signed-in-user show --query id -o tsv)
+```
+
+> Passing your `principalId` assigns the data-plane roles (Search + Storage) you need to
+> seed the corpus. Add `deploySql=true sqlAdminPassword='<StrongP@ssw0rd!>'` to also
+> provision Azure SQL.
+
+Unlike `azd up`, this path does **not** auto-write `.env`. Populate it from the deployment
+outputs (use the same `--name` you deployed with):
+
+```bash
+python scripts/write_env.py --deployment clm-microhack
+```
+
+</details>
+
+Options A and B write a populated **`.env`** automatically; Option C writes it via the
+`write_env.py --deployment` step above. ⏱️ Provisioning takes ~5–10 minutes.
 
 ---
 
@@ -247,6 +283,9 @@ Smoke test: ✅ PASS
 
 - Inspect the **Bicep** in [`infra/`](./infra/) (`main.bicep` + `resources.bicep`) — it mirrors
   `deploy.sh` and is what `azd up` runs. Try `azd provision --preview` for a what-if before deploying.
+  [`infra/azuredeploy.json`](./infra/azuredeploy.json) is that same template compiled to ARM (for the
+  one-click button in Option C) — regenerate it with
+  `az bicep build --file challenge-0/infra/main.bicep --outfile challenge-0/infra/azuredeploy.json`.
 - Regenerate this challenge's resource diagram: `python scripts/make_challenge0_resources.py`.
 - Add a **US Data Zone** deployment tier for data-residency, or scope RBAC to least privilege.
 - Deploy `claude-haiku-4-5` too and compare it against `gpt-4o-mini` for the renewal agent later.
