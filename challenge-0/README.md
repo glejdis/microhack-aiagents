@@ -105,7 +105,7 @@ Search so Foundry IQ can ground answers with citations:
 
 ### Task 1 · Fork the repository
 
-[Fork this repository](../../../fork) to your GitHub account (the **Fork** button, top-right). This
+[Fork this repository](https://github.com/glejdis/microhack-aiagents/fork) to your GitHub account (the **Fork** button, top-right). This
 lets you make changes and save your progress.
 
 ---
