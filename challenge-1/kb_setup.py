@@ -5,9 +5,9 @@ Foundry IQ grounds an agent on your corpus. Under the hood the agent uses an
 agentic retrieval (plan → search → rerank → cite).
 
 This module resolves the project's default Azure AI Search connection and builds
-an `AzureAISearchTool` you can attach to any agent. The SAME code grounds a
-Claude-backed agent or a GPT-backed one — Foundry keeps the tool/grounding API
-identical across model providers.
+the Foundry Azure AI Search tool you can attach to any Microsoft Agent Framework
+agent. The SAME code grounds a Claude-backed agent or a GPT-backed one — Foundry
+keeps the tool/grounding API identical across model providers.
 
 Run standalone to verify your connection + index:
     python challenge-1/kb_setup.py
@@ -30,15 +30,31 @@ def get_search_connection_id(project) -> str:
     return conn.id
 
 
-def build_knowledge_tool(project):
-    """Build an AzureAISearchTool over the clm-corpus index (the Foundry IQ knowledge base)."""
-    from azure.ai.agents.models import AzureAISearchQueryType, AzureAISearchTool
+def build_knowledge_tool(*, connection_id: str | None = None, project=None):
+    """Build the Foundry Azure AI Search grounding tool over the clm-corpus index.
 
-    connection_id = get_search_connection_id(project)
-    return AzureAISearchTool(
+    Pass ``connection_id`` to skip resolution (cheap, no network — handy when
+    rebuilding the tool per call), or ``project`` to resolve it from an existing
+    AIProjectClient. With neither, a short-lived project client is opened to look
+    up the default Azure AI Search connection.
+
+    Returns a Foundry tool object ready to drop into an ``Agent``'s ``tools=[...]``.
+    """
+    from agent_framework.foundry import FoundryChatClient
+
+    if connection_id is None:
+        if project is not None:
+            connection_id = get_search_connection_id(project)
+        else:
+            from clm_common.foundry import get_project_client
+
+            with get_project_client() as own_project:
+                connection_id = get_search_connection_id(own_project)
+
+    return FoundryChatClient.get_azure_ai_search_tool(
         index_connection_id=connection_id,
         index_name=settings.search_index,
-        query_type=AzureAISearchQueryType.SEMANTIC,
+        query_type="semantic",
         top_k=5,
     )
 
@@ -50,8 +66,8 @@ def main() -> None:
         conn_id = get_search_connection_id(project)
         print("✓ Default Azure AI Search connection:", conn_id)
         print("✓ Index:", settings.search_index)
-        tool = build_knowledge_tool(project)
-        print("✓ Built AzureAISearchTool with", len(tool.definitions), "tool definition(s).")
+        build_knowledge_tool(connection_id=conn_id)
+        print("✓ Built Foundry Azure AI Search grounding tool (semantic, top_k=5).")
 
 
 if __name__ == "__main__":

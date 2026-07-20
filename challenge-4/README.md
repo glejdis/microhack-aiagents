@@ -1,7 +1,7 @@
 # Challenge 4 · Publish to M365 Copilot & Teams + Proactive Alerts
 
-> **Duration:** 60 min (≈30 publish · ≈30 alerts) · **Prerequisites:** Challenge 3 complete with the
-> orchestrator kept (`orchestrator.py --keep`).
+> **Duration:** 60 min (≈30 publish · ≈30 alerts) · **Prerequisites:** Challenge 3 complete (you can
+> build and run the orchestrator).
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
 > implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
@@ -37,7 +37,7 @@ already use.
 - Governed with Entra (who can use it) and an app manifest for scoping.
 
 **Why here:** an agent legal never opens isn't used — meeting people in Teams is what makes it real.
-→ [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
+→ [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview)
 
 ### Azure Bot Service
 

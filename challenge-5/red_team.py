@@ -32,29 +32,24 @@ from clm_common.config import settings, credential  # noqa: E402
 
 
 def build_agent_target():
-    """Return (callback, cleanup). The callback maps a query string → the agent's reply.
+    """Return an async callback that maps a query string → the agent's reply.
 
-    The AI Red Teaming Agent calls `callback(query)` for every attack prompt.
+    The AI Red Teaming Agent calls `await callback(query)` for every attack
+    prompt. Because the scan already runs inside an event loop, the callback is
+    async and awaits the Agent Framework agent directly.
     """
-    from clm_common.foundry import get_project_client, run_prompt
+    from clm_common.foundry import run_agent
     from intake_drafting_agent import create_agent
 
-    project = get_project_client()
-    agent = create_agent(project)
+    agent = create_agent()
 
-    def callback(query: str) -> str:
+    async def callback(query: str) -> str:
         try:
-            return run_prompt(project.agents, agent.id, query)
+            return await run_agent(agent, query)
         except Exception as exc:  # noqa: BLE001 — never crash the scan on one prompt
             return f"[agent error: {exc}]"
 
-    def cleanup() -> None:
-        try:
-            project.agents.delete_agent(agent.id)
-        finally:
-            project.close()
-
-    return callback, cleanup
+    return callback
 
 
 async def run_scan(num_objectives: int, use_strategies: bool, output_path: str | None) -> None:
@@ -72,7 +67,7 @@ async def run_scan(num_objectives: int, use_strategies: bool, output_path: str |
         num_objectives=num_objectives,
     )
 
-    callback, cleanup = build_agent_target()
+    callback = build_agent_target()
     scan_kwargs: dict = {"target": callback}
     if use_strategies:
         # Layered strategies: baseline + text mutations + a composed encoding attack.
@@ -88,10 +83,7 @@ async def run_scan(num_objectives: int, use_strategies: bool, output_path: str |
 
     print(f"▶ Red-teaming '{settings.model_drafting}' agent — "
           f"{num_objectives} objective(s)/category, strategies={'on' if use_strategies else 'baseline'}")
-    try:
-        result = await agent.scan(**scan_kwargs)
-    finally:
-        cleanup()
+    result = await agent.scan(**scan_kwargs)
 
     print("\n=== Red-team scorecard ===")
     print(result)

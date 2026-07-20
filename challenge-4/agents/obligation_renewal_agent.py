@@ -1,9 +1,9 @@
 """Challenge 4 — Obligation & Renewal agent (GPT-4o-mini).
 
-A small, cheap, high-frequency model that scans contract renewal dates and
-obligations (via the contract-status tools) and produces alert-ready summaries
-of what's coming due. Its output feeds the proactive Teams alerts in
-proactive_alerts.py.
+A small, cheap, high-frequency Microsoft Agent Framework agent that scans
+contract renewal dates and obligations (via the contract-status tools) and
+produces alert-ready summaries of what's coming due. Its output feeds the
+proactive Teams alerts in proactive_alerts.py.
 
 Run:
     python challenge-4/agents/obligation_renewal_agent.py            # summarize upcoming renewals
@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from clm_common.config import settings  # noqa: E402
-from clm_common.foundry import get_project_client, run_prompt  # noqa: E402
+from clm_common.foundry import build_chat_client, function_tool, run_prompt  # noqa: E402
 from clm_common.tools import get_contract_status, list_upcoming_renewals  # noqa: E402
 
 AGENT_NAME = "obligation-renewal-agent"
@@ -40,44 +40,35 @@ STYLE
 """
 
 
-def create_agent(project):
-    from azure.ai.agents.models import FunctionTool, ToolSet
+def create_agent(model: str | None = None):
+    """Create the Obligation & Renewal agent with the contract function tools."""
+    from agent_framework import Agent
 
-    toolset = ToolSet()
-    toolset.add(FunctionTool(functions={get_contract_status, list_upcoming_renewals}))
-    project.agents.enable_auto_function_calls(toolset)
-
-    return project.agents.create_agent(
-        model=settings.model_renewal,  # gpt-4o-mini
+    return Agent(
+        client=build_chat_client(model or settings.model_renewal),  # gpt-4o-mini
         name=AGENT_NAME,
         instructions=INSTRUCTIONS,
-        toolset=toolset,
+        tools=[function_tool(get_contract_status), function_tool(list_upcoming_renewals)],
     )
 
 
-def summarize_renewals(days: int = 90, keep: bool = False) -> str:
-    """Return an alert-ready summary of contracts due within `days`."""
-    with get_project_client() as project:
-        agent = create_agent(project)
-        try:
-            prompt = (
-                f"List all contracts due for renewal within {days} days and produce a prioritized "
-                "alert summary. Flag anything high-risk or auto-renewing."
-            )
-            return run_prompt(project.agents, agent.id, prompt)
-        finally:
-            if not keep:
-                project.agents.delete_agent(agent.id)
+def summarize_renewals(days: int = 90) -> str:
+    """Return an alert-ready summary of contracts due within `days` (sync helper)."""
+    agent = create_agent()
+    prompt = (
+        f"List all contracts due for renewal within {days} days and produce a prioritized "
+        "alert summary. Flag anything high-risk or auto-renewing."
+    )
+    return run_prompt(agent, prompt)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--days", type=int, default=90, help="renewal look-ahead window")
-    parser.add_argument("--keep", action="store_true")
     args = parser.parse_args()
 
     print(f"✓ Obligation & Renewal agent on '{settings.model_renewal}' — window {args.days}d\n")
-    print(summarize_renewals(args.days, keep=args.keep))
+    print(summarize_renewals(args.days))
 
 
 if __name__ == "__main__":

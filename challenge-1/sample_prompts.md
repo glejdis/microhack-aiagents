@@ -1,7 +1,7 @@
 # Challenge 1 — Sample Prompts
 
-Try these against the Intake & Drafting agent (via `runs.create_and_process`, the portal
-Playground, or the demo script). Each maps to a capability you must verify.
+Try these against the Intake & Drafting agent (via the demo script, the portal
+Playground, or your own session). Each maps to a capability you must verify.
 
 ## Grounded drafting (uses approved templates)
 - `Draft a mutual NDA between Contoso Global and Acme Corp for a 2-year term.`

@@ -23,7 +23,7 @@ tips. Participants never see this file; it's for the people running the room.
 | Task | Why it matters |
 |------|----------------|
 | **Pick a region with all 3 models** (`gpt-4.1`, `gpt-4o-mini`, `claude-sonnet-4-5`). `swedencentral` is a good default. | Challenge 0 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** |
-| **Confirm Claude is enabled** in both the **model catalog** *and* the **Agent Service runner** for that region. | If the runner can't host Claude, Ch1 needs the Anthropic-SDK fallback (documented in-challenge). Know this before the room does. |
+| **Confirm Claude is enabled** in both the **model catalog** *and* the **Foundry chat runner** for that region. | If Foundry can't serve Claude via the chat client, Ch1 needs the Anthropic-SDK fallback (documented in-challenge). Know this before the room does. |
 | **Check quota** — Basic Azure AI Search + the model SKUs (TPM for each deployment). Request increases early. | Quota denials are the #1 day-of blocker and can take hours to approve. |
 | **Decide the subscription model** — one sub per team (cleanest) vs a shared sub with per-team resource groups / env names. | `azd up` uses an environment name as the RG suffix; shared subs need unique names per team. |
 | **Do a full dry-run** in the target region, including `azd up` **and** `scripts/deploy.sh`. | You'll hit the region/quota issues before the participants do. |
@@ -47,7 +47,7 @@ tips. Participants never see this file; it's for the people running the room.
 | 09:00 – 10:00 | **Tech talk** — the CLM story, the agentic architecture, multi-model (Claude + GPT), Foundry IQ, tracing/eval, MCP, publish. | Show the [architecture diagram](images/architecture.png). Set the "human always signs" guardrail expectation. |
 | 10:00 – 12:30 | **Hacking — Challenges 0, 1, 2** | **Gate at Ch0:** no team moves on until `smoke_test.py` is green. Float hard here. |
 | 12:30 – 13:30 | Lunch | — |
-| 13:30 – 15:30 | **Hacking — Challenges 3, 4** | Ch4 publish needs the Ch3 orchestrator **kept** (`--keep`). Remind teams before lunch. |
+| 13:30 – 15:30 | **Hacking — Challenges 3, 4** | Ch4 builds on a working Ch3 orchestrator — make sure Ch3 runs cleanly first. Remind teams before lunch. |
 | 15:30 – 16:00 | **Wrap-up / demos** | Each team demos one thing: a cited draft, a bake-off result, an MCP call, or a live Teams alert. |
 | *Overflow* | **Challenge 5 (bonus)** — Safety, Red-Teaming & CI gate | For fast finishers or as a follow-up; does **not** fit inside 4.5 h. |
 
@@ -89,12 +89,12 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
   legal-advice prompt is **refused**; the model shown in the portal is the **Claude** deployment.
 - **Key teaching moment:** the agent/tool/grounding API is **identical** whether `model` points at GPT
   or Claude — that's the whole point of Foundry as a model-agnostic control plane.
-- **`--keep` matters later:** `intake_drafting_agent.py --keep` leaves the agent in the project for the
-  portal/later challenges.
+- **Agents are built in-process:** with the Microsoft Agent Framework each run builds its agent against
+  the Foundry chat client — nothing persists server-side, so there's no `--keep` and nothing to clean up.
 - **Watch for:**
   - *No citations* → confirm `seed_corpus.py` populated the index + the semantic config exists; raise `top_k`.
   - *Function tool never called* → keep the docstring + type hints (the schema is derived from them) and
-    ensure `enable_auto_function_calls(toolset)` ran.
+    ensure it's wrapped with `function_tool(...)` and passed in `tools=[...]`.
   - *Search connection returns nothing* → set `AZURE_SEARCH_CONNECTION_NAME` in `.env`; check portal →
     Connected resources.
   - *Run `failed` on Claude* → use the **Anthropic-SDK fallback** in the README (§ Claude fallback). Point
@@ -126,16 +126,16 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 ### Challenge 3 · Orchestration + MCP Server *(60 min · orchestration · MCP)*
 
 - **Point:** add the **Clause & Risk** specialist (Claude), stand up a **GPT-4.1 Orchestrator** that
-  routes to both specialists via **connected agents**, and expose the workflow as an **MCP server**.
+  routes to both specialists via the **agent-as-tool pattern**, and expose the workflow as an **MCP server**.
 - **Done when:** one orchestrator thread runs **draft → extract → risk** by delegating; the Clause & Risk
   agent returns a structured, cited risk assessment; the **MCP server is discoverable + callable** from
   VS Code / Copilot Chat (`#draft_contract`, `#analyze_contract`, `#get_contract_status`).
-- **`--keep` is mandatory here:** `orchestrator.py --keep` — **Challenge 4 publishes this exact agent.**
+- **Ch4 builds on this orchestrator:** it publishes the Ch3 orchestrator pattern — make sure it runs cleanly.
   Call this out loudly before lunch.
 - **Watch for:**
-  - *Orchestrator routes wrong* → sharpen `INSTRUCTIONS` routing rules and make each connected-agent
-    `description` specific.
-  - *`ConnectedAgentTool` import error* → update `azure-ai-agents`; it's in `azure.ai.agents.models`.
+  - *Orchestrator routes wrong* → sharpen `INSTRUCTIONS` routing rules and make each specialist's
+    `as_tool(description=...)` specific.
+  - *`agent_framework` import error* → `pip install agent-framework-core agent-framework-foundry` (see requirements.txt).
   - *MCP server not listed in VS Code* → ensure the MCP feature is on and `challenge-3/.vscode/mcp.json`
     is picked up; confirm the server starts standalone first (`python challenge-3/mcp_server/server.py`).
   - *MCP call times out* → each call spins up + tears down a Foundry agent (a few seconds); keep test
@@ -188,7 +188,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 |-----------|-----|
 | **`.env` looks wrong / half-populated** | Re-run the provision path (`azd up` re-runs the `write_env.py` hook), or hand-set the missing keys from the portal (project endpoint under **Overview → Endpoint**). |
 | **Corpus / index empty** | Re-run `python scripts/seed_corpus.py` (idempotent — re-uploads Blob + rebuilds the index). |
-| **Too many leftover agents in the project** | Agents auto-delete unless `--keep` was passed. Delete stragglers in **portal → Agents**. Only the Ch1 drafting agent and the Ch3 orchestrator need to persist (for Ch4). |
+| **Legacy agents in the project** | The Microsoft Agent Framework builds agents in-process against the Foundry chat client — it registers **no** persistent server-side agents, so there's nothing to clean up. Delete any stragglers from earlier Agent-Service runs in **portal → Agents** if you like. |
 | **Auth / 403 right after provisioning** | RBAC propagation lag — wait 2–3 min and retry before debugging anything else. |
 | **Everything is wedged, start clean** | `azd down` (or delete the resource group), then `azd up` again. Budget ~15 min. |
 | **Region has no Claude runner** | Proceed with the **Anthropic-SDK fallback** in Challenge 1 — the concepts still land; only the *hosting* path differs. |
@@ -215,7 +215,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 1. **Region + model availability** decides everything — validate against the *actual* subscription.
 2. **Tracing lag** is 1–2 min; the content-recording flag must be set **before** the SDK import.
 3. **RBAC propagation** lag causes false "auth" failures right after provisioning — retry first.
-4. **`--keep`** on the Ch1 agent and the Ch3 orchestrator is what makes Ch4 possible.
+4. **Agents are built in-process** with the Microsoft Agent Framework — nothing persists server-side, so each challenge rebuilds its agent (no `--keep`).
 5. **Sideload rights** in the M365 tenant are the Ch4 wildcard — have a coach tenant on standby.
 
 ---

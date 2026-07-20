@@ -30,8 +30,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-1"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-1" / "agents"))
 
-from clm_common.config import settings, DATA_DIR, credential  # noqa: E402
-from clm_common.foundry import get_project_client, run_prompt  # noqa: E402
+from clm_common.config import settings, DATA_DIR  # noqa: E402
+from clm_common.foundry import build_chat_client, function_tool, get_project_client, run_prompt  # noqa: E402
 
 DATASET = DATA_DIR / "evaluation" / "evaluation_dataset.jsonl"
 
@@ -56,37 +56,46 @@ def judge_model_config():
     )
 
 
-def build_target(project, model: str):
-    """Create an Intake & Drafting agent on `model` and return a (fn, cleanup, meta) triple.
+def build_target(model: str, connection_id: str):
+    """Create an Intake & Drafting agent target on `model` and return a (fn, meta) pair.
 
     The returned callable maps a `query` to the agent's `response`, and records
-    latency so the bake-off can compare cost/latency alongside quality.
+    latency so the bake-off can compare cost/latency alongside quality. The agent
+    is built once per worker thread (via thread-local storage) so the evaluation
+    harness can invoke the target concurrently without sharing an event loop.
     """
+    import threading
+
     from intake_drafting_agent import INSTRUCTIONS
-    from azure.ai.agents.models import FunctionTool, ToolSet
+    from agent_framework import Agent
     from clm_common.tools import get_contract_status
     from kb_setup import build_knowledge_tool
 
-    toolset = ToolSet()
-    toolset.add(build_knowledge_tool(project))
-    toolset.add(FunctionTool(functions={get_contract_status}))
-    project.agents.enable_auto_function_calls(toolset)
-
-    agent = project.agents.create_agent(
-        model=model, name=f"eval-intake-{model}", instructions=INSTRUCTIONS, toolset=toolset
-    )
     meta = {"latencies": []}
+    tls = threading.local()
+
+    def _agent():
+        agent = getattr(tls, "agent", None)
+        if agent is None:
+            agent = Agent(
+                client=build_chat_client(model),
+                name=f"eval-intake-{model}",
+                instructions=INSTRUCTIONS,
+                tools=[
+                    build_knowledge_tool(connection_id=connection_id),
+                    function_tool(get_contract_status),
+                ],
+            )
+            tls.agent = agent
+        return agent
 
     def target(query: str, **_: object) -> dict:
         start = time.perf_counter()
-        response = run_prompt(project.agents, agent.id, query)
+        response = run_prompt(_agent(), query)
         meta["latencies"].append(time.perf_counter() - start)
         return {"response": response}
 
-    def cleanup() -> None:
-        project.agents.delete_agent(agent.id)
-
-    return target, cleanup, meta
+    return target, meta
 
 
 def evaluators_dict():
@@ -106,29 +115,26 @@ def evaluators_dict():
     }
 
 
-def run_eval(project, model: str) -> dict:
+def run_eval(model: str, connection_id: str) -> dict:
     """Evaluate the agent on `model` over the dataset; return the metrics summary."""
     from azure.ai.evaluation import evaluate
 
-    target, cleanup, meta = build_target(project, model)
-    try:
-        result = evaluate(
-            data=str(DATASET),
-            target=target,
-            evaluators=evaluators_dict(),
-            evaluator_config={
-                "default": {
-                    "column_mapping": {
-                        "query": "${data.query}",
-                        "response": "${target.response}",
-                        "context": "${data.context}",
-                        "ground_truth": "${data.ground_truth}",
-                    }
+    target, meta = build_target(model, connection_id)
+    result = evaluate(
+        data=str(DATASET),
+        target=target,
+        evaluators=evaluators_dict(),
+        evaluator_config={
+            "default": {
+                "column_mapping": {
+                    "query": "${data.query}",
+                    "response": "${target.response}",
+                    "context": "${data.context}",
+                    "ground_truth": "${data.ground_truth}",
                 }
-            },
-        )
-    finally:
-        cleanup()
+            }
+        },
+    )
 
     metrics = dict(result.get("metrics", {}))
     lat = meta["latencies"]
@@ -157,33 +163,36 @@ def main() -> int:
         print(f"✗ Missing dataset: {DATASET}")
         return 1
 
+    from kb_setup import get_search_connection_id
+
     with get_project_client() as project:
         tracing_setup.enable_tracing(project)
+        connection_id = get_search_connection_id(project)
 
-        claude = run_eval(project, settings.model_drafting)
-        print_scorecard("Intake & Drafting", claude)
+    claude = run_eval(settings.model_drafting, connection_id)
+    print_scorecard("Intake & Drafting", claude)
 
-        gpt = None
-        if args.bakeoff:
-            gpt = run_eval(project, settings.model_orchestrator)
-            print_scorecard("Intake & Drafting", gpt)
-            print("\n--- Bake-off (Claude vs GPT) ---")
-            keys = [k for k in claude if not k.startswith("_")]
-            for k in sorted(keys):
-                print(f"  {k:<40} claude={claude.get(k)}   gpt={gpt.get(k)}")
-            print(f"  {'mean latency (s)':<40} claude={claude['_mean_latency_s']}   "
-                  f"gpt={gpt['_mean_latency_s']}")
+    gpt = None
+    if args.bakeoff:
+        gpt = run_eval(settings.model_orchestrator, connection_id)
+        print_scorecard("Intake & Drafting", gpt)
+        print("\n--- Bake-off (Claude vs GPT) ---")
+        keys = [k for k in claude if not k.startswith("_")]
+        for k in sorted(keys):
+            print(f"  {k:<40} claude={claude.get(k)}   gpt={gpt.get(k)}")
+        print(f"  {'mean latency (s)':<40} claude={claude['_mean_latency_s']}   "
+              f"gpt={gpt['_mean_latency_s']}")
 
-        if args.gate is not None:
-            score = claude.get("groundedness.groundedness") or claude.get("groundedness")
-            print(f"\nQuality gate: groundedness={score} threshold={args.gate}")
-            if score is None:
-                print("⚠️  Could not read groundedness metric — check evaluator output keys.")
-                return 2
-            if float(score) < args.gate:
-                print("❌ GATE FAILED — groundedness below threshold. Blocking release.")
-                return 3
-            print("✅ GATE PASSED.")
+    if args.gate is not None:
+        score = claude.get("groundedness.groundedness") or claude.get("groundedness")
+        print(f"\nQuality gate: groundedness={score} threshold={args.gate}")
+        if score is None:
+            print("⚠️  Could not read groundedness metric — check evaluator output keys.")
+            return 2
+        if float(score) < args.gate:
+            print("❌ GATE FAILED — groundedness below threshold. Blocking release.")
+            return 3
+        print("✅ GATE PASSED.")
 
     return 0
 

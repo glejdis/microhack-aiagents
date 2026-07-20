@@ -10,14 +10,14 @@
 ## 🎯 Objective
 
 Add the **2nd specialist** (Clause & Risk on Claude), stand up an **Orchestrator agent** (GPT-4.1)
-that routes to both specialists via **connected agents**, then expose the whole workflow as an **MCP
+that routes to both specialists via the **agent-as-tool pattern**, then expose the whole workflow as an **MCP
 server** callable from VS Code / GitHub Copilot.
 
 ## 🧭 Context
 
 - **Clause & Risk agent** reuses the Ch1 grounding pattern → fast to build. It compares a
   counterparty draft to the enterprise standard and returns a **risk score**.
-- **Orchestrator** (GPT-4.1) uses **`ConnectedAgentTool`** to call each specialist as a tool. A
+- **Orchestrator** (GPT-4.1) uses the Agent Framework's **`agent.as_tool(...)`** to call each specialist as a tool. A
   **GPT orchestrator coordinating Claude specialists** is multi-model composition in one project. It
   manages routing, hand-offs and human-in-the-loop.
 - **MCP** (Model Context Protocol) lets you expose the workflow as standard tools so *any* MCP client
@@ -27,7 +27,7 @@ server** callable from VS Code / GitHub Copilot.
         ┌────────────── Orchestrator (GPT-4.1) ──────────────┐
  user → │  routes + hand-offs + human-in-the-loop            │
         └───────┬───────────────────────────┬───────────────┘
-                │ connected agent            │ connected agent
+                │ agent-as-tool             │ agent-as-tool
         Intake & Drafting (Claude)   Clause & Risk (Claude)
                 └──────────── grounded on Foundry IQ ─────────┘
         Also exposed as an MCP server: draft_contract · analyze_contract · get_contract_status
@@ -38,19 +38,20 @@ server** callable from VS Code / GitHub Copilot.
 This challenge is about **composition**: many specialist agents behind one orchestrator, plus a standard
 protocol that makes the whole workflow reusable outside your code.
 
-### Connected agents (`ConnectedAgentTool`)
+### Agent-as-tool composition (`agent.as_tool(...)`)
 
-**What it is:** Foundry's **multi-agent orchestration** primitive. You wrap an existing agent as a *tool*
-and hand it to an orchestrator, which then calls specialists the same way it calls a function.
+**What it is:** the Microsoft Agent Framework's **multi-agent orchestration** primitive. You wrap an
+existing agent as a *tool* and hand it to an orchestrator, which then calls specialists the same way it
+calls a function.
 
 - **Separation of concerns** — each specialist has its own model, instructions and evaluation.
 - The orchestrator handles **routing, hand-offs and human-in-the-loop**.
 - A **GPT orchestrator coordinating Claude specialists** = multi-model composition in one project.
-- `ConnectedAgentTool` (from `azure.ai.agents.models`) wires each specialist into
-  [`challenge-3/orchestrator.py`](orchestrator.py); run it with `--keep` so Ch4 can publish it.
+- `agent.as_tool(name=..., description=...)` wires each specialist into
+  [`challenge-3/orchestrator.py`](orchestrator.py); agents are built in-process, so there's nothing to keep.
 
 **Why here:** it lets the Orchestrator delegate *drafting* and *clause/risk* to the right specialist
-instead of one bloated mega-agent. → [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
+instead of one bloated mega-agent. → [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview)
 
 ### Model — GPT-4.1 (the orchestrator)
 
@@ -103,7 +104,7 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
 2. **Build the Orchestrator** with both specialists connected, and run a multi-step thread
    (draft → analyze → status):
    ```bash
-   python challenge-3/orchestrator.py --keep    # --keep so Ch4 can publish it
+   python challenge-3/orchestrator.py
    ```
    Note which specialist the orchestrator says it used for each turn.
 
@@ -127,7 +128,7 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
 ## 🚀 Go Further
 
 - Add the **Review & Negotiation** and **Signature & Repository** agents from the 5-agent vision as
-  more connected agents.
+  more agent-as-tool specialists.
 - Expose the MCP server **remotely** (HTTP/SSE behind APIM) instead of stdio, and consume it from a
   Foundry agent with `MCPTool(server_label=..., server_url=..., require_approval=...)`.
 - Add an approval step (`require_approval`) before high-impact tools run.
@@ -136,14 +137,14 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
 
 | Symptom | Fix |
 |---------|-----|
-| Orchestrator doesn't route correctly | Sharpen the routing rules in `INSTRUCTIONS`; make connected-agent `description`s specific. |
-| `ConnectedAgentTool` import error | Update `azure-ai-agents` (see requirements.txt); it's in `azure.ai.agents.models`. |
+| Orchestrator doesn't route correctly | Sharpen the routing rules in `INSTRUCTIONS`; make each specialist's `as_tool(description=...)` specific. |
+| `agent_framework` import error | Install the framework: `pip install agent-framework-core agent-framework-foundry` (see requirements.txt). |
 | MCP server not listed in VS Code | Ensure the MCP feature is enabled and `mcp.json` path is correct; check the server starts standalone first. |
 | MCP tool call times out | Each call spins up + tears down a Foundry agent (a few seconds). Keep drafts short while testing. |
 
 ## 🧠 Reflection
 
-- Connected agents vs one mega-agent with many tools — what do you gain (separation, per-agent
+- Specialist agents-as-tools vs one mega-agent with many tools — what do you gain (separation, per-agent
   models/eval) and what do you pay (latency, orchestration complexity)?
 - MCP makes the workflow portable. Who else in the org could consume `analyze_contract` without
   touching your code?

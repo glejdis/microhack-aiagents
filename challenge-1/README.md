@@ -41,8 +41,8 @@ Build the **Intake & Drafting agent** on **Anthropic Claude Sonnet 4.5** and mak
 | **Knowledge tool (Foundry IQ)** | An `AzureAISearchTool` over the `clm-corpus` index — grounds the agent on Contoso's templates, clauses, policy and contracts | [`kb_setup.py`](kb_setup.py) → `build_knowledge_tool()` |
 | **Function tool** | `get_contract_status(contract_id)` — deterministic lookup of status, renewal date, risk and owner (Azure SQL, falling back to seed JSON) | [`src/clm_common/tools.py`](../src/clm_common/tools.py) |
 | **Guard-railed persona** | Instructions that force citations, forbid invented terms, and refuse legal advice | `INSTRUCTIONS` in [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) |
-| **Claude-backed agent** | The same Agents API as GPT, with `model` pointed at the Claude deployment | `create_agent()` in [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) |
-| **A repeatable demo** | Creates the agent, runs four prompts (draft · cited Q&A · tool call · refusal), then cleans up | `main()` in [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) |
+| **Claude-backed agent** | The same Agent Framework API as GPT, with `model` pointed at the Claude deployment | `create_agent()` in [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) |
+| **A repeatable demo** | Builds the agent, runs four prompts (draft · cited Q&A · tool call · refusal) in one session | `main()` in [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) |
 
 ## 🧭 Context and Background
 
@@ -58,7 +58,7 @@ flowchart LR
   B --> C["Foundry IQ<br/>knowledge base"]
   C --> D["AzureAISearchTool<br/>(kb_setup.py)"]
   D --> E["Intake &amp; Drafting agent<br/>Claude Sonnet 4.5"]
-  F["get_contract_status<br/>FunctionTool"] --> E
+  F["get_contract_status<br/>function tool"] --> E
   E --> G["Cited draft / answer<br/>+ tool results"]
   style E fill:#EDE4F5,stroke:#7A4FB5,stroke-width:2px
   style D fill:#FCEBDD,stroke:#E8590C,stroke-width:2px
@@ -75,9 +75,9 @@ An agent grounds and acts through **tools**. This agent has both flavors:
 - **Knowledge tool** (`AzureAISearchTool`) — for *unstructured* knowledge: "what does our standard
   limitation-of-liability clause say?" Answered from the corpus, **with citations**.
 - **Function tool** (`get_contract_status`) — for *structured* facts the model must never hallucinate:
-  "what's the renewal date of `CT-4821`?" The Agents SDK generates the tool's JSON schema **from the
-  Python type hints + docstring**, and `enable_auto_function_calls(...)` runs the function
-  automatically mid-run.
+  "what's the renewal date of `CT-4821`?" The Agent Framework generates the tool's JSON schema **from the
+  Python type hints + docstring**, and `function_tool(...)` (`approval_mode="never_require"`) runs the
+  function automatically mid-run.
 
 > [!NOTE]
 > Because the schema is derived from the function signature and docstring, **keeping good type hints
@@ -88,7 +88,7 @@ An agent grounds and acts through **tools**. This agent has both flavors:
 Drafting rewards strong instruction-following and long-context legal reasoning, so the Intake &
 Drafting agent runs on **Claude Sonnet 4.5** (`MODEL_DRAFTING`). The whole point of Foundry as a
 control plane is that you get there by pointing `model` at the Claude deployment — **the
-agent/tool/grounding API is identical across providers**. The same `create_agent(...) → ToolSet →
+agent/tool/grounding API is identical across providers**. The same `Agent(client=..., tools=[...]) →
 run` shape hosts a GPT agent (you'll see that in Challenge 3's orchestrator) with no other changes.
 
 ### Guardrails at the prompt layer
@@ -114,7 +114,7 @@ Everything the agent "knows" comes from the corpus you seeded in Challenge 0:
 | File | What it does |
 |------|--------------|
 | [`kb_setup.py`](kb_setup.py) | Resolves the project's **default Azure AI Search connection** and builds the `AzureAISearchTool` (the Foundry IQ knowledge base). Run it standalone to verify grounding is wired up. |
-| [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) | Defines the agent (persona, guardrails, knowledge + function tools) and runs a four-prompt demo. `--keep` leaves it in the project for later challenges / the portal. |
+| [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) | Defines the agent (persona, guardrails, knowledge + function tools) and runs a four-prompt demo. Agents are built in-process — nothing persists server-side. |
 | [`sample_prompts.md`](sample_prompts.md) | Curated prompts that exercise every capability: grounded drafting, cited Q&A, the function tool, and the refusal guardrail. |
 
 ## 🧰 Services & models in this challenge
@@ -123,20 +123,21 @@ This agent is small, but every line stands on a concrete resource — the exact 
 Challenge 0 ([`challenge-0/infra/resources.bicep`](../challenge-0/infra/resources.bicep)). Here's **what
 each is**, the **specifics wired into this repo**, and **why it's in the architecture**.
 
-### Microsoft Foundry — AI Services account + Agent Service
+### Microsoft Foundry — AI Services account + model runtime
 
-**What it is:** the managed **control plane + agent runtime**. Challenge 0 creates one
+**What it is:** the managed **control plane + model runtime**. Challenge 0 creates one
 `Microsoft.CognitiveServices` account (`kind: AIServices`, SKU `S0`) holding a project **`clm-project`**;
 your `.env` reaches it through `AZURE_AI_PROJECT_ENDPOINT`
 (`https://<account>.services.ai.azure.com/api/projects/clm-project`).
 
 - **All three models deploy onto that one account** — `gpt-4.1`, `gpt-4o-mini`, `claude-sonnet-4-5` — so a
   single `get_project_client()` ([`src/clm_common/foundry.py`](../src/clm_common/foundry.py)) reaches each.
-- The Agents SDK (`project.agents.create_agent(...)`) runs the loop **server-side**: threads, runs, tools.
+- The **Microsoft Agent Framework** (`Agent(client=FoundryChatClient(...))`) runs the agent loop **in your
+  process** — planning, tool-calls and retrieval — calling Foundry for model inference.
 - The project also owns the grounding **`clm-search` connection** and the RBAC that makes retrieval keyless.
 
 **Why here:** you build a grounded, tool-using **Claude** agent in ~15 lines, and moving to GPT is a
-one-argument change (`model=`). → [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
+one-argument change (`model=`). → [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview)
 
 ### Foundry IQ — agentic retrieval (`AzureAISearchTool`)
 
@@ -189,8 +190,8 @@ Azure-hosted, SKU `GlobalStandard`, capacity 20), read from `settings.model_draf
 ### Function tools — `get_contract_status`
 
 **What it is:** plain Python in [`src/clm_common/tools.py`](../src/clm_common/tools.py) exposed as a tool.
-`get_contract_status(contract_id: str) -> str` returns a JSON string; the SDK derives the tool's schema from
-the **type hints + docstring**, and `enable_auto_function_calls(toolset)` runs it mid-run.
+`get_contract_status(contract_id: str) -> str` returns a JSON string; the Agent Framework derives the tool's
+schema from the **type hints + docstring**, and `function_tool(...)` runs it automatically mid-run.
 
 - **Prefers Azure SQL** (`SELECT … FROM dbo.contracts` via pyodbc) when `AZURE_SQL_CONNECTION_STRING` is set,
   else falls back to [`challenge-0/data/contracts_seed.json`](../challenge-0/data/contracts_seed.json) — the
@@ -216,7 +217,7 @@ Expected output (ids will differ):
 ```text
 ✓ Default Azure AI Search connection: /subscriptions/.../connections/clm-search
 ✓ Index: clm-corpus
-✓ Built AzureAISearchTool with 1 tool definition(s).
+✓ Built Foundry Azure AI Search grounding tool (semantic, top_k=5).
 ```
 
 > [!TIP]
@@ -228,48 +229,43 @@ Open [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) and tr
 
 - `model=settings.model_drafting` → **Claude Sonnet 4.5** (the only line that would change for GPT).
 - The persona + **refusal** instructions in `INSTRUCTIONS`.
-- Grounding via `build_knowledge_tool(project)` **plus** the `get_contract_status` **FunctionTool**,
-  combined in a single `ToolSet`.
-- `enable_auto_function_calls(toolset)` so the function runs automatically during a run.
+- Grounding via `build_knowledge_tool(...)` **plus** the `get_contract_status` **function tool**,
+  passed together in the Agent's `tools=[...]`.
+- `function_tool(...)` wraps the function with `approval_mode="never_require"` so it auto-executes during a run.
 
 <details>
 <summary><strong>🔬 Anatomy of the agent</strong> — the wiring in ~15 lines</summary>
 
 ```python
-from azure.ai.agents.models import FunctionTool, ToolSet
+from agent_framework import Agent
+from clm_common.foundry import build_chat_client, function_tool
 from kb_setup import build_knowledge_tool
 from clm_common.tools import get_contract_status
 
-knowledge = build_knowledge_tool(project)          # AzureAISearchTool over clm-corpus
-functions = FunctionTool(functions={get_contract_status})
+knowledge = build_knowledge_tool(connection_id=connection_id)   # Azure AI Search grounding over clm-corpus
 
-toolset = ToolSet()
-toolset.add(knowledge)                             # unstructured grounding (Foundry IQ)
-toolset.add(functions)                             # structured lookups
-project.agents.enable_auto_function_calls(toolset) # run local functions mid-run
-
-agent = project.agents.create_agent(
-    model=settings.model_drafting,                 # ← "claude-sonnet-4-5"; swap for a GPT id, nothing else changes
+agent = Agent(
+    client=build_chat_client(settings.model_drafting),          # ← "claude-sonnet-4-5"; swap for a GPT id, nothing else changes
     name="intake-drafting-agent",
-    instructions=INSTRUCTIONS,                      # persona + citations + refusal policy
-    toolset=toolset,
+    instructions=INSTRUCTIONS,                                  # persona + citations + refusal policy
+    tools=[
+        knowledge,                                              # unstructured grounding (Foundry IQ)
+        function_tool(get_contract_status),                     # structured lookups, approval_mode="never_require"
+    ],
 )
 ```
 
-A single run then does: post a user message → `runs.create_and_process` (the agent plans, retrieves,
-optionally calls `get_contract_status`, and drafts) → read back the last assistant message. That
-`run_prompt` helper lives in [`src/clm_common/foundry.py`](../src/clm_common/foundry.py).
+A single run then does: `agent.run(prompt, session=session)` — the agent plans, retrieves,
+optionally calls `get_contract_status`, and drafts — then returns the assistant's text. The
+`run_agent` / `run_prompt` helpers live in [`src/clm_common/foundry.py`](../src/clm_common/foundry.py).
 </details>
 
 ### 3 · Run the agent end-to-end
 
-This creates the agent, runs four demo prompts on one thread, then deletes it:
+This builds the agent and runs four demo prompts in one shared session:
 
 ```bash
 python challenge-1/agents/intake_drafting_agent.py
-
-# ...or keep it for later challenges / the portal Playground:
-python challenge-1/agents/intake_drafting_agent.py --keep
 ```
 
 The four built-in prompts deliberately cover all four behaviors — a **draft**, a **cited** clause
@@ -277,8 +273,8 @@ Q&A, a **`CT-4821` status** lookup (function tool), and a **legal-advice** promp
 **refused**.
 
 > [!NOTE]
-> With `--keep`, the script prints the agent id. Set `INTAKE_AGENT_ID=<id>` in your `.env` so later
-> challenges (and the portal) can reuse it instead of recreating one.
+> The agent is built in-process each run via the Microsoft Agent Framework — there's no server-side
+> agent id to manage or clean up. Later challenges simply call `create_agent(...)` again.
 
 ### 4 · Exercise every capability
 
@@ -308,11 +304,11 @@ In the portal, attach **Prompt Shields / PII** guardrails to the agent, or discu
 The refusal instructions already enforce the no-legal-advice policy at the prompt layer — content
 safety adds a second, model-independent layer (previewed here, built in **Challenge 5**).
 
-### ⚙️ Claude fallback (if the Agent runner can't host Claude in your region)
+### ⚙️ Claude fallback (if Foundry can't serve Claude via the chat client in your region)
 
-The **preferred** path is `model="claude-sonnet-4-5"` on `create_agent`, exactly like GPT. If that run
-fails because the Agent Service runner doesn't yet support Anthropic models in your region, call Claude
-**directly** through Foundry with the Anthropic SDK and keep grounding/tools in your own code:
+The **preferred** path is `model="claude-sonnet-4-5"` on `build_chat_client(...)`, exactly like GPT. If that
+run fails because Foundry doesn't yet serve Anthropic models through the chat client in your region, call
+Claude **directly** through Foundry with the Anthropic SDK and keep grounding/tools in your own code:
 
 ```python
 from anthropic import AnthropicFoundry           # pip: anthropic (already in requirements.txt)
@@ -358,9 +354,9 @@ You're done when:
 |---------|-----|
 | `get_default(AZURE_AI_SEARCH)` returns nothing | Ensure Challenge 0 created the Search resource and connected it to the project (**portal → Connected resources**). Set `AZURE_SEARCH_CONNECTION_NAME` in `.env`. |
 | No citations returned | Confirm `scripts/seed_corpus.py` populated the index and the semantic config exists; try raising `top_k` in `build_knowledge_tool`. |
-| Function tool never called | Keep the docstring + type hints (the schema comes from them); ensure `enable_auto_function_calls(toolset)` ran and the prompt actually asks for a specific contract. |
+| Function tool never called | Keep the docstring + type hints (the schema comes from them); ensure it's wrapped with `function_tool(...)` and passed in the Agent's `tools=[...]`, and the prompt actually asks for a specific contract. |
 | `get_contract_status` says "not found" | Use a known id (`CT-4821`, `CT-3390`, `CT-5102`, `CT-2765`, `CT-6033`) — the error message lists them. |
-| Run status `failed` on Claude | Your region's Agent runner may not host Anthropic models yet — use the **Claude fallback** above. |
+| Run fails on Claude | Foundry may not serve Anthropic models via the chat client in your region yet — use the **Claude fallback** above. |
 | `Missing required environment variable 'AZURE_AI_PROJECT_ENDPOINT'` | Re-run Challenge 0's deploy (which writes `.env`) or copy `.env.example` → `.env` and fill it in. |
 
 ## 🎯 What you accomplished
@@ -373,7 +369,7 @@ with the same API you'll use for GPT.
 - **Grounded on your corpus** — attached the Foundry IQ knowledge base as a tool so answers come from
   Contoso's documents, with citations, not model memory.
 - **Mixed knowledge + function tools** — combined unstructured retrieval with a deterministic
-  `get_contract_status` lookup in one `ToolSet`, auto-invoked mid-run.
+  `get_contract_status` lookup in the Agent's `tools=[...]`, auto-invoked mid-run.
 - **Enforced guardrails** — the agent refuses legal advice and flags policy deviations for a human.
 - **Proved model-agnosticism** — ran the whole thing on Claude Sonnet 4.5 by changing a single
   `model` argument.
@@ -384,7 +380,7 @@ to it, and everything it does will be **traced and evaluated** in Challenge 2.
 ## 📚 Learn more
 
 - [Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/)
-- [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
+- [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview)
 - [Function calling with Foundry agents](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/function-calling)
 - [Foundry IQ / agentic retrieval](https://learn.microsoft.com/azure/search/search-agentic-retrieval-concept)
 - [Azure AI Search](https://learn.microsoft.com/azure/search/)

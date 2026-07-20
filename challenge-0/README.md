@@ -261,7 +261,7 @@ Smoke test: ✅ PASS
 |---------|-----|
 | `deployment failed` for a model | The model/version isn't available in your region. Try `eastus2`/`westus3`, or adjust the version in `scripts/deploy.sh`. Check the Foundry catalog. |
 | `account project create` unavailable | The CLI project command is preview. Create the project in the **Foundry portal**, then set `AZURE_AI_PROJECT_ENDPOINT` in `.env` manually (Overview → Endpoint). |
-| Claude ping fails in smoke test | Claude may not be enabled in the **Agent runner** for your region yet. You can still proceed — Challenge 1 documents an Anthropic-SDK fallback. |
+| Claude ping fails in smoke test | Claude may not be served via the **Foundry chat client** in your region yet. You can still proceed — Challenge 1 documents an Anthropic-SDK fallback. |
 | `az login` in Codespaces | Use `az login --use-device-code`. |
 | Search / quota errors | Ensure the subscription has quota for Basic Search + the model SKUs; request quota if needed. |
 | `PermissionDenied` after deploy | RBAC can take 5–10 min to propagate. Wait, run `az login --use-device-code` again, and retry. |
@@ -290,7 +290,7 @@ az search service show --name <clmsearch****> --resource-group rg-clm-microhack 
 ## 📚 Learn more
 
 - [Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/)
-- [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
+- [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview)
 - [Foundry IQ / agentic retrieval](https://learn.microsoft.com/azure/search/search-agentic-retrieval-concept)
 - [Azure AI Search](https://learn.microsoft.com/azure/search/)
 - [Azure Developer CLI (`azd`)](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
