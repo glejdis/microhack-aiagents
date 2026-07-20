@@ -161,15 +161,13 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 
 By participating in this hackathon, you will learn how to:
 
-- **Foundry Agent Service** — build grounded, tool-using agents (on GPT **and** Claude).
-- **Foundry IQ** — agentic retrieval over Azure AI Search with cited answers.
-- **Tools & MCP** — function tools (Azure SQL) and exposing the workflow as an MCP server.
-- **GenAIOps** — OpenTelemetry tracing to App Insights, evaluation scorecards, a quality gate, and a
-  **Claude-vs-GPT bake-off**.
-- **Multi-agent orchestration** — an orchestrator delegating to specialists.
-- **Publish** — ship the assistant to **M365 Copilot & Teams** and push **proactive alerts**.
-- **Responsible AI** *(bonus)* — red-team the agent, add Content Safety/PII guardrails, and gate
-  releases on a **quality + safety** check in CI.
+- **Build grounded, tool-using agents on [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)** — author agents with instructions, tools, and safety, and run the *same* patterns across **GPT** *and* **Anthropic Claude** deployments from the [Foundry model catalog](https://learn.microsoft.com/azure/ai-foundry/concepts/foundry-models-overview). *(Challenges [1](challenge-1/), [3](challenge-3/))*
+- **Ground answers with [Foundry IQ](https://learn.microsoft.com/azure/ai-foundry/agents/concepts/what-is-foundry-iq)** — connect a knowledge source over your contract corpus and use [agentic retrieval](https://learn.microsoft.com/azure/search/search-agentic-retrieval-concept) on [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search) so every answer is **cited**, not hallucinated. *(Challenge [1](challenge-1/))*
+- **Connect tools and expose an [MCP server](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/model-context-protocol)** — add a [function tool](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/function-calling) that reads/writes contract status in [Azure SQL](https://learn.microsoft.com/azure/azure-sql/database/sql-database-paas-overview), then publish the workflow as a **Model Context Protocol** server any MCP client can call. *(Challenge [3](challenge-3/))*
+- **Orchestrate a multi-agent system with [connected agents](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/connected-agents)** — an **Orchestrator** delegating to specialist drafting, clause-risk, and renewal agents (reinforced by this [multi-agent training module](https://learn.microsoft.com/training/modules/develop-multi-agent-azure-ai-foundry/)). *(Challenge [3](challenge-3/))*
+- **Practice GenAIOps — [tracing](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/trace-agents-sdk) & [observability](https://learn.microsoft.com/azure/ai-foundry/concepts/observability)** — emit **OpenTelemetry** traces to **Application Insights**, then run [evaluations](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/evaluate-sdk) to score quality, add a **quality gate**, and run a **Claude-vs-GPT bake-off**. *(Challenge [2](challenge-2/))*
+- **Publish to [Microsoft 365 Copilot & Teams](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/agent-365)** — surface the assistant where contract managers already work and push **proactive renewal alerts**. *(Challenge [4](challenge-4/))*
+- **Apply Responsible AI** *(bonus)* — [red-team the agent](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/run-scans-ai-red-teaming-agent), add [Azure AI Content Safety](https://learn.microsoft.com/azure/ai-services/content-safety/overview) / PII guardrails, and gate releases on a **quality + safety** check in CI. *(Challenge [5](challenge-5/))*
 
 ---
 
