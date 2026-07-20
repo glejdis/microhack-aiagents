@@ -19,6 +19,9 @@ node_modules/
 # Build / conversion artifacts
 *.log
 *.pdf
+# ...but the CLM contract corpus PDFs ARE seed data and must be tracked.
+!data/contracts/*.pdf
+!data/counterparty_drafts/*.pdf
 dist/
 build/
 

@@ -17,14 +17,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from clm_common.config import settings, DATA_DIR, credential  # noqa: E402
+from clm_common.documents import read_document_text  # noqa: E402
 
-CORPUS_DIRS = ["contract_templates", "clause_library", "policies", "counterparty_drafts"]
+# Executed contracts + counterparty drafts are PDFs; Contoso-authored reference
+# material (templates, clause library, policy) is Markdown. Seed both.
+CORPUS_DIRS = ["contract_templates", "clause_library", "policies", "contracts", "counterparty_drafts"]
+DOC_GLOBS = ("*.md", "*.pdf")
 
 
 def _iter_docs():
     for sub in CORPUS_DIRS:
-        for path in (DATA_DIR / sub).glob("*.md"):
-            yield sub, path
+        for pattern in DOC_GLOBS:
+            for path in sorted((DATA_DIR / sub).glob(pattern)):
+                yield sub, path
 
 
 def upload_to_blob() -> int:
@@ -101,7 +106,7 @@ def build_search_index() -> int:
             {
                 "id": f"doc-{i}",
                 "title": path.stem.replace("_", " "),
-                "content": path.read_text(encoding="utf-8"),
+                "content": read_document_text(path),
                 "source": sub,
             }
         )

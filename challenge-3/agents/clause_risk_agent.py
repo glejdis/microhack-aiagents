@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "challenge-1"))
 
 from clm_common.config import settings, DATA_DIR  # noqa: E402
+from clm_common.documents import read_document_text  # noqa: E402
 from clm_common.foundry import get_project_client, run_prompt  # noqa: E402
 
 AGENT_NAME = "clause-risk-agent"
@@ -64,12 +65,12 @@ def main() -> None:
     parser.add_argument("--keep", action="store_true", help="do not delete the agent afterwards")
     parser.add_argument(
         "--draft",
-        default=str(DATA_DIR / "counterparty_drafts" / "acme_msa_draft.md"),
-        help="path to the counterparty draft to analyze",
+        default=str(DATA_DIR / "counterparty_drafts" / "acme_msa_draft.pdf"),
+        help="path to the counterparty draft to analyze (.pdf or .md)",
     )
     args = parser.parse_args()
 
-    draft_text = Path(args.draft).read_text(encoding="utf-8")
+    draft_text = read_document_text(args.draft)
     prompt = (
         "Analyze the following counterparty draft. Extract clauses, compare to our enterprise "
         "standard, flag deviations, and give an overall risk score with the top 3 issues.\n\n"

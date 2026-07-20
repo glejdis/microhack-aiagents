@@ -204,6 +204,13 @@ python scripts/seed_corpus.py
 python scripts/seed_sql.py
 ```
 
+> [!NOTE]
+> The corpus mixes **Markdown** (Contoso-authored templates, clause library, policy) with **PDF
+> contracts** — 5 executed contracts in `data/contracts/` (one per row seeded into Azure SQL) plus the
+> inbound `acme_msa_draft.pdf`. `seed_corpus.py` extracts PDF text with **pypdf** so both formats land
+> in the same index for Foundry IQ. To rebuild the PDFs from source, see
+> [`data/README.md`](../data/README.md#regenerating-the-contract-pdfs).
+
 ---
 
 ### Task 7 · Smoke test
