@@ -94,7 +94,7 @@ diagram](docs/diagrams/user-journey.excalidraw) alongside this table.
 > legal and procurement teams would actually trust.
 
 📊 Prefer a visual? Open the editable journey and architecture views in
-[`docs/diagrams/`](docs/diagrams/) (draw.io + Excalidraw).
+[`docs/diagrams/`](docs/diagrams/) (draw.io — plus Excalidraw for the journey).
 
 ---
 
@@ -143,16 +143,18 @@ days before expiry** it pushes a **proactive alert** straight back to the manage
 loop so renewals are never missed.
 
 > 🎨 **Legend:** 🟦 blue = GPT agents · 🟪 purple = Claude agents · 🟧 orange = tools / MCP ·
-> **dashed** = telemetry & alerts. Editable **draw.io** *and* **Excalidraw** sources (plus the
-> end-to-end **[user journey](docs/diagrams/)**) live in **[`docs/diagrams/`](docs/diagrams/)**.
+> 🟩 green = data / grounding · ⬜ gray = governance · **dashed grey** = telemetry · **dashed red** =
+> alerts / guardrails. Editable **draw.io** sources — plus the end-to-end **[user
+> journey](docs/diagrams/)** (draw.io + Excalidraw) — live in **[`docs/diagrams/`](docs/diagrams/)**.
 
 <details>
 <summary>Mermaid source</summary>
 
 ```mermaid
 flowchart TB
-    user["User in Microsoft 365 Copilot / Teams"]
-    user <--> orch
+    user["👤 Contract Manager<br/>Microsoft 365 Copilot / Teams"]
+    hitl["🔒 Human-in-the-loop<br/>review &amp; sign-off"]
+    user <--> hitl
 
     subgraph Foundry["Microsoft Foundry project"]
         orch["Orchestrator Agent<br/>(GPT-4.1)"]
@@ -163,26 +165,37 @@ flowchart TB
         orch --> clause
         orch --> renew
     end
+    hitl <--> orch
 
     subgraph Ground["Grounding & tools"]
+        sources[("Content corpus · Blob<br/>Clause Library · Templates")]
         iq[("Foundry IQ<br/>Azure AI Search")]
         sql[("Azure SQL<br/>contract status")]
         mcp["MCP server<br/>draft_contract · analyze_contract"]
     end
 
+    sources -->|index| iq
     intake --> iq
     clause --> iq
     renew --> sql
     orch --> mcp
+    user -. "MCP tools" .-> mcp
+
+    subgraph Sec["Platform & security"]
+        entra["🔐 Microsoft Entra ID<br/>identity · RBAC · residency"]
+        safety["🛡️ Azure AI Content Safety<br/>inline guardrail"]
+    end
+    entra -. identity .-> Foundry
+    safety <-. guardrail .-> orch
 
     subgraph Obs["Observability & governance"]
-        ai["App Insights · Tracing"]
-        eval["Evaluations · Content Safety"]
+        ai["App Insights · OpenTelemetry"]
+        eval["Evaluations · red-teaming · quality gate"]
     end
     Foundry -.traces.-> ai
     Foundry -.scorecard.-> eval
 
-    renew -. "proactive alert" .-> user
+    renew -. "proactive alert · 60-day scheduler" .-> user
 ```
 
 </details>
