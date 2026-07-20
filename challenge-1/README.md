@@ -117,6 +117,86 @@ Everything the agent "knows" comes from the corpus you seeded in Challenge 0:
 | [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) | Defines the agent (persona, guardrails, knowledge + function tools) and runs a four-prompt demo. `--keep` leaves it in the project for later challenges / the portal. |
 | [`sample_prompts.md`](sample_prompts.md) | Curated prompts that exercise every capability: grounded drafting, cited Q&A, the function tool, and the refusal guardrail. |
 
+## 🧰 Services & models in this challenge
+
+This agent is small, but it stands on a handful of Azure + Foundry services. Here's **what each one is**
+and **why it's in the architecture** — so you can reason about the system, not just run it.
+
+### Microsoft Foundry — Agent Service
+
+**What it is:** the managed **control plane and runtime** for agents. You declare an agent (a model, its
+instructions, and its tools) and Foundry hosts it — running the reasoning loop, calling tools, and
+managing conversation threads on the server side.
+
+- One project, **many models** (GPT, Claude, …) behind **one identical Agents API**.
+- Server-managed **threads, runs and tool orchestration** — you don't hand-roll the agent loop.
+- A single home for **connections, model deployments, tracing and governance**.
+
+**Why here:** it lets you build a grounded, tool-using agent on Claude in a few lines of Python — and
+swap the model later *without touching* your grounding or tool code. → [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
+
+### Foundry IQ — agentic retrieval
+
+**What it is:** the **grounding layer**. Instead of stuffing documents into the prompt, you attach a
+**knowledge base as a tool**; at run time the agent plans sub-queries, searches, reranks, and returns
+**cited** passages — *agentic* retrieval rather than a single similarity lookup.
+
+- **Query planning + reranking** for higher-quality, multi-hop answers.
+- **Citations** so every claim is traceable to a source document.
+- Decouples *what the agent knows* from *how the model was trained*.
+
+**Why here:** it's what makes the agent answer from **Contoso's corpus, with sources**, instead of the
+model's parametric memory. → [Agentic retrieval](https://learn.microsoft.com/azure/search/search-agentic-retrieval-concept)
+
+### Azure AI Search
+
+**What it is:** the **retrieval engine and index** (`clm-corpus`) behind Foundry IQ — full-text, vector
+and **semantic** ranking over your documents.
+
+- **Hybrid + semantic ranking** for relevance on legal language.
+- Chunked, embedded content built once in **Challenge 0** by `scripts/seed_corpus.py`.
+- Exposed to the agent through the `AzureAISearchTool` in [`kb_setup.py`](kb_setup.py).
+
+**Why here:** it's the searchable backing store that Foundry IQ retrieves from — the difference between
+"the model guesses" and "the agent cites CL-04". → [Azure AI Search](https://learn.microsoft.com/azure/search/)
+
+### Azure Blob Storage
+
+**What it is:** massively scalable **object storage** — the source of truth for the raw corpus
+(templates, clause library, policy, executed contract PDFs) before it's indexed.
+
+- Cheap, durable storage for the documents the agent grounds on.
+- The **seed → index** pipeline reads from Blob and writes to Azure AI Search.
+
+**Why here:** it holds the documents you seeded in Challenge 0; Search indexes them so the agent can
+retrieve them. → [Azure Blob Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction)
+
+### Model — Anthropic Claude Sonnet 4.5 (via Foundry Models)
+
+**What it is:** the LLM that powers this agent (`MODEL_DRAFTING = claude-sonnet-4-5`), deployed and
+called **through Foundry** exactly like an Azure OpenAI model.
+
+- Strong **instruction-following** and **long-context** reasoning — ideal for legal drafting.
+- Reached via the **same Agents API** as GPT (point `model` at the Claude deployment; nothing else
+  changes).
+
+**Why here:** drafting rewards careful, structured, policy-abiding writing — Claude's strengths. Routing
+and fast tool-calling go to **GPT-4.1** in Challenge 3, proving the platform is **model-agnostic**.
+→ [Models in Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/)
+
+### Function tools (Agents SDK)
+
+**What it is:** plain **Python functions** exposed to the model as callable tools. The SDK generates each
+tool's JSON schema **from your type hints + docstring**, and `enable_auto_function_calls(...)` runs them
+automatically mid-run.
+
+- Deterministic, structured actions the model must **never hallucinate** (e.g. `get_contract_status`).
+- The **docstring + signature *are* the contract** the model sees — keep them precise.
+
+**Why here:** contract facts (status, renewal date, risk) come from a **lookup**, not a guess — the
+knowledge tool grounds *unstructured* answers, this grounds *structured* ones.
+→ [Function calling with Foundry agents](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/function-calling)
+
 ## ✅ Tasks
 
 ### 1 · Verify the knowledge connection

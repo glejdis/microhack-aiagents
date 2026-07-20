@@ -33,6 +33,59 @@ server** callable from VS Code / GitHub Copilot.
         Also exposed as an MCP server: draft_contract · analyze_contract · get_contract_status
 ```
 
+## 🧰 Services & models in this challenge
+
+This challenge is about **composition**: many specialist agents behind one orchestrator, plus a standard
+protocol that makes the whole workflow reusable outside your code.
+
+### Connected agents (`ConnectedAgentTool`)
+
+**What it is:** Foundry's **multi-agent orchestration** primitive. You wrap an existing agent as a *tool*
+and hand it to an orchestrator, which then calls specialists the same way it calls a function.
+
+- **Separation of concerns** — each specialist has its own model, instructions and evaluation.
+- The orchestrator handles **routing, hand-offs and human-in-the-loop**.
+- A **GPT orchestrator coordinating Claude specialists** = multi-model composition in one project.
+
+**Why here:** it lets the Orchestrator delegate *drafting* and *clause/risk* to the right specialist
+instead of one bloated mega-agent. → [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
+
+### Model — GPT-4.1 (the orchestrator)
+
+**What it is:** the LLM that powers the Orchestrator (`MODEL_ORCHESTRATOR = gpt-4.1`), deployed through
+Foundry alongside the Claude specialists.
+
+- Fast, **deterministic tool-calling** and reliable **routing** decisions.
+- Same Agents API as the Claude agents — only the `model` id differs.
+
+**Why here:** routing and hand-offs reward speed and predictable tool selection (GPT), while drafting
+rewards long-context legal reasoning (Claude) — the platform lets you pick **the right model per job**.
+→ [Models in Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/)
+
+### Model Context Protocol (MCP)
+
+**What it is:** an **open standard** for exposing tools/data to any LLM client. You run a local **stdio**
+server that publishes the workflow as standard tools; any MCP client (VS Code, GitHub Copilot) can
+discover and call them.
+
+- **Portable** — the same tools work across editors, agents and hosts.
+- Decouples *who provides a capability* from *who consumes it*.
+- Exposes `draft_contract` · `analyze_contract` · `get_contract_status`.
+
+**Why here:** it turns your agents into reusable building blocks the rest of the org can call **without
+touching your code**. → [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro)
+
+### Azure SQL Database
+
+**What it is:** the managed **relational store** behind `get_contract_status` — structured contract
+metadata (status, renewal date, risk, owner), with the seed JSON as a local fallback.
+
+- Authoritative, **queryable** system-of-record for structured facts.
+- Fully managed (PaaS) — no servers to patch.
+
+**Why here:** structured contract facts belong in a database the tool can query, not in the model's
+memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-sql/database/sql-database-paas-overview?view=azuresql)
+
 ## ✅ Tasks
 
 1. **Build the Clause & Risk agent** and analyze the (deliberately red-flag) sample draft:

@@ -24,6 +24,62 @@ that blocks a bad build.
 - **Bake-off**: run the same agent + same scorecard on **Claude Sonnet 4.5** vs **GPT** and compare
   quality against latency — the concrete payoff of a model-agnostic platform.
 
+## 🧰 Services & models in this challenge
+
+Observability turns the agent from a black box into something you can **see** and **measure**. These are
+the services that make that possible.
+
+### OpenTelemetry + Azure Monitor OpenTelemetry Distro
+
+**What it is:** the **open standard** for traces, metrics and logs. The Agents SDK emits OpenTelemetry
+**spans** for every prompt, retrieval and tool call; `configure_azure_monitor(...)` from the Azure Monitor
+distro exports them to Azure with one call.
+
+- **Vendor-neutral** instrumentation — no bespoke logging code.
+- Captures the **causal chain** of a run (prompt → retrieval → tool → response).
+- Enable prompt/response capture with `AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true` **before**
+  importing the SDK.
+
+**Why here:** it's how a multi-step agent run becomes an inspectable trace instead of a wall of print
+statements. → [Enable OpenTelemetry](https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-enable)
+
+### Application Insights + Log Analytics
+
+**What it is:** the **Azure Monitor** application-performance service (backed by a Log Analytics
+workspace) that **stores and queries** the telemetry the agent emits.
+
+- End-to-end **transaction/trace** views, latency and token metrics, failures.
+- **KQL** queries over spans for custom analysis and dashboards.
+- Provisioned in **Challenge 0**; the connection string lives in `APPLICATIONINSIGHTS_CONNECTION_STRING`.
+
+**Why here:** it's the durable sink your traces land in — the data source behind the portal's Tracing and
+monitoring views. → [Application Insights overview](https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview)
+
+### Foundry Observability (portal Tracing + Agent Monitoring)
+
+**What it is:** the **agent-aware UI** in the Foundry portal that renders those traces as **Tracing** and
+an **Agent Monitoring Dashboard** — no query-writing required.
+
+- Per-run **span timelines** with retrieval hits and tool arguments.
+- Because both agents live in one project, you see **Claude and GPT traces in one pane of glass**.
+- Home for **continuous/online evaluation** on live traffic.
+
+**Why here:** it's the fastest way to *look at* what the agent actually did on a given run.
+→ [Observability in Foundry](https://learn.microsoft.com/en-us/azure/foundry/concepts/observability)
+
+### Azure AI Evaluation SDK (`azure-ai-evaluation`)
+
+**What it is:** the library that **scores** agent responses. Evaluators (**groundedness, relevance,
+coherence, fluency**) are **LLM-judged** by an Azure OpenAI deployment; a *target* callable generates the
+agent's answer for each dataset row so evaluation is end-to-end.
+
+- Ready-made **quality** and **safety** evaluators (safety ones take `azure_ai_project` + a credential).
+- A **quality gate** (`--gate 4.0`) returns a non-zero exit code — drop-in for CI.
+- Same scorecard across models powers the **Claude-vs-GPT bake-off**.
+
+**Why here:** tracing shows *what happened*; evaluation shows *how good it was* — and lets a bad build
+**fail the gate** before it ships. → [Evaluation & observability](https://learn.microsoft.com/en-us/azure/foundry/concepts/observability)
+
 ## ✅ Tasks
 
 1. **Enable tracing** and confirm the exporter wires up:
