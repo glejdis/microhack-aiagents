@@ -55,7 +55,7 @@ FOUNDRY = "#8661C5"   # AI Foundry / Cognitive Services purple
 GPT = "#0E9C6E"       # OpenAI green
 CLAUDE = "#CC6B3E"    # Anthropic clay
 SEARCH = "#0F6CBD"    # Azure blue
-STORAGE = "#1B9AAA"   # storage teal
+SHAREPOINT = "#038387" # SharePoint teal
 SQL = "#C0392B"       # SQL red
 INSIGHTS = "#8E44AD"  # monitor purple
 LOGS = "#0F6CBD"
@@ -178,7 +178,7 @@ text(21, 84.9, "project: clm-project   ·   one identity, billing, tracing & gov
 text(10, 81.4, "Model fleet — LLM deployments", fs=9.5, weight="bold", color=INK)
 
 # three model cards
-resource(11, 66.2, 44, 13.6, "GPT", GPT, "gpt-4.1",
+resource(11, 66.2, 44, 13.6, "GPT", GPT, "gpt-5.3",
          "OpenAI · GlobalStandard 30\nOrchestrator agent", mono_fs=9)
 resource(58, 66.2, 44, 13.6, "CLD", CLAUDE, "claude-sonnet-4-5",
          "Anthropic · GlobalStandard 20\nIntake & Drafting · Clause & Risk", mono_fs=9)
@@ -203,8 +203,8 @@ panel(8, 30, 71, 28, fill=PANEL_FILL, edge=SEARCH, lw=1.8, radius=1.8, z=2)
 text(10.5, 54.8, "Grounding & data stores", fs=12.5, weight="bold", color=SEARCH)
 resource(10.5, 46.4, 66, 6.6, "SRCH", SEARCH, "Azure AI Search (Basic)",
          "clm-corpus index · clm-search connection · Foundry IQ", mono_fs=8)
-resource(10.5, 38.4, 66, 6.6, "BLOB", STORAGE, "Blob Storage (StorageV2 · LRS)",
-         "container clm-corpus — source contract corpus", mono_fs=8)
+resource(10.5, 38.4, 66, 6.6, "SPO", SHAREPOINT, "SharePoint document library (BYO)",
+         "source contract corpus — crawled by the AI Search indexer", mono_fs=8)
 resource(10.5, 30.6, 66, 6.6, "SQL", SQL, "Azure SQL Database (Basic · optional)",
          "contract status & renewals — DEPLOY_SQL / --with-sql", mono_fs=8)
 
@@ -227,7 +227,7 @@ text(10.5, 20.0, "System-assigned managed identities (Foundry + Search)",
      fs=9.2, color=INK)
 text(10.5, 16.6, "RBAC: Azure AI Developer · Cognitive Services User",
      fs=9.2, color=MUTED)
-text(10.5, 13.4, "Search Index Data · Storage Blob Data roles",
+text(10.5, 13.4, "Search Index Data roles · SharePoint indexer app registration",
      fs=9.2, color=MUTED)
 text(10.5, 10.2, "Keyless, AAD data-plane auth (DefaultAzureCredential)",
      fs=9.2, color=MUTED)

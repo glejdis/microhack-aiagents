@@ -163,7 +163,7 @@ STEPS = [
     ("Ask, with citations",
      "\u201cWhat's our standard indemnity cap?\u201d",
      "Foundry IQ",
-     "Answers over the Contoso corpus \u2014 with sources",
+     "Answers over the SharePoint corpus \u2014 with sources",
      "Built in C1", TOOLS),
     ("Review & sign off",
      "Reads flags + citations, edits, approves",

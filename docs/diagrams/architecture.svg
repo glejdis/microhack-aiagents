@@ -81,7 +81,7 @@
 <text x="190" y="493" font-size="10" fill="#3a3a3a" text-anchor="middle">Anthropic · claude-sonnet-4-5</text>
 
 <rect x="330" y="452" width="240" height="56" rx="8" ry="8" fill="#CFE4FA" stroke="#0078D4" stroke-width="2"/>
-<text x="450" y="477" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">GPT-4.1</text>
+<text x="450" y="477" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">GPT-5.3</text>
 <text x="450" y="493" font-size="10" fill="#3a3a3a" text-anchor="middle">OpenAI · GlobalStandard</text>
 
 <rect x="636" y="452" width="232" height="56" rx="8" ry="8" fill="#CFE4FA" stroke="#0078D4" stroke-width="2"/>
@@ -91,7 +91,7 @@
 <!-- grounding + tools -->
 <path d="M 66,635 A 88,9 0 0 0 242,635 L 242,705 A 88,9 0 0 1 66,705 Z" fill="#D3F9D8" stroke="#2F9E44" stroke-width="1.5"/>
 <ellipse cx="154" cy="635" rx="88" ry="9" fill="#D3F9D8" stroke="#2F9E44" stroke-width="1.5"/>
-<text x="154" y="666" font-size="10" fill="#111111" text-anchor="middle" font-weight="bold">Content corpus · Blob</text>
+<text x="154" y="666" font-size="10" fill="#111111" text-anchor="middle" font-weight="bold">Content corpus · SharePoint</text>
 <text x="154" y="681" font-size="9" fill="#3a3a3a" text-anchor="middle">Clause Library · Templates</text>
 
 <path d="M 270,635 A 93,9 0 0 0 456,635 L 456,705 A 93,9 0 0 1 270,705 Z" fill="#CFE4FA" stroke="#0078D4" stroke-width="1.5"/>

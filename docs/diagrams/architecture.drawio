@@ -50,14 +50,14 @@
         <mxCell id="m_claude" value="Claude Sonnet 4.5&lt;br&gt;&lt;font style=&quot;font-size:10px;color:#666666&quot;&gt;Anthropic · claude-sonnet-4-5&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EBDDF7;strokeColor=#7A4FB5;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
           <mxGeometry x="72" y="452" width="236" height="56" as="geometry"/>
         </mxCell>
-        <mxCell id="m_gpt41" value="GPT-4.1&lt;br&gt;&lt;font style=&quot;font-size:10px;color:#666666&quot;&gt;OpenAI · GlobalStandard&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFE4FA;strokeColor=#0078D4;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
+        <mxCell id="m_gpt41" value="GPT-5.3&lt;br&gt;&lt;font style=&quot;font-size:10px;color:#666666&quot;&gt;OpenAI · GlobalStandard&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFE4FA;strokeColor=#0078D4;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
           <mxGeometry x="330" y="452" width="240" height="56" as="geometry"/>
         </mxCell>
         <mxCell id="m_gpt4omini" value="GPT-4o-mini&lt;br&gt;&lt;font style=&quot;font-size:10px;color:#666666&quot;&gt;OpenAI · GlobalStandard&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFE4FA;strokeColor=#0078D4;fontColor=#111111;fontSize=13;strokeWidth=1;" vertex="1" parent="1">
           <mxGeometry x="636" y="452" width="232" height="56" as="geometry"/>
         </mxCell>
 
-        <mxCell id="sources" value="Content corpus (Blob)&lt;br&gt;Standard Clause Library · Templates" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#D3F9D8;strokeColor=#2F9E44;fontColor=#111111;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="sources" value="Content corpus (SharePoint)&lt;br&gt;Standard Clause Library · Templates" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#D3F9D8;strokeColor=#2F9E44;fontColor=#111111;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="66" y="626" width="176" height="88" as="geometry"/>
         </mxCell>
         <mxCell id="iq" value="Foundry IQ&lt;br&gt;Azure AI Search" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#CFE4FA;strokeColor=#0078D4;fontColor=#111111;fontSize=12;" vertex="1" parent="1">
@@ -121,7 +121,7 @@
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
 
-        <mxCell id="sources_iq" value="index" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#2F9E44;endArrow=block;strokeWidth=1.5;fontColor=#2F9E44;fontSize=10;" edge="1" parent="1" source="sources" target="iq">
+        <mxCell id="sources_iq" value="SharePoint indexer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#2F9E44;endArrow=block;strokeWidth=1.5;fontColor=#2F9E44;fontSize=10;" edge="1" parent="1" source="sources" target="iq">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
         <mxCell id="intake_iq" value="retrieve" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=1.5;fontColor=#555555;fontSize=10;exitX=0.95;exitY=1;exitDx=0;exitDy=0;entryX=0.4;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="intake" target="iq">

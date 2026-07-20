@@ -11,7 +11,7 @@ targetScope = 'subscription'
 param environmentName string
 
 @minLength(1)
-@description('Azure region for all resources. Must offer gpt-4.1, gpt-4o-mini AND Claude Sonnet 4.5.')
+@description('Azure region for all resources. Must offer gpt-5.3, gpt-4o-mini AND Claude Sonnet 4.5.')
 param location string
 
 @description('Object id of the user/service principal running the deployment (azd provides AZURE_PRINCIPAL_ID). Used for RBAC.')
@@ -68,10 +68,6 @@ output MODEL_RENEWAL string = resources.outputs.MODEL_RENEWAL
 output AZURE_SEARCH_ENDPOINT string = resources.outputs.AZURE_SEARCH_ENDPOINT
 output AZURE_SEARCH_INDEX string = resources.outputs.AZURE_SEARCH_INDEX
 output AZURE_SEARCH_CONNECTION_NAME string = resources.outputs.AZURE_SEARCH_CONNECTION_NAME
-
-#disable-next-line outputs-should-not-contain-secrets
-output AZURE_STORAGE_CONNECTION_STRING string = resources.outputs.AZURE_STORAGE_CONNECTION_STRING
-output AZURE_STORAGE_CONTAINER string = resources.outputs.AZURE_STORAGE_CONTAINER
 
 #disable-next-line outputs-should-not-contain-secrets
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = resources.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING

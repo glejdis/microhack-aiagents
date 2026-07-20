@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "6776386845205100346"
+      "templateHash": "4921665624004274040"
     }
   },
   "parameters": {
@@ -21,7 +21,7 @@
       "type": "string",
       "minLength": 1,
       "metadata": {
-        "description": "Azure region for all resources. Must offer gpt-4.1, gpt-4o-mini AND Claude Sonnet 4.5."
+        "description": "Azure region for all resources. Must offer gpt-5.3, gpt-4o-mini AND Claude Sonnet 4.5."
       }
     },
     "principalId": {
@@ -112,7 +112,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "9575213790595241725"
+              "templateHash": "5797536079254193630"
             }
           },
           "parameters": {
@@ -172,22 +172,19 @@
             "foundryName": "[format('clmfoundry{0}', parameters('resourceToken'))]",
             "projectName": "clm-project",
             "searchName": "[format('clmsearch{0}', parameters('resourceToken'))]",
-            "storageName": "[format('clmstor{0}', parameters('resourceToken'))]",
             "appInsightsName": "[format('clm-appinsights-{0}', parameters('resourceToken'))]",
             "logAnalyticsName": "[format('clm-logs-{0}', parameters('resourceToken'))]",
-            "containerName": "clm-corpus",
             "searchIndexName": "clm-corpus",
             "searchConnectionName": "clm-search",
-            "gptOrchestrator": "gpt-4.1",
+            "gptOrchestrator": "gpt-5.3",
             "gptMini": "gpt-4o-mini",
             "claude": "claude-sonnet-4-5",
+            "gptOrchestratorVersion": "2025-11-01",
             "roleAiDeveloper": "64702f94-c441-49e6-a78b-ef80e0188fee",
             "roleCognitiveServicesUser": "a97b65f3-24c7-4388-baec-2e87135dc908",
             "roleSearchIndexDataContributor": "8ebe5a00-799e-43f5-93ac-243d3dce84a7",
             "roleSearchServiceContributor": "7ca78c08-252a-4471-8644-bb5ff32d4ba0",
             "roleSearchIndexDataReader": "1407120a-92aa-4202-b7e9-c0e197c71c8f",
-            "roleStorageBlobDataContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
-            "roleStorageBlobDataReader": "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1",
             "wantSql": "[and(equals(toLower(parameters('deploySql')), 'true'), not(empty(parameters('sqlAdminPassword'))))]",
             "assignUserRoles": "[not(empty(parameters('principalId')))]"
           },
@@ -218,41 +215,6 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Storage/storageAccounts",
-              "apiVersion": "2023-05-01",
-              "name": "[variables('storageName')]",
-              "location": "[parameters('location')]",
-              "tags": "[parameters('tags')]",
-              "sku": {
-                "name": "Standard_LRS"
-              },
-              "kind": "StorageV2",
-              "properties": {
-                "minimumTlsVersion": "TLS1_2",
-                "allowBlobPublicAccess": false,
-                "supportsHttpsTrafficOnly": true
-              }
-            },
-            {
-              "type": "Microsoft.Storage/storageAccounts/blobServices",
-              "apiVersion": "2023-05-01",
-              "name": "[format('{0}/{1}', variables('storageName'), 'default')]",
-              "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-              "apiVersion": "2023-05-01",
-              "name": "[format('{0}/{1}/{2}', variables('storageName'), 'default', variables('containerName'))]",
-              "properties": {
-                "publicAccess": "None"
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storageName'), 'default')]"
               ]
             },
             {
@@ -326,8 +288,8 @@
               "properties": {
                 "model": {
                   "format": "OpenAI",
-                  "name": "gpt-4.1",
-                  "version": "2025-04-14"
+                  "name": "gpt-5.3",
+                  "version": "[variables('gptOrchestratorVersion')]"
                 }
               },
               "dependsOn": [
@@ -497,21 +459,6 @@
               ]
             },
             {
-              "condition": "[variables('assignUserRoles')]",
-              "type": "Microsoft.Authorization/roleAssignments",
-              "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]",
-              "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), parameters('principalId'), variables('roleStorageBlobDataContributor'))]",
-              "properties": {
-                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleStorageBlobDataContributor'))]",
-                "principalId": "[parameters('principalId')]",
-                "principalType": "[parameters('principalType')]"
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]"
-              ]
-            },
-            {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
               "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchName'))]",
@@ -524,21 +471,6 @@
               "dependsOn": [
                 "[resourceId('Microsoft.CognitiveServices/accounts', variables('foundryName'))]",
                 "[resourceId('Microsoft.Search/searchServices', variables('searchName'))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Authorization/roleAssignments",
-              "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]",
-              "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), resourceId('Microsoft.CognitiveServices/accounts', variables('foundryName')), variables('roleStorageBlobDataReader'))]",
-              "properties": {
-                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleStorageBlobDataReader'))]",
-                "principalId": "[reference(resourceId('Microsoft.CognitiveServices/accounts', variables('foundryName')), '2025-04-01-preview', 'full').identity.principalId]",
-                "principalType": "ServicePrincipal"
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.CognitiveServices/accounts', variables('foundryName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]"
               ]
             }
           ],
@@ -574,14 +506,6 @@
             "AZURE_SEARCH_CONNECTION_NAME": {
               "type": "string",
               "value": "[variables('searchConnectionName')]"
-            },
-            "AZURE_STORAGE_CONNECTION_STRING": {
-              "type": "string",
-              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix={2}', variables('storageName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), '2023-05-01').keys[0].value, environment().suffixes.storage)]"
-            },
-            "AZURE_STORAGE_CONTAINER": {
-              "type": "string",
-              "value": "[variables('containerName')]"
             },
             "APPLICATIONINSIGHTS_CONNECTION_STRING": {
               "type": "string",
@@ -643,14 +567,6 @@
     "AZURE_SEARCH_CONNECTION_NAME": {
       "type": "string",
       "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-clm-microhack'), 'Microsoft.Resources/deployments', 'clm-resources'), '2025-04-01').outputs.AZURE_SEARCH_CONNECTION_NAME.value]"
-    },
-    "AZURE_STORAGE_CONNECTION_STRING": {
-      "type": "string",
-      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-clm-microhack'), 'Microsoft.Resources/deployments', 'clm-resources'), '2025-04-01').outputs.AZURE_STORAGE_CONNECTION_STRING.value]"
-    },
-    "AZURE_STORAGE_CONTAINER": {
-      "type": "string",
-      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-clm-microhack'), 'Microsoft.Resources/deployments', 'clm-resources'), '2025-04-01').outputs.AZURE_STORAGE_CONTAINER.value]"
     },
     "APPLICATIONINSIGHTS_CONNECTION_STRING": {
       "type": "string",

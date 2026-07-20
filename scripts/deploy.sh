@@ -7,7 +7,7 @@
 #           rights to deploy GPT and Anthropic Claude models.
 #
 # NOTE: Model + region availability changes over time. Confirm your target
-#       region offers gpt-4.1, gpt-4o-mini AND Claude Sonnet 4.5 in the
+#       region offers gpt-5.3, gpt-4o-mini AND Claude Sonnet 4.5 in the
 #       Foundry model catalog before running. See the challenge-0 README.
 # ==========================================================================
 set -euo pipefail
@@ -19,13 +19,12 @@ RG="${RG:-rg-clm-microhack}"
 FOUNDRY="${FOUNDRY:-clmfoundry${SUFFIX}}"
 PROJECT="${PROJECT:-clm-project}"
 SEARCH="${SEARCH:-clmsearch${SUFFIX}}"
-STORAGE="${STORAGE:-clmstor${SUFFIX}}"
 APPINSIGHTS="${APPINSIGHTS:-clm-appinsights}"
 WITH_SQL="false"
 [[ "${1:-}" == "--with-sql" ]] && WITH_SQL="true"
 
 # Model deployments (name=catalog-model:version:format)
-GPT_ORCH="gpt-4.1"
+GPT_ORCH="gpt-5.3"
 GPT_MINI="gpt-4o-mini"
 CLAUDE="claude-sonnet-4-5"
 
@@ -58,7 +57,8 @@ deploy_model () {  # name  model-name  version  format  sku-capacity
     --sku-name "GlobalStandard" --sku-capacity "${5:-20}" -o none \
     || echo "    ! $1 deployment failed — check the model is available in $LOCATION."
 }
-deploy_model "$GPT_ORCH" "gpt-4.1"          "2025-04-14" "OpenAI"    30
+# gpt-5.3 version: confirm the exact version in your region's Foundry catalog.
+deploy_model "$GPT_ORCH" "gpt-5.3"          "2025-11-01" "OpenAI"    30
 deploy_model "$GPT_MINI" "gpt-4o-mini"      "2024-07-18" "OpenAI"    30
 # Claude: model-format Anthropic, version "2" = Hosted on Azure (vs "1" on Anthropic).
 deploy_model "$CLAUDE"   "claude-sonnet-4-5" "2"         "Anthropic" 20
@@ -69,12 +69,12 @@ az search service create \
   --sku basic --partition-count 1 --replica-count 1 -o none
 echo "  ✓ Azure AI Search created"
 
-# ---- 5. Storage (corpus source docs) -------------------------------------
-az storage account create \
-  -n "$STORAGE" -g "$RG" -l "$LOCATION" --sku Standard_LRS -o none
-STORAGE_CONN=$(az storage account show-connection-string -n "$STORAGE" -g "$RG" -o tsv)
-az storage container create --name clm-corpus --connection-string "$STORAGE_CONN" -o none
-echo "  ✓ Storage + container created"
+# ---- 5. Corpus source: SharePoint (bring-your-own) -----------------------
+# The contract PDFs live in a SharePoint document library (Microsoft 365, not an
+# Azure resource — nothing to create here). scripts/seed_corpus.py creates the
+# Azure AI Search SharePoint Online data source + indexer that crawls it into the
+# clm-corpus index. Fill the SHAREPOINT_* values in .env first (see challenge-0 README).
+echo "  · Corpus source is SharePoint (BYO) — set SHAREPOINT_* in .env, then run seed_corpus.py"
 
 # ---- 6. Application Insights ---------------------------------------------
 az monitor app-insights component create \
@@ -117,8 +117,12 @@ AZURE_SEARCH_ENDPOINT=${SEARCH_ENDPOINT}
 AZURE_SEARCH_INDEX=clm-corpus
 AZURE_SEARCH_CONNECTION_NAME=clm-search
 
-AZURE_STORAGE_CONNECTION_STRING=${STORAGE_CONN}
-AZURE_STORAGE_CONTAINER=clm-corpus
+# SharePoint corpus (BYO) — fill these in before running seed_corpus.py.
+SHAREPOINT_SITE_URL=
+SHAREPOINT_DOC_LIBRARY=Documents
+SHAREPOINT_APP_ID=
+SHAREPOINT_APP_SECRET=
+SHAREPOINT_TENANT_ID=
 
 APPLICATIONINSIGHTS_CONNECTION_STRING=${APPINSIGHTS_CONN}
 AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true

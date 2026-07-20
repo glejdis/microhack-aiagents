@@ -14,8 +14,9 @@ Produces the **entire document corpus** as real, text-extractable PDFs under
 
 This is authoring tooling (like `scripts/make_banner.py`); it is NOT a runtime
 dependency of the hack. The full document text lives here so it is reviewable in
-source control; the generated PDFs are what get seeded into Blob + Azure AI
-Search (Challenge 0) and analyzed by the agents.
+source control; the generated PDFs are what you upload to the SharePoint corpus
+library, which the Azure AI Search SharePoint indexer crawls into the clm-corpus
+index (Challenge 0) and the Clause & Risk agent analyzes.
 
 Requires:  pip install reportlab
 Run:       python scripts/make_corpus_pdfs.py

@@ -3,7 +3,7 @@ flowchart TB
     user <--> orch
 
     subgraph Foundry["Microsoft Foundry project"]
-        orch["Orchestrator Agent<br/>(GPT-4.1)"]
+        orch["Orchestrator Agent<br/>(GPT-5.3)"]
         intake["Intake & Drafting<br/>(Claude Sonnet 4.5)"]
         clause["Clause & Risk<br/>(Claude Sonnet 4.5)"]
         renew["Obligation & Renewal<br/>(GPT-4o-mini)"]
@@ -13,11 +13,13 @@ flowchart TB
     end
 
     subgraph Ground["Grounding & tools"]
+        sp[("SharePoint<br/>corpus library")]
         iq[("Foundry IQ<br/>Azure AI Search")]
         sql[("Azure SQL<br/>contract status")]
         mcp["MCP server<br/>draft_contract · analyze_contract"]
     end
 
+    sp -- "AI Search indexer" --> iq
     intake --> iq
     clause --> iq
     renew --> sql

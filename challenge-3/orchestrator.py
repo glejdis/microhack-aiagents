@@ -1,6 +1,6 @@
-"""Challenge 3 — Orchestrator agent (GPT-4.1) with specialist agents as tools.
+"""Challenge 3 — Orchestrator agent (GPT-5.3) with specialist agents as tools.
 
-Builds the front-door **Orchestrator** on GPT-4.1 and attaches the two Claude
+Builds the front-door **Orchestrator** on GPT-5.3 and attaches the two Claude
 specialists (Intake & Drafting, Clause & Risk) as **tools** using the Microsoft
 Agent Framework's `agent.as_tool(...)`. The orchestrator routes each user request
 to the right specialist, manages hand-offs and human-in-the-loop review.
@@ -82,7 +82,7 @@ def build_orchestrator():
     from agent_framework import Agent
 
     return Agent(
-        client=build_chat_client(settings.model_orchestrator),  # gpt-4.1
+        client=build_chat_client(settings.model_orchestrator),  # gpt-5.3
         name=ORCHESTRATOR_NAME,
         instructions=INSTRUCTIONS,
         tools=[intake_tool, clause_tool],

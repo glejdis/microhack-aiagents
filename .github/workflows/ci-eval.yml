@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZURE_AI_PROJECT_ENDPOINT: ${{ secrets.AZURE_AI_PROJECT_ENDPOINT }}
-      MODEL_ORCHESTRATOR: ${{ vars.MODEL_ORCHESTRATOR || 'gpt-4.1' }}
+      MODEL_ORCHESTRATOR: ${{ vars.MODEL_ORCHESTRATOR || 'gpt-5.3' }}
       MODEL_DRAFTING: ${{ vars.MODEL_DRAFTING || 'claude-sonnet-4-5' }}
       MODEL_CLAUSE_RISK: ${{ vars.MODEL_CLAUSE_RISK || 'claude-sonnet-4-5' }}
       MODEL_RENEWAL: ${{ vars.MODEL_RENEWAL || 'gpt-4o-mini' }}

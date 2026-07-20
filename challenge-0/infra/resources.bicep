@@ -30,17 +30,18 @@ param tags object = {}
 var foundryName = 'clmfoundry${resourceToken}'
 var projectName = 'clm-project'
 var searchName = 'clmsearch${resourceToken}'
-var storageName = 'clmstor${resourceToken}'
 var appInsightsName = 'clm-appinsights-${resourceToken}'
 var logAnalyticsName = 'clm-logs-${resourceToken}'
-var containerName = 'clm-corpus'
 var searchIndexName = 'clm-corpus'
 var searchConnectionName = 'clm-search'
 
 // ---- Model deployment names ----------------------------------------------
-var gptOrchestrator = 'gpt-4.1'
+var gptOrchestrator = 'gpt-5.3'
 var gptMini = 'gpt-4o-mini'
 var claude = 'claude-sonnet-4-5'
+// gpt-5.3 model version — confirm the exact version offered in your region's
+// Foundry model catalog and update here if needed.
+var gptOrchestratorVersion = '2025-11-01'
 
 // ---- Built-in role definition ids ----------------------------------------
 var roleAiDeveloper = '64702f94-c441-49e6-a78b-ef80e0188fee'            // Azure AI Developer
@@ -48,8 +49,6 @@ var roleCognitiveServicesUser = 'a97b65f3-24c7-4388-baec-2e87135dc908' // Cognit
 var roleSearchIndexDataContributor = '8ebe5a00-799e-43f5-93ac-243d3dce84a7'
 var roleSearchServiceContributor = '7ca78c08-252a-4471-8644-bb5ff32d4ba0'
 var roleSearchIndexDataReader = '1407120a-92aa-4202-b7e9-c0e197c71c8f'
-var roleStorageBlobDataContributor = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
-var roleStorageBlobDataReader = '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
 
 var wantSql = toLower(deploySql) == 'true' && !empty(sqlAdminPassword)
 var assignUserRoles = !empty(principalId)
@@ -79,33 +78,14 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 // ==========================================================================
-// Storage — corpus source docs + clm-corpus container
+// Corpus source of truth — SharePoint document library (bring-your-own)
 // ==========================================================================
-resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: storageName
-  location: location
-  tags: tags
-  sku: { name: 'Standard_LRS' }
-  kind: 'StorageV2'
-  properties: {
-    minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: false
-    supportsHttpsTrafficOnly: true
-  }
-}
-
-resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
-  parent: storage
-  name: 'default'
-}
-
-resource corpusContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
-  parent: blobService
-  name: containerName
-  properties: {
-    publicAccess: 'None'
-  }
-}
+// The original contract PDFs live in a SharePoint Online document library, which
+// is Microsoft 365 (not an Azure Resource Manager resource) and therefore not
+// provisioned here. Challenge 0's scripts/seed_corpus.py creates the Azure AI
+// Search SharePoint Online data source + indexer that crawls that library into
+// the clm-corpus index. See the challenge-0 README for the prerequisite Entra
+// app registration and .env values (SHAREPOINT_*).
 
 // ==========================================================================
 // Azure AI Search — Foundry IQ backing store (AAD data-plane auth enabled)
@@ -166,7 +146,7 @@ resource deployOrchestrator 'Microsoft.CognitiveServices/accounts/deployments@20
   name: gptOrchestrator
   sku: { name: 'GlobalStandard', capacity: 30 }
   properties: {
-    model: { format: 'OpenAI', name: 'gpt-4.1', version: '2025-04-14' }
+    model: { format: 'OpenAI', name: 'gpt-5.3', version: gptOrchestratorVersion }
   }
 }
 
@@ -285,32 +265,12 @@ resource raUserSearchServiceContributor 'Microsoft.Authorization/roleAssignments
   }
 }
 
-resource raUserBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignUserRoles) {
-  name: guid(storage.id, principalId, roleStorageBlobDataContributor)
-  scope: storage
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataContributor)
-    principalId: principalId
-    principalType: principalType
-  }
-}
-
 // -- Foundry account managed identity (grounding / Foundry IQ retrieval) ---
 resource raAccountSearchReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(search.id, account.id, roleSearchIndexDataReader)
   scope: search
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataReader)
-    principalId: account.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource raAccountBlobReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storage.id, account.id, roleStorageBlobDataReader)
-  scope: storage
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataReader)
     principalId: account.identity.principalId
     principalType: 'ServicePrincipal'
   }
@@ -329,10 +289,6 @@ output MODEL_RENEWAL string = gptMini
 output AZURE_SEARCH_ENDPOINT string = 'https://${search.name}.search.windows.net'
 output AZURE_SEARCH_INDEX string = searchIndexName
 output AZURE_SEARCH_CONNECTION_NAME string = searchConnectionName
-
-#disable-next-line outputs-should-not-contain-secrets
-output AZURE_STORAGE_CONNECTION_STRING string = 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${storage.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
-output AZURE_STORAGE_CONTAINER string = containerName
 
 #disable-next-line outputs-should-not-contain-secrets
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString

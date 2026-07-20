@@ -46,7 +46,7 @@ class Settings:
     project_endpoint: str | None = field(default_factory=lambda: _get("AZURE_AI_PROJECT_ENDPOINT"))
 
     # Model deployments (multi-model fleet)
-    model_orchestrator: str = field(default_factory=lambda: _get("MODEL_ORCHESTRATOR", "gpt-4.1"))
+    model_orchestrator: str = field(default_factory=lambda: _get("MODEL_ORCHESTRATOR", "gpt-5.3"))
     model_drafting: str = field(default_factory=lambda: _get("MODEL_DRAFTING", "claude-sonnet-4-5"))
     model_clause_risk: str = field(default_factory=lambda: _get("MODEL_CLAUSE_RISK", "claude-sonnet-4-5"))
     model_renewal: str = field(default_factory=lambda: _get("MODEL_RENEWAL", "gpt-4o-mini"))
@@ -56,9 +56,15 @@ class Settings:
     search_index: str = field(default_factory=lambda: _get("AZURE_SEARCH_INDEX", "clm-corpus"))
     search_connection_name: str = field(default_factory=lambda: _get("AZURE_SEARCH_CONNECTION_NAME", "clm-search"))
 
-    # Storage
-    storage_connection_string: str | None = field(default_factory=lambda: _get("AZURE_STORAGE_CONNECTION_STRING"))
-    storage_container: str = field(default_factory=lambda: _get("AZURE_STORAGE_CONTAINER", "clm-corpus"))
+    # SharePoint — corpus source of truth (BYO document library). An Azure AI
+    # Search SharePoint Online indexer crawls this library into the clm-corpus
+    # index (built in Challenge 0 by scripts/seed_corpus.py). The app-registration
+    # values authorize that indexer (Graph app-only auth).
+    sharepoint_site_url: str | None = field(default_factory=lambda: _get("SHAREPOINT_SITE_URL"))
+    sharepoint_doc_library: str = field(default_factory=lambda: _get("SHAREPOINT_DOC_LIBRARY", "Documents"))
+    sharepoint_app_id: str | None = field(default_factory=lambda: _get("SHAREPOINT_APP_ID"))
+    sharepoint_app_secret: str | None = field(default_factory=lambda: _get("SHAREPOINT_APP_SECRET"))
+    sharepoint_tenant_id: str | None = field(default_factory=lambda: _get("SHAREPOINT_TENANT_ID"))
 
     # Observability
     appinsights_connection_string: str | None = field(

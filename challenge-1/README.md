@@ -54,7 +54,7 @@ retrieval** — it plans sub-queries, searches, reranks, and returns **cited** p
 
 ```mermaid
 flowchart LR
-  A["Corpus in Blob Storage<br/>templates · clauses · policy · contracts"] --> B["Azure AI Search index<br/>clm-corpus · semantic"]
+  A["Corpus in SharePoint library<br/>templates · clauses · policy · contracts"] --> B["Azure AI Search index<br/>clm-corpus · SharePoint indexer · semantic"]
   B --> C["Foundry IQ<br/>knowledge base"]
   C --> D["AzureAISearchTool<br/>(kb_setup.py)"]
   D --> E["Intake &amp; Drafting agent<br/>Claude Sonnet 4.5"]
@@ -132,7 +132,7 @@ each is**, the **specifics wired into this repo**, and **why it's in the archite
 your `.env` reaches it through `AZURE_AI_PROJECT_ENDPOINT`
 (`https://<account>.services.ai.azure.com/api/projects/clm-project`).
 
-- **All three models deploy onto that one account** — `gpt-4.1`, `gpt-4o-mini`, `claude-sonnet-4-5` — so a
+- **All three models deploy onto that one account** — `gpt-5.3`, `gpt-4o-mini`, `claude-sonnet-4-5` — so a
   single `get_project_client()` ([`src/clm_common/foundry.py`](../src/clm_common/foundry.py)) reaches each.
 - The **Microsoft Agent Framework** (`Agent(client=FoundryChatClient(...))`) runs the agent loop **in your
   process** — planning, tool-calls and retrieval — calling Foundry for model inference.
@@ -157,26 +157,27 @@ it as a tool and the agent runs **plan → search → rerank → cite** during a
 ### Azure AI Search — the `clm-corpus` index
 
 **What it is:** the **retrieval engine** behind Foundry IQ. Challenge 0 provisions a **`basic`** search
-service (1 partition · 1 replica, `semanticSearch: free`), and `scripts/seed_corpus.py` **pushes** the
-documents in with `SearchClient.upload_documents` (no indexer).
+service (1 partition · 1 replica, `semanticSearch: free`), and `scripts/seed_corpus.py` creates a
+**SharePoint Online indexer** that crawls the corpus library and populates the index (no manual upload).
 
 - Index **`clm-corpus`**, semantic config **`clm-semantic`**, fields `id` · `title` · `content` · `source`.
-- **Full-text + semantic (L2) re-ranking** over **one document per source file** (`source` = the subfolder).
+- **Full-text + semantic (L2) re-ranking** over **one document per file** (`content` = the extracted PDF text).
 - Built once in Ch0 — here you only **attach** and query it.
 
 **Why here:** it's the searchable store that turns "the model guesses" into "the agent cites `CL-04`".
 → [Azure AI Search](https://learn.microsoft.com/azure/search/)
 
-### Azure Blob Storage — corpus source of truth
+### SharePoint — corpus source of truth
 
-**What it is:** the **object store** the raw documents land in before indexing. Ch0 creates a `Standard_LRS`
-`StorageV2` account (blob public access **off**, TLS 1.2) with a **`clm-corpus`** container.
+**What it is:** the **document library** the original contract PDFs live in (Microsoft 365). It's the
+system of record; the corpus is authored/managed there, not copied into Azure.
 
-- `seed_corpus.py` uploads each file as `{subfolder}/{name}` (e.g. `contracts/CT-4821_msa.pdf`), `overwrite=True`.
-- The Foundry account MI gets **Storage Blob Data Reader**; the deploying user gets **…Data Contributor** to seed.
+- `seed_corpus.py` creates an Azure AI Search **SharePoint Online data source + indexer** that crawls
+  the library into `clm-corpus` (app-only Microsoft Entra auth via a prerequisite app registration).
+- The indexer extracts each PDF's text + metadata; re-running it re-crawls for changes.
 
-**Why here:** it holds the templates, clause library, policy and executed-contract PDFs that Search indexes.
-→ [Azure Blob Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction)
+**Why here:** it holds the templates, clause library, policy and executed-contract PDFs that Search indexes —
+and keeps them where the business already curates them. → [Index SharePoint content](https://learn.microsoft.com/azure/search/search-howto-index-sharepoint-online)
 
 ### Model — Anthropic Claude Sonnet 4.5
 
@@ -186,7 +187,7 @@ Azure-hosted, SKU `GlobalStandard`, capacity 20), read from `settings.model_draf
 - Strong **instruction-following** + **long-context** reasoning — ideal for careful legal drafting.
 - Called through the **same Agents API** as the GPT deployments; only the deployment name differs.
 
-**Why here:** drafting goes to Claude; routing/tool-calling to **`gpt-4.1`** (Ch3) and the renewal scan to
+**Why here:** drafting goes to Claude; routing/tool-calling to **`gpt-5.3`** (Ch3) and the renewal scan to
 **`gpt-4o-mini`** (Ch4) — right model per job, one platform. → [Models in Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/)
 
 ### Function tools — `get_contract_status`

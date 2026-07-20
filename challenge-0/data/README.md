@@ -1,13 +1,14 @@
 # CLM Corpus (Contoso Global)
 
 Seed data for the microhack, kept **under Challenge 0** — where it is provisioned and seeded.
-Challenge 0 uploads these to Blob Storage and indexes them into Azure AI Search so the
-**Foundry IQ** knowledge base can ground the agents with cited answers. Every challenge reads
-this corpus through `clm_common.config.DATA_DIR` (which points at `challenge-0/data/`).
+Challenge 0 hosts these PDFs in a **SharePoint** document library and crawls them into Azure AI Search
+(via a SharePoint Online indexer) so the **Foundry IQ** knowledge base can ground the agents with cited
+answers. Every challenge reads this corpus through `clm_common.config.DATA_DIR` (which points at
+`challenge-0/data/`).
 
 The contract corpus is delivered as **PDF** — real, text-extractable documents that mirror how
-a CLM system ingests exchanged legal paper. Text is extracted at seed/analysis time via
-`clm_common.documents.read_document_text` (pypdf).
+a CLM system ingests exchanged legal paper. The SharePoint indexer extracts text at crawl time; the
+Clause & Risk agent also reads drafts locally via `clm_common.documents.read_document_text` (pypdf).
 
 | Folder | Contents | Used by |
 |--------|----------|---------|

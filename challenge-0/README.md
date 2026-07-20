@@ -22,8 +22,8 @@ If something isn't working as expected, please let your coach know.
 ## 🎯 Objective
 
 - Provision the Azure resources needed for the upcoming challenges into a single resource group.
-- Seed the **Contoso Global** contract corpus into Blob Storage + Azure AI Search so **Foundry IQ**
-  can ground the agents with **cited** answers.
+- Seed the **Contoso Global** contract corpus from a **SharePoint** document library into Azure AI
+  Search (via a SharePoint Online indexer) so **Foundry IQ** can ground the agents with **cited** answers.
 - Smoke-test the environment so you *know* both a GPT and the Claude deployment run before you build.
 
 ## 🧭 Context and Background
@@ -43,16 +43,18 @@ All resources reside in a **single resource group** (default name `rg-clm-microh
 
 - A **Microsoft Foundry** account (Azure AI Services · S0) with a **Foundry project** (`clm-project`)
   — one identity, billing, tracing, and governance plane for the whole system.
-- Three **model deployments** — the multi-model fleet the agents run on: **`gpt-4.1`**,
+- Three **model deployments** — the multi-model fleet the agents run on: **`gpt-5.3`**,
   **`gpt-4o-mini`**, and **`claude-sonnet-4-5`** (Claude is GA in Microsoft Foundry).
 - **Azure AI Search** (Basic) — the backing store for the **Foundry IQ** knowledge base (`clm-corpus`
   index, `clm-search` connection).
-- **Blob Storage** (StorageV2 · LRS) — the source contract corpus (`clm-corpus` container).
+- **SharePoint document library** *(bring-your-own · Microsoft 365, not an Azure resource)* — the source
+  contract corpus. An Azure AI Search **SharePoint Online indexer** crawls it into the `clm-corpus` index.
 - **Application Insights** + a **Log Analytics** workspace — OpenTelemetry tracing (Challenge 2).
 - *(Optional)* **Azure SQL Database** (Basic) — backs the contract-status / renewal function tool.
 
-Identity is **keyless**: system-assigned managed identities plus Microsoft Entra ID RBAC (Azure AI
-Developer, Cognitive Services User, Search + Storage data roles) — all assigned for you by `azd up`.
+Identity is **keyless** for Azure data planes: system-assigned managed identities plus Microsoft Entra
+ID RBAC (Azure AI Developer, Cognitive Services User, Search data roles) — all assigned for you by
+`azd up`. *(The SharePoint indexer authenticates with a separate Entra app registration — see below.)*
 
 <details>
 <summary><strong>📦 Resource inventory</strong> (what gets created)</summary>
@@ -62,7 +64,7 @@ Developer, Cognitive Services User, Search + Storage data roles) — all assigne
 | Foundry account | Azure AI Services · `S0` | `clmfoundry****` | Hosts the project + model deployments |
 | Foundry project | AI Foundry project | `clm-project` | Agents, connections, tracing |
 | Azure AI Search | `Basic` | `clmsearch****` | Foundry IQ knowledge base (`clm-corpus` index) |
-| Storage account | `StorageV2` · `Standard_LRS` | `clmstor****` | Source corpus (`clm-corpus` container) |
+| SharePoint library *(BYO · M365)* | document library | *your site* | Source contract corpus → AI Search indexer |
 | Application Insights | `web` | `clm-appinsights****` | OpenTelemetry traces |
 | Log Analytics | `PerGB2018` | `clm-logs****` | Backing store for App Insights |
 | Azure SQL *(optional)* | `Basic` | `clmsql****` | Contract status / renewal dates |
@@ -76,7 +78,7 @@ Developer, Cognitive Services User, Search + Storage data roles) — all assigne
 
 | Deployment | Model · format | SKU | Agent it powers | Challenge |
 |------------|----------------|-----|-----------------|-----------|
-| `gpt-4.1` | OpenAI `gpt-4.1` (`2025-04-14`) | GlobalStandard · 30 | **Orchestrator** — routing + hand-offs | C3 |
+| `gpt-5.3` | OpenAI `gpt-5.3` (version per your region's catalog) | GlobalStandard · 30 | **Orchestrator** — routing + hand-offs | C3 |
 | `claude-sonnet-4-5` | Anthropic `claude-sonnet-4-5` (v`2`, Azure-hosted) | GlobalStandard · 20 | **Intake & Drafting** + **Clause & Risk** | C1, C3 |
 | `gpt-4o-mini` | OpenAI `gpt-4o-mini` (`2024-07-18`) | GlobalStandard · 30 | **Obligation & Renewal** — cheap, high-frequency | C3 |
 
@@ -88,10 +90,11 @@ Developer, Cognitive Services User, Search + Storage data roles) — all assigne
 <details>
 <summary><strong>📚 CLM corpus</strong> (the data you seed)</summary>
 
-`python scripts/seed_corpus.py` uploads [`data/`](./data/) to Blob and indexes it into Azure AI
-Search so Foundry IQ can ground answers with citations. The contract corpus is delivered as
-**PDF** (text-extracted at seed time via `clm_common.documents`); regenerate it with
-`python scripts/make_corpus_pdfs.py` (needs `pip install reportlab`):
+`python scripts/seed_corpus.py` creates an Azure AI Search **SharePoint Online indexer** that crawls the
+[`data/`](./data/) corpus (hosted in your SharePoint library) into Azure AI Search so Foundry IQ can
+ground answers with citations. The contract corpus is delivered as **PDF** (the indexer extracts the
+text at crawl time); regenerate the PDFs with `python scripts/make_corpus_pdfs.py` (needs
+`pip install reportlab`) and upload them to the library:
 
 | Folder | Contents | Used by |
 |--------|----------|---------|
@@ -202,7 +205,7 @@ az deployment sub create \
                principalId=$(az ad signed-in-user show --query id -o tsv)
 ```
 
-> Passing your `principalId` assigns the data-plane roles (Search + Storage) you need to
+> Passing your `principalId` assigns the data-plane roles (Search Index Data) you need to
 > seed the corpus. Add `deploySql=true sqlAdminPassword='<StrongP@ssw0rd!>'` to also
 > provision Azure SQL.
 
@@ -224,19 +227,25 @@ Options A and B write a populated **`.env`** automatically; Option C writes it v
 
 Open the [Azure Portal](https://portal.azure.com/), find your resource group, and confirm it contains
 the resources from the [inventory above](#-context-and-background) — the Foundry account, the 3 model
-deployments, Azure AI Search, Storage, and Application Insights. Then open `.env` at the repo root and
-confirm the values are filled in (no empty entries except the Challenge 4 Teams/Bot variables).
+deployments, Azure AI Search, and Application Insights. Then open `.env` at the repo root and
+confirm the values are filled in (no empty entries except the SharePoint corpus and Challenge 4 Teams/Bot variables).
 
 > [!CAUTION]
-> For convenience, this hackathon uses key-based storage connection strings and public network access.
-> **Never commit `.env`** — it's already in [`.gitignore`](../.gitignore). In production, prefer managed
-> identities, private endpoints, and Key Vault.
+> For convenience, this hackathon keeps secrets (e.g. the SharePoint app secret) in `.env` and uses
+> public network access. **Never commit `.env`** — it's already in [`.gitignore`](../.gitignore). In
+> production, prefer managed identities, private endpoints, and Key Vault.
 
 ---
 
 ### Task 6 · Seed the corpus
 
-Upload `data/` to Blob and build the `clm-corpus` search index:
+Build the `clm-corpus` search index from your **SharePoint** corpus library:
+
+> [!IMPORTANT]
+> **SharePoint prerequisites (bring-your-own):** before seeding, (1) upload the `data/` PDFs to a
+> SharePoint document library, and (2) create a Microsoft Entra **app registration** with Graph
+> application permissions (`Sites.Read.All` / `Files.Read.All`, admin-consented). Put the site URL,
+> library name, app id/secret, and tenant id into `.env` (`SHAREPOINT_*` — see [`.env.example`](../.env.example)).
 
 ```bash
 python scripts/seed_corpus.py
@@ -247,8 +256,9 @@ python scripts/seed_sql.py
 > [!NOTE]
 > The entire corpus is **PDF** — Contoso-authored templates, the clause library and policies, the 5
 > executed contracts in `data/contracts/` (one per row seeded into Azure SQL) and the inbound
-> counterparty drafts. `seed_corpus.py` extracts the text with **pypdf** so every document lands in
-> the same index for Foundry IQ. To rebuild the PDFs from source, see
+> counterparty drafts. `seed_corpus.py` creates an Azure AI Search **SharePoint Online data source +
+> indexer**; the indexer extracts each document's text so it lands in the `clm-corpus` index for
+> Foundry IQ. To rebuild the PDFs from source, see
 > [`data/README.md`](data/README.md#regenerating-the-pdfs).
 
 ---
@@ -266,7 +276,7 @@ python scripts/smoke_test.py
 ## ✔️ Success criteria
 
 - `.env` is populated (project endpoint + connection strings).
-- `python scripts/smoke_test.py` prints **✅ PASS** — a tiny agent runs on **both** `gpt-4.1` and
+- `python scripts/smoke_test.py` prints **✅ PASS** — a tiny agent runs on **both** `gpt-5.3` and
   `claude-sonnet-4-5`.
 - In the Foundry portal you can see the project, the 3 model deployments, and the `clm-corpus` index
   with documents.
@@ -275,7 +285,7 @@ Expected smoke-test output:
 
 ```
 1) Checking environment…            ✓ (all vars present)
-2) Pinging gpt deployment 'gpt-4.1'… ✓ gpt replied: OK
+2) Pinging gpt deployment 'gpt-5.3'… ✓ gpt replied: OK
 2) Pinging claude deployment 'claude-sonnet-4-5'… ✓ claude replied: OK
 Smoke test: ✅ PASS
 ```
@@ -320,11 +330,12 @@ az search service show --name <clmsearch****> --resource-group rg-clm-microhack 
 
 ## 🧠 Reflection
 
-- Why keep the corpus in Blob **and** an Azure AI Search index? *(Source of truth vs. retrieval.)*
+- Why keep the corpus in **SharePoint** *and* an Azure AI Search index? *(Business system of record vs. retrieval.)*
 - The fleet mixes GPT and Claude in one project. What does Foundry give you that stitching two vendor
   APIs together would not? *(One identity, billing, tracing, and governance plane.)*
-- The deploy assigns **data-plane** roles (Search Index Data, Storage Blob Data) to a **managed
-  identity** rather than using keys. Why does that matter for an enterprise CLM system?
+- The deploy assigns **data-plane** roles (Search Index Data) to a **managed identity**, while the
+  SharePoint indexer uses an **Entra app registration**. Why do keyless/app-scoped credentials matter
+  for an enterprise CLM system?
 
 ## 📚 Learn more
 

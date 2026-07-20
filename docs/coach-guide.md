@@ -22,13 +22,13 @@ tips. Participants never see this file; it's for the people running the room.
 
 | Task | Why it matters |
 |------|----------------|
-| **Pick a region with all 3 models** (`gpt-4.1`, `gpt-4o-mini`, `claude-sonnet-4-5`). `swedencentral` is a good default. | Challenge 0 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** |
+| **Pick a region with all 3 models** (`gpt-5.3`, `gpt-4o-mini`, `claude-sonnet-4-5`). `swedencentral` is a good default. | Challenge 0 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** |
 | **Confirm Claude is enabled** in both the **model catalog** *and* the **Foundry chat runner** for that region. | If Foundry can't serve Claude via the chat client, Ch1 needs the Anthropic-SDK fallback (documented in-challenge). Know this before the room does. |
 | **Check quota** — Basic Azure AI Search + the model SKUs (TPM for each deployment). Request increases early. | Quota denials are the #1 day-of blocker and can take hours to approve. |
 | **Decide the subscription model** — one sub per team (cleanest) vs a shared sub with per-team resource groups / env names. | `azd up` uses an environment name as the RG suffix; shared subs need unique names per team. |
 | **Do a full dry-run** in the target region, including `azd up` **and** `scripts/deploy.sh`. | You'll hit the region/quota issues before the participants do. |
 | **Pre-provision (optional but recommended)** a subscription per team the night before. | Saves ~20 of Challenge 0's 30 min; teams start on agents, not provisioning. |
-| **Cost check** — models are pay-per-token; Search Basic + Storage + App Insights are the fixed cost. Tear down with `azd down` / delete the RG after. | Budget approval + a reminder to delete afterwards. |
+| **Cost check** — models are pay-per-token; Search Basic + App Insights are the fixed cost. Tear down with `azd down` / delete the RG after. | Budget approval + a reminder to delete afterwards. |
 | **Teams/M365 tenant** — confirm you (or the participants) can **sideload a custom Teams app** and publish to M365 Copilot. | Challenge 4's publish step needs sideload rights; many corp tenants block it. Have a coach-owned tenant as fallback. |
 
 ### Pre-flight checklist (per team, morning of)
@@ -65,7 +65,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 
 - **Point:** stand up the whole Foundry environment + seed the corpus with **zero local install**.
 - **Done when:** `python scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
-  `gpt-4.1` **and** `claude-sonnet-4-5`) and the `clm-corpus` index shows documents in the portal.
+  `gpt-5.3` **and** `claude-sonnet-4-5`) and the `clm-corpus` index shows documents in the portal.
 - **Provisioning paths** — all produce the same resources and `.env`: **`azd up`** (Bicep in
   `challenge-0/infra/`), **`scripts/deploy.sh`** (`.ps1` on Windows), or the one-click **Deploy to
   Azure** button / `az deployment sub create` on `infra/azuredeploy.json` (then
@@ -127,7 +127,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 
 ### Challenge 3 · Orchestration + MCP Server *(60 min · orchestration · MCP)*
 
-- **Point:** add the **Clause & Risk** specialist (Claude), stand up a **GPT-4.1 Orchestrator** that
+- **Point:** add the **Clause & Risk** specialist (Claude), stand up a **GPT-5.3 Orchestrator** that
   routes to both specialists via the **agent-as-tool pattern**, and expose the workflow as an **MCP server**.
 - **Done when:** one orchestrator thread runs **draft → extract → risk** by delegating; the Clause & Risk
   agent returns a structured, cited risk assessment; the **MCP server is discoverable + callable** from
@@ -189,7 +189,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 | Situation | Fix |
 |-----------|-----|
 | **`.env` looks wrong / half-populated** | Re-run the provision path (`azd up` re-runs the `write_env.py` hook), or hand-set the missing keys from the portal (project endpoint under **Overview → Endpoint**). |
-| **Corpus / index empty** | Re-run `python scripts/seed_corpus.py` (idempotent — re-uploads Blob + rebuilds the index). |
+| **Corpus / index empty** | Re-run `python scripts/seed_corpus.py` (idempotent — recreates the SharePoint indexer and re-crawls the library). Check the indexer run status + that the SharePoint library is populated. |
 | **Legacy agents in the project** | The Microsoft Agent Framework builds agents in-process against the Foundry chat client — it registers **no** persistent server-side agents, so there's nothing to clean up. Delete any stragglers from earlier Agent-Service runs in **portal → Agents** if you like. |
 | **Auth / 403 right after provisioning** | RBAC propagation lag — wait 2–3 min and retry before debugging anything else. |
 | **Everything is wedged, start clean** | `azd down` (or delete the resource group), then `azd up` again. Budget ~15 min. |

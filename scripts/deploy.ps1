@@ -13,10 +13,9 @@ $Rg          = $env:RG          ?? "rg-clm-microhack"
 $Foundry     = $env:FOUNDRY     ?? "clmfoundry$Suffix"
 $Project     = $env:PROJECT     ?? "clm-project"
 $Search      = $env:SEARCH      ?? "clmsearch$Suffix"
-$Storage     = $env:STORAGE     ?? "clmstor$Suffix"
 $AppInsights = "clm-appinsights"
 
-$GptOrch = "gpt-4.1"; $GptMini = "gpt-4o-mini"; $Claude = "claude-sonnet-4-5"
+$GptOrch = "gpt-5.3"; $GptMini = "gpt-4o-mini"; $Claude = "claude-sonnet-4-5"
 
 Write-Host "▶ Resource group: $Rg ($Location); Foundry $Foundry / project $Project"
 
@@ -36,17 +35,16 @@ function Deploy-Model($name, $model, $version, $format, $cap) {
     --sku-name GlobalStandard --sku-capacity $cap -o none 2>$null
   if ($LASTEXITCODE -ne 0) { Write-Host "    ! $name failed — check availability in $Location." }
 }
-Deploy-Model $GptOrch "gpt-4.1"          "2025-04-14" "OpenAI"    30
+Deploy-Model $GptOrch "gpt-5.3"          "2025-11-01" "OpenAI"    30
 Deploy-Model $GptMini "gpt-4o-mini"      "2024-07-18" "OpenAI"    30
 Deploy-Model $Claude  "claude-sonnet-4-5" "2"         "Anthropic" 20
 
 az search service create -n $Search -g $Rg -l $Location --sku basic --partition-count 1 --replica-count 1 -o none
 Write-Host "  ✓ Azure AI Search created"
 
-az storage account create -n $Storage -g $Rg -l $Location --sku Standard_LRS -o none
-$StorageConn = az storage account show-connection-string -n $Storage -g $Rg -o tsv
-az storage container create --name clm-corpus --connection-string $StorageConn -o none
-Write-Host "  ✓ Storage + container created"
+# Corpus source is SharePoint (BYO) — nothing to create; seed_corpus.py wires the
+# AI Search SharePoint indexer. Fill SHAREPOINT_* in .env first (see challenge-0 README).
+Write-Host "  · Corpus source is SharePoint (BYO) — set SHAREPOINT_* in .env, then run seed_corpus.py"
 
 az monitor app-insights component create --app $AppInsights -g $Rg -l $Location --kind web -o none
 $AppInsightsConn = az monitor app-insights component show --app $AppInsights -g $Rg --query connectionString -o tsv
@@ -80,8 +78,12 @@ AZURE_SEARCH_ENDPOINT=$SearchEndpoint
 AZURE_SEARCH_INDEX=clm-corpus
 AZURE_SEARCH_CONNECTION_NAME=clm-search
 
-AZURE_STORAGE_CONNECTION_STRING=$StorageConn
-AZURE_STORAGE_CONTAINER=clm-corpus
+# SharePoint corpus (BYO) — fill these in before running seed_corpus.py.
+SHAREPOINT_SITE_URL=
+SHAREPOINT_DOC_LIBRARY=Documents
+SHAREPOINT_APP_ID=
+SHAREPOINT_APP_SECRET=
+SHAREPOINT_TENANT_ID=
 
 APPLICATIONINSIGHTS_CONNECTION_STRING=$AppInsightsConn
 AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true

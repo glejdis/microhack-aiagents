@@ -16,7 +16,7 @@ inconsistent clause review, and missed renewals. In this microhack you'll transf
 process into a grounded, **agentic** workflow with a human always in the loop.
 
 The build uniquely combines four things: a **multi-model agent fleet** — orchestration on
-**GPT-4.1** with specialist drafting and clause-analysis running on **Anthropic Claude**, all inside
+**GPT-5.3** with specialist drafting and clause-analysis running on **Anthropic Claude**, all inside
 a single Foundry project; **grounded retrieval with Foundry IQ** over your own contract corpus so
 every answer is cited; **tools and an MCP server** that expose the workflow to **Microsoft 365
 Copilot**, **Teams**, and any MCP-compatible client; and the full **GenAIOps lifecycle** —
@@ -117,8 +117,8 @@ runs inside a *single* Foundry project: shared identity (Entra), model deploymen
 tracing, and safety. Crucially, **GPT** *and* **Anthropic Claude** deployments live side by side here —
 no second platform to operate.
 
-❸ **Orchestrator (GPT-4.1) — the front door.** It receives each request, decides which specialist to
-call, hands off the right context, and composes the final answer. GPT-4.1 is chosen for fast,
+❸ **Orchestrator (GPT-5.3) — the front door.** It receives each request, decides which specialist to
+call, hands off the right context, and composes the final answer. GPT-5.3 is chosen for fast,
 deterministic routing and tool/hand-off calls rather than long-form generation.
 
 ❹ **Specialist agents — each matched to its task *and* its model.** The Orchestrator delegates to three
@@ -128,7 +128,8 @@ cheaper **GPT-4o-mini** (blue) for high-frequency date and obligation extraction
 
 ❺ **Grounding & tools (blue) — how agents stay factual and act on the world.** **Foundry IQ** (over
 **Azure AI Search**) provides agentic retrieval so drafting and clause agents answer *with citations*
-from the contract corpus; **Azure SQL** is the system of record for contract status, read/written by
+from the contract corpus — the original PDFs live in a **SharePoint** document library that a SharePoint
+Online indexer crawls into the index; **Azure SQL** is the system of record for contract status, read/written by
 the renewal agent through a function tool; and the **MCP server** (`draft_contract` ·
 `analyze_contract`) re-exposes the whole workflow as Model Context Protocol tools any MCP client —
 including M365 Copilot — can call.
@@ -167,11 +168,11 @@ flowchart TB
             orch --> renew
         end
         subgraph Farm["LLM farm · model deployments"]
-            gpt41["GPT-4.1<br/>OpenAI · GlobalStandard"]
+            gpt53["GPT-5.3<br/>OpenAI · GlobalStandard"]
             claude["Claude Sonnet 4.5<br/>Anthropic"]
             gpt4omini["GPT-4o-mini<br/>OpenAI · GlobalStandard"]
         end
-        orch -->|runs on| gpt41
+        orch -->|runs on| gpt53
         intake -->|runs on| claude
         clause -->|runs on| claude
         renew -->|runs on| gpt4omini
@@ -179,13 +180,13 @@ flowchart TB
     hitl <--> orch
 
     subgraph Ground["Grounding & tools"]
-        sources[("Content corpus · Blob<br/>Clause Library · Templates")]
+        sources[("Content corpus · SharePoint<br/>Clause Library · Templates")]
         iq[("Foundry IQ<br/>Azure AI Search")]
         sql[("Azure SQL<br/>contract status")]
         mcp["MCP server<br/>draft_contract · analyze_contract"]
     end
 
-    sources -->|index| iq
+    sources -->|SharePoint indexer| iq
     intake --> iq
     clause --> iq
     renew --> sql
@@ -219,7 +220,7 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 
 | Agent | Model | Why this model |
 |-------|-------|----------------|
-| **Orchestrator** | GPT-4.1 | Fast, deterministic routing + tool/hand-off calls |
+| **Orchestrator** | GPT-5.3 | Fast, deterministic routing + tool/hand-off calls |
 | **Intake & Drafting** | **Claude Sonnet 4.5** | High-fidelity, template-grounded drafting |
 | **Clause & Risk** | **Claude Sonnet 4.5** | 200K-context clause comparison + nuanced risk rationale |
 | **Obligation & Renewal** | GPT-4o-mini | Cheap, high-frequency structured extraction + alerts |

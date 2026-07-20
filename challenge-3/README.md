@@ -9,7 +9,7 @@
 
 ## 🎯 Objective
 
-Add the **2nd specialist** (Clause & Risk on Claude), stand up an **Orchestrator agent** (GPT-4.1)
+Add the **2nd specialist** (Clause & Risk on Claude), stand up an **Orchestrator agent** (GPT-5.3)
 that routes to both specialists via the **agent-as-tool pattern**, then expose the whole workflow as an **MCP
 server** callable from VS Code / GitHub Copilot.
 
@@ -17,14 +17,14 @@ server** callable from VS Code / GitHub Copilot.
 
 - **Clause & Risk agent** reuses the Ch1 grounding pattern → fast to build. It compares a
   counterparty draft to the enterprise standard and returns a **risk score**.
-- **Orchestrator** (GPT-4.1) uses the Agent Framework's **`agent.as_tool(...)`** to call each specialist as a tool. A
+- **Orchestrator** (GPT-5.3) uses the Agent Framework's **`agent.as_tool(...)`** to call each specialist as a tool. A
   **GPT orchestrator coordinating Claude specialists** is multi-model composition in one project. It
   manages routing, hand-offs and human-in-the-loop.
 - **MCP** (Model Context Protocol) lets you expose the workflow as standard tools so *any* MCP client
   can reuse it. You'll run a local **stdio** server and call it from VS Code.
 
 ```
-        ┌────────────── Orchestrator (GPT-4.1) ──────────────┐
+        ┌────────────── Orchestrator (GPT-5.3) ──────────────┐
  user → │  routes + hand-offs + human-in-the-loop            │
         └───────┬───────────────────────────┬───────────────┘
                 │ agent-as-tool             │ agent-as-tool
@@ -53,10 +53,10 @@ calls a function.
 **Why here:** it lets the Orchestrator delegate *drafting* and *clause/risk* to the right specialist
 instead of one bloated mega-agent. → [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview)
 
-### Model — GPT-4.1 (the orchestrator)
+### Model — GPT-5.3 (the orchestrator)
 
-**What it is:** the LLM behind the Orchestrator (`MODEL_ORCHESTRATOR = gpt-4.1`) — deployment `gpt-4.1`
-(`format: OpenAI`, version `2025-04-14`, SKU `GlobalStandard`, capacity 30), sitting alongside the Claude
+**What it is:** the LLM behind the Orchestrator (`MODEL_ORCHESTRATOR = gpt-5.3`) — deployment `gpt-5.3`
+(`format: OpenAI`, version confirmed in your region's Foundry catalog, SKU `GlobalStandard`, capacity 30), sitting alongside the Claude
 specialists on the same account.
 
 - Fast, **deterministic tool-calling** and reliable **routing** decisions.
