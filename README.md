@@ -259,7 +259,8 @@ By participating in this hackathon, you will learn how to:
    Python 3.11, Azure CLI, `azd`, Node, and `requirements.txt` automatically.
 2. `az login` (and `azd auth login` if you use the `azd up` path)
 3. Do **[Challenge 0](challenge-0/)** to deploy resources and seed the corpus — provision with
-   **`azd up`** (Bicep in `challenge-0/infra/`) or the **`scripts/deploy`** script. Either autofills your `.env`.
+   **`azd up`** (Bicep in `challenge-0/infra/`), the **`scripts/deploy`** script, or the one-click
+   **Deploy to Azure** button (`infra/azuredeploy.json`). The first two autofill your `.env`.
 4. Work through Challenges 1 → 4.
 
 ---
