@@ -53,7 +53,8 @@ mutates them with **attack strategies** (encodings, ciphers, composed jailbreaks
 
 - **Auto-generated** attacks — you don't have to invent every jailbreak.
 - **Attack strategies** reveal what slips past guardrails that plain prompts don't.
-- Produces a repeatable scorecard (`redteam_scorecard.json`) you can track over time.
+- [`challenge-5/red_team.py`](red_team.py) (`--num-objectives`, `--strategies`) writes a repeatable
+  scorecard (`challenge-5/redteam_scorecard.json`) you can track over time.
 
 **Why here:** red-teaming finds **unknown** failures — the ones you didn't think to test for — before an
 attacker does. → [AI Red Teaming Agent](https://learn.microsoft.com/en-us/azure/foundry/concepts/ai-red-teaming-agent)
@@ -65,7 +66,8 @@ attacker does. → [AI Red Teaming Agent](https://learn.microsoft.com/en-us/azur
 
 - Model-graded scoring for a **guardrail defect rate**, not just pass/fail heuristics.
 - Take `azure_ai_project` + a credential (not a `model_config`).
-- Complements quality evaluators (groundedness, relevance) with a **safety** dimension.
+- Run via [`challenge-5/safety_eval.py`](safety_eval.py) (`--safety-evals`); the gate `--gate 0.1` fails on
+  too high a defect rate (`--dry-run` previews with no Azure calls).
 
 **Why here:** red-teaming *attacks*; safety evaluators *measure* — together they tell you whether
 hardening actually worked. → [Evaluation & observability](https://learn.microsoft.com/en-us/azure/foundry/concepts/observability)

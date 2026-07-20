@@ -119,82 +119,86 @@ Everything the agent "knows" comes from the corpus you seeded in Challenge 0:
 
 ## 🧰 Services & models in this challenge
 
-This agent is small, but it stands on a handful of Azure + Foundry services. Here's **what each one is**
-and **why it's in the architecture** — so you can reason about the system, not just run it.
+This agent is small, but every line stands on a concrete resource — the exact ones `azd up` provisioned in
+Challenge 0 ([`challenge-0/infra/resources.bicep`](../challenge-0/infra/resources.bicep)). Here's **what
+each is**, the **specifics wired into this repo**, and **why it's in the architecture**.
 
-### Microsoft Foundry — Agent Service
+### Microsoft Foundry — AI Services account + Agent Service
 
-**What it is:** the managed **control plane and runtime** for agents. You declare an agent (a model, its
-instructions, and its tools) and Foundry hosts it — running the reasoning loop, calling tools, and
-managing conversation threads on the server side.
+**What it is:** the managed **control plane + agent runtime**. Challenge 0 creates one
+`Microsoft.CognitiveServices` account (`kind: AIServices`, SKU `S0`) holding a project **`clm-project`**;
+your `.env` reaches it through `AZURE_AI_PROJECT_ENDPOINT`
+(`https://<account>.services.ai.azure.com/api/projects/clm-project`).
 
-- One project, **many models** (GPT, Claude, …) behind **one identical Agents API**.
-- Server-managed **threads, runs and tool orchestration** — you don't hand-roll the agent loop.
-- A single home for **connections, model deployments, tracing and governance**.
+- **All three models deploy onto that one account** — `gpt-4.1`, `gpt-4o-mini`, `claude-sonnet-4-5` — so a
+  single `get_project_client()` ([`src/clm_common/foundry.py`](../src/clm_common/foundry.py)) reaches each.
+- The Agents SDK (`project.agents.create_agent(...)`) runs the loop **server-side**: threads, runs, tools.
+- The project also owns the grounding **`clm-search` connection** and the RBAC that makes retrieval keyless.
 
-**Why here:** it lets you build a grounded, tool-using agent on Claude in a few lines of Python — and
-swap the model later *without touching* your grounding or tool code. → [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
+**Why here:** you build a grounded, tool-using **Claude** agent in ~15 lines, and moving to GPT is a
+one-argument change (`model=`). → [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
 
-### Foundry IQ — agentic retrieval
+### Foundry IQ — agentic retrieval (`AzureAISearchTool`)
 
-**What it is:** the **grounding layer**. Instead of stuffing documents into the prompt, you attach a
-**knowledge base as a tool**; at run time the agent plans sub-queries, searches, reranks, and returns
-**cited** passages — *agentic* retrieval rather than a single similarity lookup.
+**What it is:** the **grounding layer**. [`kb_setup.py`](kb_setup.py) resolves the project's default Search
+connection and builds `AzureAISearchTool(index_name="clm-corpus", query_type=SEMANTIC, top_k=5)`; you attach
+it as a tool and the agent runs **plan → search → rerank → cite** during a run.
 
-- **Query planning + reranking** for higher-quality, multi-hop answers.
-- **Citations** so every claim is traceable to a source document.
-- Decouples *what the agent knows* from *how the model was trained*.
+- Rides the project → Search connection **`clm-search`** (`category: CognitiveSearch`, **AAD** auth, shared).
+- The Foundry account's **managed identity** holds **Search Index Data Reader**, so retrieval needs no keys.
+- Returns the **top 5** semantically-reranked passages **with citations** — not one raw similarity hit.
 
-**Why here:** it's what makes the agent answer from **Contoso's corpus, with sources**, instead of the
-model's parametric memory. → [Agentic retrieval](https://learn.microsoft.com/azure/search/search-agentic-retrieval-concept)
+**Why here:** it's what makes answers come from **Contoso's corpus, with sources**, not model memory.
+→ [Agentic retrieval](https://learn.microsoft.com/azure/search/search-agentic-retrieval-concept)
 
-### Azure AI Search
+### Azure AI Search — the `clm-corpus` index
 
-**What it is:** the **retrieval engine and index** (`clm-corpus`) behind Foundry IQ — full-text, vector
-and **semantic** ranking over your documents.
+**What it is:** the **retrieval engine** behind Foundry IQ. Challenge 0 provisions a **`basic`** search
+service (1 partition · 1 replica, `semanticSearch: free`), and `scripts/seed_corpus.py` **pushes** the
+documents in with `SearchClient.upload_documents` (no indexer).
 
-- **Hybrid + semantic ranking** for relevance on legal language.
-- Chunked, embedded content built once in **Challenge 0** by `scripts/seed_corpus.py`.
-- Exposed to the agent through the `AzureAISearchTool` in [`kb_setup.py`](kb_setup.py).
+- Index **`clm-corpus`**, semantic config **`clm-semantic`**, fields `id` · `title` · `content` · `source`.
+- **Full-text + semantic (L2) re-ranking** over **one document per source file** (`source` = the subfolder).
+- Built once in Ch0 — here you only **attach** and query it.
 
-**Why here:** it's the searchable backing store that Foundry IQ retrieves from — the difference between
-"the model guesses" and "the agent cites CL-04". → [Azure AI Search](https://learn.microsoft.com/azure/search/)
+**Why here:** it's the searchable store that turns "the model guesses" into "the agent cites `CL-04`".
+→ [Azure AI Search](https://learn.microsoft.com/azure/search/)
 
-### Azure Blob Storage
+### Azure Blob Storage — corpus source of truth
 
-**What it is:** massively scalable **object storage** — the source of truth for the raw corpus
-(templates, clause library, policy, executed contract PDFs) before it's indexed.
+**What it is:** the **object store** the raw documents land in before indexing. Ch0 creates a `Standard_LRS`
+`StorageV2` account (blob public access **off**, TLS 1.2) with a **`clm-corpus`** container.
 
-- Cheap, durable storage for the documents the agent grounds on.
-- The **seed → index** pipeline reads from Blob and writes to Azure AI Search.
+- `seed_corpus.py` uploads each file as `{subfolder}/{name}` (e.g. `contracts/CT-4821_msa.pdf`), `overwrite=True`.
+- The Foundry account MI gets **Storage Blob Data Reader**; the deploying user gets **…Data Contributor** to seed.
 
-**Why here:** it holds the documents you seeded in Challenge 0; Search indexes them so the agent can
-retrieve them. → [Azure Blob Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction)
+**Why here:** it holds the templates, clause library, policy and executed-contract PDFs that Search indexes.
+→ [Azure Blob Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction)
 
-### Model — Anthropic Claude Sonnet 4.5 (via Foundry Models)
+### Model — Anthropic Claude Sonnet 4.5
 
-**What it is:** the LLM that powers this agent (`MODEL_DRAFTING = claude-sonnet-4-5`), deployed and
-called **through Foundry** exactly like an Azure OpenAI model.
+**What it is:** this agent's LLM — deployment **`claude-sonnet-4-5`** (`format: Anthropic`, **version `2`** =
+Azure-hosted, SKU `GlobalStandard`, capacity 20), read from `settings.model_drafting` (`MODEL_DRAFTING`).
 
-- Strong **instruction-following** and **long-context** reasoning — ideal for legal drafting.
-- Reached via the **same Agents API** as GPT (point `model` at the Claude deployment; nothing else
-  changes).
+- Strong **instruction-following** + **long-context** reasoning — ideal for careful legal drafting.
+- Called through the **same Agents API** as the GPT deployments; only the deployment name differs.
 
-**Why here:** drafting rewards careful, structured, policy-abiding writing — Claude's strengths. Routing
-and fast tool-calling go to **GPT-4.1** in Challenge 3, proving the platform is **model-agnostic**.
-→ [Models in Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/)
+**Why here:** drafting goes to Claude; routing/tool-calling to **`gpt-4.1`** (Ch3) and the renewal scan to
+**`gpt-4o-mini`** (Ch4) — right model per job, one platform. → [Models in Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/)
 
-### Function tools (Agents SDK)
+### Function tools — `get_contract_status`
 
-**What it is:** plain **Python functions** exposed to the model as callable tools. The SDK generates each
-tool's JSON schema **from your type hints + docstring**, and `enable_auto_function_calls(...)` runs them
-automatically mid-run.
+**What it is:** plain Python in [`src/clm_common/tools.py`](../src/clm_common/tools.py) exposed as a tool.
+`get_contract_status(contract_id: str) -> str` returns a JSON string; the SDK derives the tool's schema from
+the **type hints + docstring**, and `enable_auto_function_calls(toolset)` runs it mid-run.
 
-- Deterministic, structured actions the model must **never hallucinate** (e.g. `get_contract_status`).
-- The **docstring + signature *are* the contract** the model sees — keep them precise.
+- **Prefers Azure SQL** (`SELECT … FROM dbo.contracts` via pyodbc) when `AZURE_SQL_CONNECTION_STRING` is set,
+  else falls back to [`challenge-0/data/contracts_seed.json`](../challenge-0/data/contracts_seed.json) — the
+  reply's `_note` tells you which source answered.
+- Ships a second tool, `list_upcoming_renewals(within_days=90)`, ready for the **🚀 Go Further** step.
 
-**Why here:** contract facts (status, renewal date, risk) come from a **lookup**, not a guess — the
-knowledge tool grounds *unstructured* answers, this grounds *structured* ones.
+**Why here:** structured facts (status, renewal date, risk, owner) come from a **lookup**, never a guess —
+the knowledge tool grounds *unstructured* answers, this grounds *structured* ones.
 → [Function calling with Foundry agents](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/tools/function-calling)
 
 ## ✅ Tasks

@@ -46,14 +46,17 @@ and hand it to an orchestrator, which then calls specialists the same way it cal
 - **Separation of concerns** — each specialist has its own model, instructions and evaluation.
 - The orchestrator handles **routing, hand-offs and human-in-the-loop**.
 - A **GPT orchestrator coordinating Claude specialists** = multi-model composition in one project.
+- `ConnectedAgentTool` (from `azure.ai.agents.models`) wires each specialist into
+  [`challenge-3/orchestrator.py`](orchestrator.py); run it with `--keep` so Ch4 can publish it.
 
 **Why here:** it lets the Orchestrator delegate *drafting* and *clause/risk* to the right specialist
 instead of one bloated mega-agent. → [Foundry Agent Service](https://learn.microsoft.com/azure/ai-foundry/agents/overview)
 
 ### Model — GPT-4.1 (the orchestrator)
 
-**What it is:** the LLM that powers the Orchestrator (`MODEL_ORCHESTRATOR = gpt-4.1`), deployed through
-Foundry alongside the Claude specialists.
+**What it is:** the LLM behind the Orchestrator (`MODEL_ORCHESTRATOR = gpt-4.1`) — deployment `gpt-4.1`
+(`format: OpenAI`, version `2025-04-14`, SKU `GlobalStandard`, capacity 30), sitting alongside the Claude
+specialists on the same account.
 
 - Fast, **deterministic tool-calling** and reliable **routing** decisions.
 - Same Agents API as the Claude agents — only the `model` id differs.
@@ -70,18 +73,20 @@ discover and call them.
 
 - **Portable** — the same tools work across editors, agents and hosts.
 - Decouples *who provides a capability* from *who consumes it*.
-- Exposes `draft_contract` · `analyze_contract` · `get_contract_status`.
+- `challenge-3/mcp_server/server.py` serves over **stdio**; VS Code loads it from
+  `challenge-3/.vscode/mcp.json` (start **clm-mcp**), exposing `draft_contract` · `analyze_contract` · `get_contract_status`.
 
 **Why here:** it turns your agents into reusable building blocks the rest of the org can call **without
 touching your code**. → [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro)
 
 ### Azure SQL Database
 
-**What it is:** the managed **relational store** behind `get_contract_status` — structured contract
-metadata (status, renewal date, risk, owner), with the seed JSON as a local fallback.
+**What it is:** the **optional** managed relational store behind `get_contract_status` — provisioned only
+when you deploy with `deploySql=true` (`Basic` tier, database `clmdb`, table `dbo.contracts`); without it
+the tool falls back to `contracts_seed.json`.
 
-- Authoritative, **queryable** system-of-record for structured facts.
-- Fully managed (PaaS) — no servers to patch.
+- Queried via **pyodbc** (`ODBC Driver 18 for SQL Server`) in [`src/clm_common/tools.py`](../src/clm_common/tools.py).
+- Authoritative, **queryable** system-of-record for structured contract facts.
 
 **Why here:** structured contract facts belong in a database the tool can query, not in the model's
 memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-sql/database/sql-database-paas-overview?view=azuresql)

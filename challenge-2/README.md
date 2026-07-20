@@ -37,16 +37,18 @@ distro exports them to Azure with one call.
 
 - **Vendor-neutral** instrumentation — no bespoke logging code.
 - Captures the **causal chain** of a run (prompt → retrieval → tool → response).
-- Enable prompt/response capture with `AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true` **before**
-  importing the SDK.
+- [`challenge-2/tracing_setup.py`](tracing_setup.py) calls `configure_azure_monitor(connection_string=…)`
+  and sets `AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true` **on import** — import it first in any
+  entry point, or prompt/response content won't be recorded.
 
 **Why here:** it's how a multi-step agent run becomes an inspectable trace instead of a wall of print
 statements. → [Enable OpenTelemetry](https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-enable)
 
 ### Application Insights + Log Analytics
 
-**What it is:** the **Azure Monitor** application-performance service (backed by a Log Analytics
-workspace) that **stores and queries** the telemetry the agent emits.
+**What it is:** the **Azure Monitor** APM service that **stores and queries** the telemetry. Ch0 provisions
+a **workspace-based** Application Insights component wired to a Log Analytics workspace (`PerGB2018` SKU,
+30-day retention).
 
 - End-to-end **transaction/trace** views, latency and token metrics, failures.
 - **KQL** queries over spans for custom analysis and dashboards.
@@ -69,13 +71,14 @@ an **Agent Monitoring Dashboard** — no query-writing required.
 
 ### Azure AI Evaluation SDK (`azure-ai-evaluation`)
 
-**What it is:** the library that **scores** agent responses. Evaluators (**groundedness, relevance,
-coherence, fluency**) are **LLM-judged** by an Azure OpenAI deployment; a *target* callable generates the
-agent's answer for each dataset row so evaluation is end-to-end.
+**What it is:** the library ([`challenge-2/evaluators.py`](evaluators.py)) that **scores** agent responses.
+`GroundednessEvaluator`, `RelevanceEvaluator`, `CoherenceEvaluator` and `FluencyEvaluator` are **LLM-judged**
+by an Azure OpenAI deployment (your `gpt-4.1` / `gpt-4o-mini`); a `target(query)` callable produces the
+agent's answer for each of the **16 rows** in `challenge-0/data/evaluation/evaluation_dataset.jsonl`.
 
 - Ready-made **quality** and **safety** evaluators (safety ones take `azure_ai_project` + a credential).
-- A **quality gate** (`--gate 4.0`) returns a non-zero exit code — drop-in for CI.
-- Same scorecard across models powers the **Claude-vs-GPT bake-off**.
+- The gate `python challenge-2/evaluators.py --gate 4.0` **exits 3** if groundedness < 4.0 — drop-in for CI.
+- `--bakeoff` reruns the same scorecard on **Claude vs GPT** to weigh quality against latency.
 
 **Why here:** tracing shows *what happened*; evaluation shows *how good it was* — and lets a bad build
 **fail the gate** before it ships. → [Evaluation & observability](https://learn.microsoft.com/en-us/azure/foundry/concepts/observability)
