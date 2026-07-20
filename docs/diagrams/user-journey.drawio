@@ -43,6 +43,24 @@
         <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#495057;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="s4" target="s5">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
+        <mxCell id="svc0" value="Claude Sonnet 4.5 · Foundry IQ" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#5A5A66;" vertex="1" parent="1">
+          <mxGeometry x="40" y="402" width="224" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc1" value="Claude Sonnet 4.5 · Azure AI Search" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#5A5A66;" vertex="1" parent="1">
+          <mxGeometry x="280" y="402" width="224" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc2" value="Foundry IQ · Azure AI Search" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#5A5A66;" vertex="1" parent="1">
+          <mxGeometry x="520" y="402" width="224" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc3" value="Human sign-off · Azure AI Content Safety" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#5A5A66;" vertex="1" parent="1">
+          <mxGeometry x="760" y="402" width="224" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc4" value="GPT-4o-mini · Azure SQL" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#5A5A66;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="402" width="224" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc5" value="Azure Bot Service · Teams / M365 Copilot" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#5A5A66;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="402" width="224" height="20" as="geometry"/>
+        </mxCell>
         <mxCell id="trust" value="🔒  Under the hood, every step runs in one Microsoft Foundry project — a GPT-4.1 orchestrator routing to Claude &amp;amp; GPT specialists, traced to Application Insights &amp;amp; scored by evaluations (C2), exposed as MCP tools (C3), and guarded by Content Safety / red-teaming (bonus C5).  Multi-model fleet: Claude Sonnet 4.5 (drafting + clause &amp;amp; risk) · GPT-4.1 (orchestrator) · GPT-4o-mini (renewal)." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF6FF;strokeColor=#0078D4;fontColor=#1F3864;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacingLeft=12;spacingRight=12;" vertex="1" parent="1">
           <mxGeometry x="40" y="430" width="1424" height="86" as="geometry"/>
         </mxCell>

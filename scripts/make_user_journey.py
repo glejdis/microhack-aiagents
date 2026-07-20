@@ -187,6 +187,16 @@ TOP_Y, TOP_H = 47.5, 11.5
 BOT_Y, BOT_H = 18.5, 24.0
 BADGE_CY = 45.4
 
+# Key Azure service(s) / model(s) that power each step — named below the card.
+SERVICES = [
+    "Claude Sonnet 4.5 · Foundry IQ",
+    "Claude Sonnet 4.5 · AI Search",
+    "Foundry IQ · Azure AI Search",
+    "Human sign-off · Content Safety",
+    "GPT-4o-mini · Azure SQL",
+    "Azure Bot Service · Teams",
+]
+
 for i, (title_s, quote, mech, cap, tag, color) in enumerate(STEPS):
     x = X0 + i * (COLW + GAP)
     cx = x + COLW / 2
@@ -224,6 +234,10 @@ for i, (title_s, quote, mech, cap, tag, color) in enumerate(STEPS):
          ha="center", va="center", lh=1.28)
     cw = 12.5 if "\u00b7" in tag else 11.5
     chip(cx - cw / 2, BOT_Y + 1.4, cw, 3.4, tag, color, fs=8.4)
+
+    # key Azure service(s) / model(s) for this step — named below the card
+    text(cx, 16.6, SERVICES[i], fs=7.6, weight="bold", color=MUTED,
+         ha="center")
 
 # proactive alert — the system pushes up to the manager on the final step
 cx6 = X0 + 5 * (COLW + GAP) + COLW / 2
