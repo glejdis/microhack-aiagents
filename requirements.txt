@@ -14,6 +14,12 @@ anthropic>=0.50.0
 # --- Grounding / knowledge (Foundry IQ over Azure AI Search) --------------
 azure-search-documents>=11.5.0
 azure-storage-blob>=12.20.0
+# Text extraction from the Challenge 0 corpus PDFs (executed contracts,
+# templates, clause library, policy, counterparty drafts) so they can be
+# indexed for Foundry IQ (Ch0 seeding) and analyzed by the Clause & Risk
+# agent (Ch3). Regenerating the PDFs is build-time only and needs reportlab
+# (`pip install reportlab`; see scripts/make_corpus_pdfs.py).
+pypdf>=5.0.0
 
 # --- Observability + evaluation (Challenge 2) -----------------------------
 azure-monitor-opentelemetry>=1.6.0

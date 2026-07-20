@@ -19,6 +19,8 @@ node_modules/
 # Build / conversion artifacts
 *.log
 *.pdf
+# ...but the Challenge 0 CLM corpus PDFs ARE seed data and must be tracked.
+!challenge-0/data/**/*.pdf
 dist/
 build/
 

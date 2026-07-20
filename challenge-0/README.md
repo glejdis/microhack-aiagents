@@ -88,15 +88,19 @@ Developer, Cognitive Services User, Search + Storage data roles) — all assigne
 <details>
 <summary><strong>📚 CLM corpus</strong> (the data you seed)</summary>
 
-`python scripts/seed_corpus.py` uploads [`data/`](../data/) to Blob and indexes it into Azure AI
-Search so Foundry IQ can ground answers with citations:
+`python scripts/seed_corpus.py` uploads [`data/`](./data/) to Blob and indexes it into Azure AI
+Search so Foundry IQ can ground answers with citations. The contract corpus is delivered as
+**PDF** (text-extracted at seed time via `clm_common.documents`); regenerate it with
+`python scripts/make_corpus_pdfs.py` (needs `pip install reportlab`):
 
 | Folder | Contents | Used by |
 |--------|----------|---------|
-| `contract_templates/` | Approved NDA / MSA / SOW templates | Intake & Drafting (C1) |
-| `clause_library/` | `standard_clauses.md` — standard positions CL-01…CL-10 | Clause & Risk (C3) |
-| `policies/` | Contracting policy (approval thresholds, no-legal-advice rule) | All agents (grounding + guardrails) |
-| `counterparty_drafts/` | `acme_msa_draft.md` — an inbound draft full of red flags | Clause & Risk (C3) |
+| `contract_templates/` | Approved NDA / MSA / SOW templates (PDF) | Intake & Drafting (C1) |
+| `clause_library/` | `standard_clauses.pdf` — standard positions CL-01…CL-12 | Clause & Risk (C3) |
+| `policies/` | Contracting policy + delegation-of-authority matrix (PDF) | All agents (grounding + guardrails) |
+| `contracts/` | 5 executed contracts (PDF), one per `contracts_seed.json` row | Clause & Risk (C3), tools (C1/C4) |
+| `counterparty_drafts/` | `acme_msa_draft.pdf`, `globex_nda_redline.pdf` — inbound drafts full of red flags | Clause & Risk (C3) |
+| `playbooks/` | `negotiation_playbook.pdf` — fallback positions | Intake & Drafting (C1) |
 | `evaluation/` | `evaluation_dataset.jsonl` — 16 labelled cases | Evaluation (C2) |
 
 </details>

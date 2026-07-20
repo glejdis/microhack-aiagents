@@ -36,7 +36,7 @@ that blocks a bad build.
 2. **Generate traffic**, then open **Foundry portal → Tracing**. Run a few prompts (e.g. re-run the
    Ch1 demo) and inspect the **prompt / retrieval / tool** spans and the token counts.
 
-3. **Run the evaluation** over the 16-row dataset (`data/evaluation/evaluation_dataset.jsonl`):
+3. **Run the evaluation** over the 16-row dataset (`challenge-0/data/evaluation/evaluation_dataset.jsonl`):
    ```bash
    python challenge-2/evaluators.py
    ```

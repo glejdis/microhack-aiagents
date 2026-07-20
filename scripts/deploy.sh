@@ -97,7 +97,7 @@ if [[ "$WITH_SQL" == "true" ]]; then
   echo "  ✓ Azure SQL created (admin password stored only in .env)"
 else
   echo "  · Skipping Azure SQL (run with --with-sql to provision). The contract-status"
-  echo "    tool will fall back to data/contracts_seed.json."
+  echo "    tool will fall back to challenge-0/data/contracts_seed.json."
 fi
 
 # ---- 8. Resolve endpoints + write .env -----------------------------------

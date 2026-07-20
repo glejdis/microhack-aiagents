@@ -31,7 +31,7 @@ jobs:
                   json.loads(p.read_text(encoding="utf-8"))
               except Exception as e:
                   print(f"BAD JSON {p}: {e}"); bad += 1
-          ds = root / "data" / "evaluation" / "evaluation_dataset.jsonl"
+          ds = root / "challenge-0" / "data" / "evaluation" / "evaluation_dataset.jsonl"
           rows = [l for l in ds.read_text(encoding="utf-8").splitlines() if l.strip()]
           for i, line in enumerate(rows, 1):
               try:
