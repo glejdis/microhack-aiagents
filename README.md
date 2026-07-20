@@ -30,14 +30,38 @@ use.
 
 ## The scenario — Contoso Global
 
-Contoso Global signs hundreds of contracts a month. Legal & Procurement drown in intake, clause
-review, and renewals: ~17-day turnaround and ~11% of auto-renewals missed. Contracts are scattered
-across SharePoint, email, and legacy systems, and comparing a counterparty draft to the enterprise
-standard is slow and manual.
+This microhack uses a fictitious multinational, **Contoso Global**, but the scenario applies to any
+enterprise that manages contracts at scale. The points below illustrate the conceptual scenario.
 
-You'll build an **Agentic CLM** system: an **Orchestrator** coordinating grounded specialist agents
-that draft from approved templates, extract and risk-score clauses, answer cited questions over the
-corpus, and proactively alert on renewals — all with **human sign-off and full tracing**.
+❶ Contoso signs **hundreds of contracts a month** — NDAs, MSAs, procurement and partnership
+agreements — each moving through the same lifecycle: intake → drafting → clause review → approval →
+obligation tracking → renewal.
+
+❷ The business runs on two numbers: **cycle time** and **renewal capture**. Today that's a **~17-day**
+turnaround and **~11% of auto-renewals missed** — and every missed renewal is lost revenue or
+unwanted lock-in.
+
+❸ Reviewing a counterparty draft means **manually comparing every clause to the enterprise Standard
+Clause Library** — slow, inconsistent between reviewers, and impossible to scale.
+
+❹ Contracts and their obligations are **scattered across SharePoint, email, and legacy systems** —
+there's no single source of truth for status, owners, and key dates.
+
+❺ Legal and Procurement can't hand this to a black box: **human sign-off, citations, and a full audit
+trail are non-negotiable.** Trust, traceability, and safety are requirements, not extras.
+
+The process is complex and coordination-heavy. Common challenges include:
+
+- Drafting consistently from **approved templates** instead of ad-hoc copy-paste.
+- **Risk-scoring** counterparty clauses against the standard — quickly and repeatably.
+- Answering *"what's our standard position on X?"* with **cited** sources, not tribal knowledge.
+- Keeping a human **in the loop** on every finalization, with a reviewable trail.
+- Never missing a **renewal or obligation** date across thousands of live contracts.
+
+Agents help by coordinating these steps — drafting, reviewing, answering, tracking, and alerting —
+while keeping a person in control. You'll build an **Agentic CLM** system: an **Orchestrator**
+coordinating grounded specialist agents, all inside one Microsoft Foundry project with **human
+sign-off and full tracing**.
 
 ### Meet the contract manager
 
