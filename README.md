@@ -255,7 +255,7 @@ By participating in this hackathon, you will learn how to:
    Python 3.11, Azure CLI, `azd`, Node, and `requirements.txt` automatically.
 2. `az login` (and `azd auth login` if you use the `azd up` path)
 3. Do **[Challenge 0](challenge-0/)** to deploy resources and seed the corpus — provision with
-   **`azd up`** (Bicep in `infra/`) or the **`scripts/deploy`** script. Either autofills your `.env`.
+   **`azd up`** (Bicep in `challenge-0/infra/`) or the **`scripts/deploy`** script. Either autofills your `.env`.
 4. Work through Challenges 1 → 4.
 
 ---
@@ -265,8 +265,7 @@ By participating in this hackathon, you will learn how to:
 ```
 .
 ├── .devcontainer/            # Codespaces definition
-├── infra/                    # Bicep for `azd up` (main.bicep + resources.bicep)
-├── azure.yaml                # azd config (provision + write-.env hook)
+├── azure.yaml                # azd config (points at challenge-0/infra, write-.env hook)
 ├── src/clm_common/           # shared config + Foundry client helpers
 ├── scripts/                  # deploy, seed corpus, smoke test, write .env
 ├── data/                     # CLM corpus + evaluation dataset

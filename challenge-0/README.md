@@ -29,7 +29,7 @@ If something isn't working as expected, please let your coach know.
 ## 🧭 Context and Background
 
 Everything runs from **GitHub Codespaces** using the devcontainer in this repo (Python 3.11, Azure
-CLI, `azd`, Node). A single command — **`azd up`** (Bicep in [`infra/`](../infra/)) or the
+CLI, `azd`, Node). A single command — **`azd up`** (Bicep in [`infra/`](./infra/)) or the
 **`scripts/deploy`** script — provisions everything below into **one resource group** and autofills
 your `.env`.
 
@@ -151,7 +151,7 @@ azd auth login
 azd up          # prompts for an environment name + region, then provisions everything
 ```
 
-`azd up` deploys the Bicep in [`infra/`](../infra/), assigns the RBAC roles the later challenges need,
+`azd up` deploys the Bicep in [`infra/`](./infra/), assigns the RBAC roles the later challenges need,
 creates the `clm-search` Foundry IQ connection, and runs the `postprovision` hook
 (`scripts/write_env.py`) to write your `.env`.
 
@@ -238,7 +238,7 @@ Smoke test: ✅ PASS
 > [!NOTE]
 > Finished early? These are **optional** — feel free to move on and come back later.
 
-- Inspect the **Bicep** in [`infra/`](../infra/) (`main.bicep` + `resources.bicep`) — it mirrors
+- Inspect the **Bicep** in [`infra/`](./infra/) (`main.bicep` + `resources.bicep`) — it mirrors
   `deploy.sh` and is what `azd up` runs. Try `azd provision --preview` for a what-if before deploying.
 - Regenerate this challenge's resource diagram: `python scripts/make_challenge0_resources.py`.
 - Add a **US Data Zone** deployment tier for data-residency, or scope RBAC to least privilege.
