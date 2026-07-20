@@ -7,8 +7,8 @@ Framework** and runs on Claude for long-context legal reasoning. Reuses the Ch1
 grounding pattern, so it's fast to build.
 
 Run:
-    python challenge-3/agents/clause_risk_agent.py            # analyze the sample Acme draft
-    python challenge-3/agents/clause_risk_agent.py --draft path/to/draft.pdf
+    python challenge-3/agents/clause_risk_agent.py            # analyze BOTH sample drafts
+    python challenge-3/agents/clause_risk_agent.py --draft challenge-0/data/counterparty_drafts/globex_nda_redline.pdf  # one draft
 """
 from __future__ import annotations
 
@@ -26,6 +26,12 @@ from clm_common.foundry import build_chat_client, run_agent  # noqa: E402
 
 AGENT_NAME = "clause-risk-agent"
 
+# Inbound counterparty drafts analyzed by default (both are full of graded red flags).
+SAMPLE_DRAFTS = [
+    DATA_DIR / "counterparty_drafts" / "acme_msa_draft.pdf",
+    DATA_DIR / "counterparty_drafts" / "globex_nda_redline.pdf",
+]
+
 INSTRUCTIONS = """\
 You are the Clause Extraction & Risk agent for Contoso Global's Legal team.
 
@@ -41,6 +47,10 @@ Given a counterparty contract draft, you:
 RULES
 - Ground your comparison in the retrieved standard clauses and policy; cite them.
 - Be specific: quote the counterparty language and the standard it violates.
+- For each deviation classified 'Needs negotiation', cite the negotiation playbook's recommended
+  fallback position (the approved counter-position(s) to propose, in order).
+- For each High-risk item, state the required approver / escalation per the delegation-of-authority
+  matrix (who must sign off, by role/threshold) — never self-approve.
 - You are NOT a lawyer and do NOT give legal advice or enforceability opinions — you flag risk for
   human counsel to decide. Recommend human review for anything High risk.
 - Output a concise structured summary (clauses table + overall risk + top 3 issues).
@@ -62,25 +72,38 @@ def create_agent(model: str | None = None, *, connection_id: str | None = None):
     )
 
 
+async def _analyze_draft(agent, draft_path) -> None:
+    """Read one counterparty draft and run the clause/risk analysis against it."""
+    draft_text = read_document_text(str(draft_path))
+    prompt = (
+        "Analyze the following counterparty draft. Extract clauses, compare to our enterprise "
+        "standard, flag deviations, and give an overall risk score with the top 3 issues.\n\n"
+        f"=== COUNTERPARTY DRAFT ({Path(draft_path).name}) ===\n{draft_text}"
+    )
+    print("―" * 80)
+    print(f"DRAFT: {Path(draft_path).name}")
+    print(await run_agent(agent, prompt))
+
+
 async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--draft",
-        default=str(DATA_DIR / "counterparty_drafts" / "acme_msa_draft.pdf"),
-        help="path to the counterparty draft to analyze (.pdf or .md)",
+        default=None,
+        help=(
+            "path to a single counterparty draft to analyze (.pdf or .md). "
+            "If omitted, both sample drafts (acme_msa_draft.pdf and globex_nda_redline.pdf) "
+            "are analyzed."
+        ),
     )
     args = parser.parse_args()
 
-    draft_text = read_document_text(args.draft)
-    prompt = (
-        "Analyze the following counterparty draft. Extract clauses, compare to our enterprise "
-        "standard, flag deviations, and give an overall risk score with the top 3 issues.\n\n"
-        f"=== COUNTERPARTY DRAFT ===\n{draft_text}"
-    )
+    drafts = [args.draft] if args.draft else SAMPLE_DRAFTS
 
     agent = create_agent()
     print(f"✓ Built {AGENT_NAME} on model '{settings.model_clause_risk}'\n")
-    print(await run_agent(agent, prompt))
+    for draft in drafts:
+        await _analyze_draft(agent, draft)
 
 
 if __name__ == "__main__":
