@@ -157,13 +157,24 @@ flowchart TB
     user <--> hitl
 
     subgraph Foundry["Microsoft Foundry project"]
-        orch["Orchestrator Agent<br/>(GPT-4.1)"]
-        intake["Intake &amp; Drafting<br/>(Claude Sonnet 4.5)"]
-        clause["Clause &amp; Risk<br/>(Claude Sonnet 4.5)"]
-        renew["Obligation &amp; Renewal<br/>(GPT-4o-mini)"]
-        orch --> intake
-        orch --> clause
-        orch --> renew
+        subgraph Agents["Agent layer"]
+            orch["Orchestrator Agent"]
+            intake["Intake &amp; Drafting"]
+            clause["Clause &amp; Risk"]
+            renew["Obligation &amp; Renewal"]
+            orch --> intake
+            orch --> clause
+            orch --> renew
+        end
+        subgraph Farm["LLM farm · model deployments"]
+            gpt41["GPT-4.1<br/>OpenAI · GlobalStandard"]
+            claude["Claude Sonnet 4.5<br/>Anthropic"]
+            gpt4omini["GPT-4o-mini<br/>OpenAI · GlobalStandard"]
+        end
+        orch -->|runs on| gpt41
+        intake -->|runs on| claude
+        clause -->|runs on| claude
+        renew -->|runs on| gpt4omini
     end
     hitl <--> orch
 
