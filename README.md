@@ -96,7 +96,51 @@ diagram](docs/diagrams/user-journey.excalidraw) alongside this table.
 
 ## Architecture
 
-![Architecture — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced and evaluated, published to Teams/M365 Copilot](images/architecture.png)
+The diagram below shows the end-to-end architecture you'll build — a layered system with the contract
+manager on top, the agent fleet and grounding in a single **Microsoft Foundry** project in the middle,
+and observability underneath. It's rendered from the editable source in
+[`docs/diagrams/`](docs/diagrams/).
+
+![Architecture — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced and evaluated, published to Teams/M365 Copilot](docs/diagrams/architecture.svg)
+
+❶ **Consumption plane — where the manager already works.** At the top, the contract manager interacts
+through **Microsoft 365 Copilot & Teams** (teal). There's no new app to learn: the assistant meets
+users in the tools they use daily, and the two-way arrow to the Orchestrator carries requests down and
+grounded answers back.
+
+❷ **The Microsoft Foundry project (navy) — one governed home for every agent and model.** Everything
+runs inside a *single* Foundry project: shared identity (Entra), model deployments, tool connections,
+tracing, and safety. Crucially, **GPT** *and* **Anthropic Claude** deployments live side by side here —
+no second platform to operate.
+
+❸ **Orchestrator (GPT-4.1) — the front door.** It receives each request, decides which specialist to
+call, hands off the right context, and composes the final answer. GPT-4.1 is chosen for fast,
+deterministic routing and tool/hand-off calls rather than long-form generation.
+
+❹ **Specialist agents — each matched to its task *and* its model.** The Orchestrator delegates to three
+grounded specialists: **Intake & Drafting** and **Clause & Risk** run on **Claude Sonnet 4.5** (purple)
+for high-fidelity drafting and 200K-context clause comparison; **Obligation & Renewal** runs on the
+cheaper **GPT-4o-mini** (blue) for high-frequency date and obligation extraction.
+
+❺ **Grounding & tools (blue) — how agents stay factual and act on the world.** **Foundry IQ** (over
+**Azure AI Search**) provides agentic retrieval so drafting and clause agents answer *with citations*
+from the contract corpus; **Azure SQL** is the system of record for contract status, read/written by
+the renewal agent through a function tool; and the **MCP server** (`draft_contract` ·
+`analyze_contract`) re-exposes the whole workflow as Model Context Protocol tools any MCP client —
+including M365 Copilot — can call.
+
+❻ **Observability & governance (gray) — what turns a demo into production.** Every run streams
+**OpenTelemetry traces to Application Insights**, while **Evaluations + Content Safety** score answer
+quality and enforce guardrails. The **dashed** lines are telemetry (traces, scorecards) flowing out of
+the Foundry project — the layer that makes agent behavior debuggable, measurable, and safe.
+
+❼ **The proactive loop (red, dashed).** The Obligation & Renewal agent doesn't wait to be asked — **60
+days before expiry** it pushes a **proactive alert** straight back to the manager in Teams, closing the
+loop so renewals are never missed.
+
+> 🎨 **Legend:** 🟦 blue = GPT agents · 🟪 purple = Claude agents · 🟧 orange = tools / MCP ·
+> **dashed** = telemetry & alerts. Editable **draw.io** *and* **Excalidraw** sources (plus the
+> end-to-end **[user journey](docs/diagrams/)**) live in **[`docs/diagrams/`](docs/diagrams/)**.
 
 <details>
 <summary>Mermaid source</summary>
@@ -138,9 +182,6 @@ flowchart TB
 ```
 
 </details>
-
-> 📐 **Editable diagrams:** the architecture (above) and an end-to-end **[user journey](docs/diagrams/)**
-> are available as **draw.io** *and* **Excalidraw** sources in **[`docs/diagrams/`](docs/diagrams/)**.
 
 ### Multi-model fleet
 

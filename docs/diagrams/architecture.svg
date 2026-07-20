@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 672" width="900" height="672" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#495057"/></marker>
+<marker id="arrR" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#D13438"/></marker>
+</defs>
+<rect x="0" y="0" width="900" height="672" fill="#ffffff"/>
+<text x="40" y="40" font-size="20" fill="#111111" text-anchor="start" font-weight="bold">Architecture — Agentic CLM on Microsoft Foundry</text>
+<rect x="636" y="82" width="13" height="13" rx="2" fill="#0078D4"/>
+<text x="654" y="93" font-size="12" fill="#111111" text-anchor="start" font-weight="normal">GPT</text>
+<rect x="706" y="82" width="13" height="13" rx="2" fill="#7A4FB5"/>
+<text x="724" y="93" font-size="12" fill="#111111" text-anchor="start" font-weight="normal">Claude</text>
+<rect x="792" y="82" width="13" height="13" rx="2" fill="#E8590C"/>
+<text x="810" y="93" font-size="12" fill="#111111" text-anchor="start" font-weight="normal">tools</text>
+<line x1="636" y1="114" x2="666" y2="114" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="672" y="118" font-size="12" fill="#555555" text-anchor="start" font-weight="normal">dashed = telemetry</text>
+<rect x="40" y="168" width="840" height="176" rx="10" ry="10" fill="none" stroke="#1F3864" stroke-width="2"/>
+<rect x="50" y="174" width="200" height="18" rx="3" fill="#ffffff"/>
+<text x="54" y="187" font-size="13" fill="#1F3864" text-anchor="start" font-weight="bold">Microsoft Foundry project</text>
+<rect x="40" y="380" width="840" height="132" rx="10" ry="10" fill="none" stroke="#0078D4" stroke-width="2"/>
+<rect x="50" y="386" width="139" height="18" rx="3" fill="#ffffff"/>
+<text x="54" y="399" font-size="13" fill="#0078D4" text-anchor="start" font-weight="bold">Grounding &amp; tools</text>
+<rect x="40" y="548" width="840" height="96" rx="10" ry="10" fill="none" stroke="#495057" stroke-width="2"/>
+<rect x="50" y="554" width="208" height="18" rx="3" fill="#ffffff"/>
+<text x="54" y="567" font-size="13" fill="#495057" text-anchor="start" font-weight="bold">Observability &amp; governance</text>
+<rect x="300" y="74" width="320" height="56" rx="8" ry="8" fill="#C5F0F0" stroke="#0C8599" stroke-width="2"/>
+<text x="460.0" y="98.0" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">Contract Manager</text>
+<text x="460.0" y="114.0" font-size="11" fill="#3a3a3a" text-anchor="middle" font-weight="normal">Microsoft 365 Copilot / Teams</text>
+<rect x="350" y="212" width="240" height="56" rx="8" ry="8" fill="#CFE4FA" stroke="#0078D4" stroke-width="3"/>
+<text x="470.0" y="236.0" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">Orchestrator Agent</text>
+<text x="470.0" y="252.0" font-size="11" fill="#3a3a3a" text-anchor="middle" font-weight="normal">GPT-4.1</text>
+<rect x="70" y="292" width="232" height="50" rx="8" ry="8" fill="#EBDDF7" stroke="#7A4FB5" stroke-width="2"/>
+<text x="186.0" y="313.0" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">Intake &amp; Drafting</text>
+<text x="186.0" y="329.0" font-size="11" fill="#3a3a3a" text-anchor="middle" font-weight="normal">Claude Sonnet 4.5</text>
+<rect x="356" y="292" width="232" height="50" rx="8" ry="8" fill="#EBDDF7" stroke="#7A4FB5" stroke-width="2"/>
+<text x="472.0" y="313.0" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">Clause &amp; Risk</text>
+<text x="472.0" y="329.0" font-size="11" fill="#3a3a3a" text-anchor="middle" font-weight="normal">Claude Sonnet 4.5</text>
+<rect x="630" y="292" width="220" height="50" rx="8" ry="8" fill="#CFE4FA" stroke="#0078D4" stroke-width="2"/>
+<text x="740.0" y="313.0" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">Obligation &amp; Renewal</text>
+<text x="740.0" y="329.0" font-size="11" fill="#3a3a3a" text-anchor="middle" font-weight="normal">GPT-4o-mini</text>
+<path d="M 92,425 A 110.0,9 0 0 0 312,425 L 312,479 A 110.0,9 0 0 1 92,479 Z" fill="#CFE4FA" stroke="#0078D4" stroke-width="1.5"/>
+<ellipse cx="202.0" cy="425" rx="110.0" ry="9" fill="#CFE4FA" stroke="#0078D4" stroke-width="1.5"/>
+<text x="202.0" y="452.0" font-size="12" fill="#111111" text-anchor="middle" font-weight="bold">Foundry IQ</text>
+<text x="202.0" y="467.0" font-size="10" fill="#3a3a3a" text-anchor="middle" font-weight="normal">Azure AI Search</text>
+<path d="M 360,425 A 100.0,9 0 0 0 560,425 L 560,479 A 100.0,9 0 0 1 360,479 Z" fill="#CFE4FA" stroke="#0078D4" stroke-width="1.5"/>
+<ellipse cx="460.0" cy="425" rx="100.0" ry="9" fill="#CFE4FA" stroke="#0078D4" stroke-width="1.5"/>
+<text x="460.0" y="452.0" font-size="12" fill="#111111" text-anchor="middle" font-weight="bold">Azure SQL</text>
+<text x="460.0" y="467.0" font-size="10" fill="#3a3a3a" text-anchor="middle" font-weight="normal">contract status</text>
+<rect x="612" y="420" width="240" height="60" rx="8" ry="8" fill="#FFE8CC" stroke="#E8590C" stroke-width="2"/>
+<text x="732.0" y="446.0" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">MCP server</text>
+<text x="732.0" y="462.0" font-size="11" fill="#3a3a3a" text-anchor="middle" font-weight="normal">draft_contract · analyze_contract</text>
+<rect x="150" y="580" width="262" height="48" rx="8" ry="8" fill="#E9ECEF" stroke="#495057" stroke-width="2"/>
+<text x="281.0" y="608.0" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">App Insights · Tracing</text>
+<rect x="500" y="580" width="282" height="48" rx="8" ry="8" fill="#E9ECEF" stroke="#495057" stroke-width="2"/>
+<text x="641.0" y="608.0" font-size="13" fill="#111111" text-anchor="middle" font-weight="bold">Evaluations · Content Safety</text>
+<polyline points="460,130 470,212" fill="none" stroke="#495057" stroke-width="1.5" marker-end="url(#arr)" marker-start="url(#arr)"/>
+<polyline points="470,268 470,280 186,280 186,292" fill="none" stroke="#495057" stroke-width="1.5" marker-end="url(#arr)"/>
+<polyline points="472,268 472,292" fill="none" stroke="#495057" stroke-width="1.5" marker-end="url(#arr)"/>
+<polyline points="470,268 470,280 740,280 740,292" fill="none" stroke="#495057" stroke-width="1.5" marker-end="url(#arr)"/>
+<polyline points="186,342 200,416" fill="none" stroke="#495057" stroke-width="1.5" marker-end="url(#arr)"/>
+<polyline points="472,342 204,416" fill="none" stroke="#495057" stroke-width="1.5" marker-end="url(#arr)"/>
+<polyline points="740,342 462,416" fill="none" stroke="#495057" stroke-width="1.5" marker-end="url(#arr)"/>
+<polyline points="590,240 615,240 615,406 732,406 732,420" fill="none" stroke="#495057" stroke-width="1.5" marker-end="url(#arr)"/>
+<polyline points="336,344 336,578" fill="none" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+<polyline points="586,344 586,578" fill="none" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+<polyline points="850,317 880,317 880,102 622,102" fill="none" stroke="#D13438" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrR)"/>
+<rect x="313" y="459" width="45" height="16" rx="3" fill="#ffffff" opacity="0.92"/>
+<text x="336" y="471" font-size="11" fill="#555555" text-anchor="middle" font-weight="normal">traces</text>
+<rect x="554" y="459" width="64" height="16" rx="3" fill="#ffffff" opacity="0.92"/>
+<text x="586" y="471" font-size="11" fill="#555555" text-anchor="middle" font-weight="normal">scorecard</text>
+<rect x="710" y="93" width="101" height="16" rx="3" fill="#ffffff" opacity="0.92"/>
+<text x="760" y="105" font-size="11" fill="#D13438" text-anchor="middle" font-weight="normal">proactive alert</text>
+</svg>

@@ -3,10 +3,10 @@
 Editable source diagrams for the CLM microhack. Each view is provided in **two
 formats** so you can open and edit in whichever tool you prefer.
 
-| View | draw.io | Excalidraw |
-|------|---------|------------|
-| **Architecture** — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced & evaluated, published to Teams/M365 Copilot | [`architecture.drawio`](architecture.drawio) | [`architecture.excalidraw`](architecture.excalidraw) |
-| **User journey** — the Contoso contract manager's path: draft → review → ask → sign‑off → track → proactive renewal alert | [`user-journey.drawio`](user-journey.drawio) | [`user-journey.excalidraw`](user-journey.excalidraw) |
+| View | draw.io | Excalidraw | Rendered |
+|------|---------|------------|----------|
+| **Architecture** — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced & evaluated, published to Teams/M365 Copilot | [`architecture.drawio`](architecture.drawio) | [`architecture.excalidraw`](architecture.excalidraw) | [`architecture.svg`](architecture.svg) |
+| **User journey** — the Contoso contract manager's path: draft → review → ask → sign‑off → track → proactive renewal alert | [`user-journey.drawio`](user-journey.drawio) | [`user-journey.excalidraw`](user-journey.excalidraw) | — |
 
 ## How to open / edit
 
@@ -21,7 +21,6 @@ formats** so you can open and edit in whichever tool you prefer.
 - 🟦 **Blue** = GPT agents · 🟪 **Purple** = Claude (Anthropic) agents ·
   🟧 **Orange** = tools / MCP · **dashed** = telemetry (traces, eval scorecards).
 
-> The canonical rendered architecture image used in the top‑level README is
-> [`../../images/architecture.png`](../../images/architecture.png) (generated from
-> the Mermaid source). These `.drawio` / `.excalidraw` files are the editable
-> equivalents plus the user‑journey view.
+> The **[`architecture.svg`](architecture.svg)** is the rendered image embedded in the top‑level
+> README (a vector export of the `.drawio` / `.excalidraw` architecture view). The `.drawio` and
+> `.excalidraw` files are the editable equivalents; `user-journey.*` adds the end‑to‑end journey view.
