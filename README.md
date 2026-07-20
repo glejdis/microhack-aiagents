@@ -39,6 +39,35 @@ You'll build an **Agentic CLM** system: an **Orchestrator** coordinating grounde
 that draft from approved templates, extract and risk-score clauses, answer cited questions over the
 corpus, and proactively alert on renewals — all with **human sign-off and full tracing**.
 
+### Meet the contract manager
+
+> 👤 **Persona** — a **Legal / Procurement contract manager** at Contoso Global, drowning in intake,
+> clause review, and renewals. They live in **Microsoft 365 Copilot & Teams** — not in a new tool.
+> The whole system meets them there.
+
+### The end-to-end journey
+
+Here's a single day in that manager's life once the Agentic CLM assistant is live. Each step maps
+directly to what you build in the challenges — follow the [user-journey
+diagram](docs/diagrams/user-journey.excalidraw) alongside this table.
+
+| # | What the manager does | What happens under the hood | Foundry capability | Built in |
+|---|-----------------------|-----------------------------|--------------------|----------|
+| **1 · Request a draft** | *"Draft a mutual NDA with Acme, 2-yr term."* | **Intake & Drafting** agent (Claude) drafts from an **approved template** | Grounded agent + tools | [C1](challenge-1/) |
+| **2 · Check their draft** | Uploads Acme's counter-draft MSA | **Clause & Risk** agent (Claude) scores every clause against the **Standard Clause Library** and flags deviations | Specialist agent + orchestration | [C3](challenge-3/) |
+| **3 · Ask, with citations** | *"What's our standard indemnity cap?"* | **Foundry IQ** answers over the Contoso corpus — **with sources** | Agentic retrieval (Foundry IQ) | [C1](challenge-1/) |
+| **4 · Review & sign off** | Reads flags + citations, edits, **approves** | **Human-in-the-loop** — nothing is finalized without sign-off | HITL + guardrails | [C1](challenge-1/) · [C3](challenge-3/) |
+| **5 · Track obligations** | Key dates captured automatically | **Obligation & Renewal** agent (GPT-4o-mini) writes contract status to **Azure SQL** | Function tool / MCP server | [C3](challenge-3/) |
+| **6 · Proactive alert** | Gets a Teams ping **60 days before expiry** | Renew or renegotiate in time — **no missed auto-renewals** | Publish + proactive messaging | [C4](challenge-4/) |
+
+> 🔒 **Under the hood, every step runs in one Microsoft Foundry project** — traced (Application
+> Insights), scored by **evaluations** *([C2](challenge-2/))*, and guarded by **Content Safety**
+> *(bonus [C5](challenge-5/))*. That observability + safety layer is what turns a demo into something
+> legal and procurement teams would actually trust.
+
+📊 Prefer a visual? Open the editable journey and architecture views in
+[`docs/diagrams/`](docs/diagrams/) (draw.io + Excalidraw).
+
 ---
 
 ## Architecture
