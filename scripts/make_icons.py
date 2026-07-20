@@ -12,7 +12,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-NAVY = (31, 42, 90)     # 1F2A5A  (matches images/banner.png)
+NAVY = (31, 42, 90)     # 1F2A5A  (matches docs/images/banner.png)
 BLUE = (15, 108, 189)   # 0F6CBD
 WHITE = (255, 255, 255)
 

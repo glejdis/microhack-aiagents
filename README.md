@@ -1,4 +1,4 @@
-![Agentic AI Hacks · Contract Lifecycle Management](images/banner.png)
+![Agentic AI Hacks · Contract Lifecycle Management](docs/images/banner.png)
 
 # Agentic AI Hacks · Contract Lifecycle Management
 
@@ -275,12 +275,11 @@ By participating in this hackathon, you will learn how to:
 ├── data/                     # CLM corpus + evaluation dataset
 ├── challenge-0/ … challenge-4/   # one folder per challenge (README + code)
 ├── challenge-5/              # bonus: safety, red-teaming & CI eval gate
-├── images/                   # banner + rendered architecture diagram
-└── docs/                     # coach guide + marketing collateral + editable diagrams
+└── docs/                     # coach guide, editable diagrams + rendered images (banner, architecture)
 ```
 
 > Generate images locally with `python scripts/make_banner.py` and
-> `mmdc -i scripts/architecture.mmd -o images/architecture.png -b white -s 3 -w 1600`. Regenerate the
+> `mmdc -i scripts/architecture.mmd -o docs/images/architecture.png -b white -s 3 -w 1600`. Regenerate the
 > Teams app icons with `python scripts/make_icons.py`.
 
 Each challenge README follows the same anatomy: **🎯 Objective · 🧭 Context · ✅ Tasks · ✔️ Success
