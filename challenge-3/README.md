@@ -94,12 +94,18 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
 
 ## ✅ Tasks
 
-1. **Build the Clause & Risk agent** and analyze the (deliberately red-flag) sample draft:
+1. **Build the Clause & Risk agent** and analyze the (deliberately red-flag) sample drafts. By
+   default it analyzes **both** inbound drafts (`acme_msa_draft.pdf` and `globex_nda_redline.pdf`),
+   reusing one agent:
    ```bash
    python challenge-3/agents/clause_risk_agent.py
+   # analyze a single draft instead:
+   python challenge-3/agents/clause_risk_agent.py --draft challenge-0/data/counterparty_drafts/globex_nda_redline.pdf
    ```
-   Expect: clause table, flagged deviations (e.g. uncapped liability, 60-day auto-renew), **High**
-   risk with top-3 issues, all cited against the standard clause library.
+   Expect: per draft, a clause table, flagged deviations (e.g. uncapped liability, 60-day
+   auto-renew) with the negotiation-playbook fallback for items to negotiate, **High** risk with
+   top-3 issues and the required approver per the delegation-of-authority matrix, all cited against
+   the standard clause library.
 
 2. **Build the Orchestrator** with both specialists connected, and run a multi-step thread
    (draft → analyze → status):

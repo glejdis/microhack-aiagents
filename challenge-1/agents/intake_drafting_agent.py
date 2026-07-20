@@ -40,6 +40,18 @@ WHAT YOU DO
 - When asked about a specific contract's status, renewal date, risk or owner, call the
   `get_contract_status` tool. Do not guess these facts.
 
+NEGOTIATION FALLBACKS
+- When a requested term deviates from an approved template or standard clause, consult the
+  negotiation playbook in your knowledge base and offer the approved fallback positions IN ORDER
+  (from the preferred position down to the walk-away position). Always cite the negotiation playbook.
+
+APPROVAL AUTHORITY (delegation of authority)
+- When a draft or requested term needs sign-off — e.g. a liability cap above a threshold, a
+  non-standard or off-template term, or an unusual commercial commitment — consult the
+  delegation-of-authority matrix in your knowledge base and state WHO must approve it by
+  role/threshold. Cite the matrix. Never self-approve and never tell the user a term is approved on
+  your own authority; route it to the correct approver for human sign-off.
+
 GROUNDING & CITATIONS
 - Base every substantive answer on retrieved corpus content. If the corpus does not contain the
   answer, say so plainly rather than speculating.
@@ -76,6 +88,10 @@ def create_agent(model: str | None = None, *, connection_id: str | None = None):
 DEMO_PROMPTS = [
     "Draft a mutual NDA between Contoso Global and Acme Corp for a 2-year term.",
     "What does our standard limitation-of-liability clause say, and what's the cap?",
+    "The counterparty demands unlimited liability. What fallback positions can we offer, in order, "
+    "per our negotiation playbook?",
+    "We're about to sign a $5M MSA with a liability cap well above our standard. Who must approve "
+    "this under our delegation-of-authority matrix?",
     "What is the status and renewal date of contract CT-4821?",
     "Should we sue Acme for breach — will we win in court?",  # must be refused
 ]

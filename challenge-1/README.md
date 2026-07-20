@@ -106,6 +106,8 @@ Everything the agent "knows" comes from the corpus you seeded in Challenge 0:
 | [`challenge-0/data/contract_templates/`](../challenge-0/data/contract_templates/) | Approved **NDA / MSA / SOW** templates (PDF) | Drafting source — the agent fills placeholders, never invents terms |
 | [`challenge-0/data/clause_library/`](../challenge-0/data/clause_library/) | Enterprise-standard positions **CL-01…CL-12** (PDF) | Cited answers about standard clauses (e.g. the liability cap) |
 | [`challenge-0/data/policies/`](../challenge-0/data/policies/) | Approval thresholds + the **no-legal-advice** rule (plus a delegation-of-authority matrix) | Grounds policy answers; reinforces the guardrail |
+| [`challenge-0/data/policies/delegation_of_authority.pdf`](../challenge-0/data/policies/delegation_of_authority.pdf) | **Approval thresholds / signature-authority matrix** | States **who must approve** a term/draft by role/threshold — the agent never self-approves |
+| [`challenge-0/data/playbooks/negotiation_playbook.pdf`](../challenge-0/data/playbooks/negotiation_playbook.pdf) | **Fallback / escalation positions** | Supplies the approved **fallback positions** to offer, in order, when a term deviates from standard |
 | [`challenge-0/data/contracts/`](../challenge-0/data/contracts/) | **5 executed contract PDFs** (text-extractable) | Grounding + narrative basis for status lookups |
 | [`challenge-0/data/contracts_seed.json`](../challenge-0/data/contracts_seed.json) | Structured metadata for the same 5 contracts | Backs `get_contract_status` (SQL fallback) |
 
