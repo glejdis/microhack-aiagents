@@ -1,4 +1,4 @@
-![Agentic AI Hacks · Contract Lifecycle Management](images/banner.png)
+![Agentic AI Hacks · Contract Lifecycle Management](docs/images/banner.png)
 
 # Agentic AI Hacks · Contract Lifecycle Management
 
@@ -29,6 +29,10 @@ use.
 ---
 
 ## The scenario — Contoso Global
+
+<p align="center">
+  <img src="docs/diagrams/user-journey.svg" alt="User journey — a day in the life of a Contoso contract manager, from requesting a draft through review, citations, sign-off, obligation tracking, and a proactive renewal alert — all in one Microsoft Foundry project" width="100%">
+</p>
 
 This microhack uses a fictitious multinational, **Contoso Global**, but the scenario applies to any
 enterprise that manages contracts at scale. The points below illustrate the conceptual scenario.
@@ -255,7 +259,7 @@ By participating in this hackathon, you will learn how to:
    Python 3.11, Azure CLI, `azd`, Node, and `requirements.txt` automatically.
 2. `az login` (and `azd auth login` if you use the `azd up` path)
 3. Do **[Challenge 0](challenge-0/)** to deploy resources and seed the corpus — provision with
-   **`azd up`** (Bicep in `infra/`) or the **`scripts/deploy`** script. Either autofills your `.env`.
+   **`azd up`** (Bicep in `challenge-0/infra/`) or the **`scripts/deploy`** script. Either autofills your `.env`.
 4. Work through Challenges 1 → 4.
 
 ---
@@ -265,19 +269,17 @@ By participating in this hackathon, you will learn how to:
 ```
 .
 ├── .devcontainer/            # Codespaces definition
-├── infra/                    # Bicep for `azd up` (main.bicep + resources.bicep)
-├── azure.yaml                # azd config (provision + write-.env hook)
+├── azure.yaml                # azd config (points at challenge-0/infra, write-.env hook)
 ├── src/clm_common/           # shared config + Foundry client helpers
 ├── scripts/                  # deploy, seed corpus, make corpus PDFs, smoke test, write .env
 ├── challenge-0/ … challenge-4/   # one folder per challenge (README + code)
 │   └── challenge-0/data/     # CLM corpus (PDF contracts/templates/clauses/policies) + eval datasets
 ├── challenge-5/              # bonus: safety, red-teaming & CI eval gate
-├── images/                   # banner + rendered architecture diagram
-└── docs/                     # coach guide + marketing collateral + editable diagrams
+└── docs/                     # coach guide, editable diagrams + rendered images (banner, architecture)
 ```
 
 > Generate images locally with `python scripts/make_banner.py` and
-> `mmdc -i scripts/architecture.mmd -o images/architecture.png -b white -s 3 -w 1600`. Regenerate the
+> `mmdc -i scripts/architecture.mmd -o docs/images/architecture.png -b white -s 3 -w 1600`. Regenerate the
 > Teams app icons with `python scripts/make_icons.py`.
 
 Each challenge README follows the same anatomy: **🎯 Objective · 🧭 Context · ✅ Tasks · ✔️ Success

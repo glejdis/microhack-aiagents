@@ -29,7 +29,7 @@ If something isn't working as expected, please let your coach know.
 ## 🧭 Context and Background
 
 Everything runs from **GitHub Codespaces** using the devcontainer in this repo (Python 3.11, Azure
-CLI, `azd`, Node). A single command — **`azd up`** (Bicep in [`infra/`](../infra/)) or the
+CLI, `azd`, Node). A single command — **`azd up`** (Bicep in [`infra/`](./infra/)) or the
 **`scripts/deploy`** script — provisions everything below into **one resource group** and autofills
 your `.env`.
 
@@ -109,7 +109,7 @@ Search so Foundry IQ can ground answers with citations. The contract corpus is d
 
 ### Task 1 · Fork the repository
 
-[Fork this repository](../../../fork) to your GitHub account (the **Fork** button, top-right). This
+[Fork this repository](https://github.com/glejdis/microhack-aiagents/fork) to your GitHub account (the **Fork** button, top-right). This
 lets you make changes and save your progress.
 
 ---
@@ -155,7 +155,7 @@ azd auth login
 azd up          # prompts for an environment name + region, then provisions everything
 ```
 
-`azd up` deploys the Bicep in [`infra/`](../infra/), assigns the RBAC roles the later challenges need,
+`azd up` deploys the Bicep in [`infra/`](./infra/), assigns the RBAC roles the later challenges need,
 creates the `clm-search` Foundry IQ connection, and runs the `postprovision` hook
 (`scripts/write_env.py`) to write your `.env`.
 
@@ -208,6 +208,13 @@ python scripts/seed_corpus.py
 python scripts/seed_sql.py
 ```
 
+> [!NOTE]
+> The entire corpus is **PDF** — Contoso-authored templates, the clause library and policies, the 5
+> executed contracts in `data/contracts/` (one per row seeded into Azure SQL) and the inbound
+> counterparty drafts. `seed_corpus.py` extracts the text with **pypdf** so every document lands in
+> the same index for Foundry IQ. To rebuild the PDFs from source, see
+> [`data/README.md`](data/README.md#regenerating-the-pdfs).
+
 ---
 
 ### Task 7 · Smoke test
@@ -242,7 +249,7 @@ Smoke test: ✅ PASS
 > [!NOTE]
 > Finished early? These are **optional** — feel free to move on and come back later.
 
-- Inspect the **Bicep** in [`infra/`](../infra/) (`main.bicep` + `resources.bicep`) — it mirrors
+- Inspect the **Bicep** in [`infra/`](./infra/) (`main.bicep` + `resources.bicep`) — it mirrors
   `deploy.sh` and is what `azd up` runs. Try `azd provision --preview` for a what-if before deploying.
 - Regenerate this challenge's resource diagram: `python scripts/make_challenge0_resources.py`.
 - Add a **US Data Zone** deployment tier for data-residency, or scope RBAC to least privilege.

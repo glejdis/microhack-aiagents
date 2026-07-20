@@ -1,6 +1,6 @@
 # ==========================================================================
 # Foundry CLM Microhack — Azure Developer CLI (azd) configuration
-# `azd up` provisions the full Foundry environment defined in infra/ and then
+# `azd up` provisions the full Foundry environment defined in challenge-0/infra/ and then
 # writes a repo-root .env matching scripts/deploy.sh.
 # Docs: https://aka.ms/azure-dev/schema
 # ==========================================================================
@@ -10,7 +10,7 @@ metadata:
 
 infra:
   provider: bicep
-  path: infra
+  path: challenge-0/infra
   module: main
 
 hooks:

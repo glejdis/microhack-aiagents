@@ -44,7 +44,7 @@ tips. Participants never see this file; it's for the people running the room.
 
 | Time | Block | Coach cadence |
 |------|-------|---------------|
-| 09:00 – 10:00 | **Tech talk** — the CLM story, the agentic architecture, multi-model (Claude + GPT), Foundry IQ, tracing/eval, MCP, publish. | Show the [architecture diagram](../images/architecture.png). Set the "human always signs" guardrail expectation. |
+| 09:00 – 10:00 | **Tech talk** — the CLM story, the agentic architecture, multi-model (Claude + GPT), Foundry IQ, tracing/eval, MCP, publish. | Show the [architecture diagram](images/architecture.png). Set the "human always signs" guardrail expectation. |
 | 10:00 – 12:30 | **Hacking — Challenges 0, 1, 2** | **Gate at Ch0:** no team moves on until `smoke_test.py` is green. Float hard here. |
 | 12:30 – 13:30 | Lunch | — |
 | 13:30 – 15:30 | **Hacking — Challenges 3, 4** | Ch4 publish needs the Ch3 orchestrator **kept** (`--keep`). Remind teams before lunch. |
@@ -66,7 +66,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 - **Point:** stand up the whole Foundry environment + seed the corpus with **zero local install**.
 - **Done when:** `python scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
   `gpt-4.1` **and** `claude-sonnet-4-5`) and the `clm-corpus` index shows documents in the portal.
-- **Two provisioning paths** — both write the same `.env`: **`azd up`** (Bicep in `infra/`) or
+- **Two provisioning paths** — both write the same `.env`: **`azd up`** (Bicep in `challenge-0/infra/`) or
   **`scripts/deploy.sh`** (`.ps1` on Windows). Let teams pick one; don't mix.
 - **Watch for:**
   - *Model deploy fails* → the model/version isn't in their region. Switch region (`eastus2`/`westus3`)
