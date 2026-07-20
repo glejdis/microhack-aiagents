@@ -186,7 +186,7 @@ resource(105, 66.2, 44, 13.6, "GPT", GPT, "gpt-4o-mini",
          "OpenAI · GlobalStandard 30\nObligation & Renewal agent", mono_fs=9)
 
 # capability tags
-tags = ["Foundry Agent Service", "Foundry IQ (agentic retrieval)",
+tags = ["Microsoft Agent Framework", "Foundry IQ (agentic retrieval)",
         "Evaluations", "Content Safety"]
 tx = 11
 for t in tags:

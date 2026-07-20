@@ -1,21 +1,22 @@
 """Challenge 1 — Intake & Drafting agent (Anthropic Claude Sonnet 4.5).
 
-Builds a grounded, cited, tool-enabled, guard-railed agent that:
+Builds a grounded, cited, tool-enabled, guard-railed agent with the **Microsoft
+Agent Framework** that:
   • drafts NDA/MSA/SOW from APPROVED templates in the corpus,
   • answers questions about clauses/policies with citations (Foundry IQ),
   • calls the `get_contract_status` function tool for structured lookups,
   • REFUSES to give legal advice (guardrail).
 
 The agent runs on the **Claude Sonnet 4.5** deployment (MODEL_DRAFTING). Note how
-the Foundry Agents API is identical to a GPT agent — only the `model` changes.
+the Agent Framework code is identical to a GPT agent — only the `model` on the
+Foundry chat client changes.
 
 Run:
     python challenge-1/agents/intake_drafting_agent.py            # interactive demo
-    python challenge-1/agents/intake_drafting_agent.py --keep     # leave the agent in the project
 """
 from __future__ import annotations
 
-import argparse
+import asyncio
 import sys
 from pathlib import Path
 
@@ -23,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # for kb_setup
 
 from clm_common.config import settings  # noqa: E402
-from clm_common.foundry import get_project_client, run_prompt  # noqa: E402
+from clm_common.foundry import build_chat_client, function_tool, run_agent  # noqa: E402
 from clm_common.tools import get_contract_status  # noqa: E402
 
 AGENT_NAME = "intake-drafting-agent"
@@ -51,28 +52,25 @@ GUARDRAILS (must follow)
 """
 
 
-def create_agent(project):
-    """Create the Intake & Drafting agent with knowledge grounding + a function tool."""
-    from azure.ai.agents.models import FunctionTool, ToolSet
+def create_agent(model: str | None = None, *, connection_id: str | None = None):
+    """Create the Intake & Drafting agent with knowledge grounding + a function tool.
+
+    :param model: model deployment to run on (defaults to MODEL_DRAFTING / Claude).
+        Override it to run the same agent on another deployment (e.g. Ch2 bake-off).
+    :param connection_id: optional Azure AI Search connection id to reuse instead of
+        resolving the project's default connection again.
+    """
+    from agent_framework import Agent
     from kb_setup import build_knowledge_tool
 
-    knowledge = build_knowledge_tool(project)
-    functions = FunctionTool(functions={get_contract_status})
+    knowledge = build_knowledge_tool(connection_id=connection_id)
 
-    toolset = ToolSet()
-    toolset.add(knowledge)
-    toolset.add(functions)
-
-    # Auto-run local function tools during runs.create_and_process.
-    project.agents.enable_auto_function_calls(toolset)
-
-    agent = project.agents.create_agent(
-        model=settings.model_drafting,  # claude-sonnet-4-5
+    return Agent(
+        client=build_chat_client(model or settings.model_drafting),  # claude-sonnet-4-5
         name=AGENT_NAME,
         instructions=INSTRUCTIONS,
-        toolset=toolset,
+        tools=[knowledge, function_tool(get_contract_status)],
     )
-    return agent
 
 
 DEMO_PROMPTS = [
@@ -83,28 +81,17 @@ DEMO_PROMPTS = [
 ]
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--keep", action="store_true", help="do not delete the agent afterwards")
-    args = parser.parse_args()
+async def main() -> None:
+    agent = create_agent()
+    print(f"✓ Built {AGENT_NAME} on model '{settings.model_drafting}'\n")
 
-    with get_project_client() as project:
-        agent = create_agent(project)
-        print(f"✓ Created {AGENT_NAME} (id={agent.id}) on model '{settings.model_drafting}'\n")
-        try:
-            thread_id = project.agents.threads.create().id
-            for prompt in DEMO_PROMPTS:
-                print("―" * 80)
-                print("USER:", prompt)
-                answer = run_prompt(project.agents, agent.id, prompt, thread_id=thread_id)
-                print("AGENT:", answer, "\n")
-        finally:
-            if not args.keep:
-                project.agents.delete_agent(agent.id)
-                print("(agent deleted — pass --keep to retain it for Challenge 2)")
-            else:
-                print(f"(kept agent {agent.id} — set INTAKE_AGENT_ID={agent.id} for later challenges)")
+    session = agent.create_session()  # one session → the demo prompts share context
+    for prompt in DEMO_PROMPTS:
+        print("―" * 80)
+        print("USER:", prompt)
+        answer = await run_agent(agent, prompt, session=session)
+        print("AGENT:", answer, "\n")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

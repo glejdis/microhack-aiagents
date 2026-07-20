@@ -38,14 +38,13 @@ across providers**, which is the whole point of Foundry as a model-agnostic cont
 2. **Read the agent definition** in `agents/intake_drafting_agent.py`. Note:
    - `model=settings.model_drafting` → **Claude Sonnet 4.5**,
    - the persona + **refusal** instructions,
-   - grounding via `build_knowledge_tool(project)` and the `get_contract_status` **FunctionTool**,
-   - `enable_auto_function_calls(toolset)` so the function runs automatically during a run.
+   - grounding via `build_knowledge_tool(...)` and the `get_contract_status` **function tool**,
+   - both passed to the Agent's `tools=[...]`; `function_tool(...)` wraps the function with
+     `approval_mode="never_require"` so it auto-executes during a run.
 
-3. **Run the agent** end-to-end (creates the agent, runs four demo prompts, then deletes it):
+3. **Run the agent** end-to-end (builds the agent, runs four demo prompts in one shared session):
    ```bash
    python challenge-1/agents/intake_drafting_agent.py
-   # keep it for later challenges / the portal:
-   python challenge-1/agents/intake_drafting_agent.py --keep
    ```
 
 4. **Exercise every capability** with `sample_prompts.md` — a draft, a cited Q&A, a `CT-4821`
@@ -74,14 +73,14 @@ across providers**, which is the whole point of Foundry as a model-agnostic cont
 |---------|-----|
 | `get_default(AZURE_AI_SEARCH)` returns nothing | Ensure Ch0 created the Search resource and it's connected to the project (portal → Connected resources). Set `AZURE_SEARCH_CONNECTION_NAME` in `.env`. |
 | No citations returned | Confirm `scripts/seed_corpus.py` populated the index and the semantic config exists; raise `top_k`. |
-| Function tool never called | Keep the docstring + type hints (the schema comes from them); ensure `enable_auto_function_calls(toolset)` ran. |
-| Run status `failed` on Claude | See the fallback below — the Agent runner may not yet host Claude in your region. |
+| Function tool never called | Keep the docstring + type hints (the schema comes from them); ensure it's wrapped with `function_tool(...)` and passed in `tools=[...]`. |
+| Run fails on Claude | See the fallback below — Foundry may not yet serve Claude via the chat client in your region. |
 
-### ⚙️ Claude fallback (if the Agent runner can't host Claude in your region)
+### ⚙️ Claude fallback (if Foundry can't serve Claude via the chat client in your region)
 
 The **preferred** path is `model="claude-sonnet-4-5"` on `create_agent`, exactly like GPT. If that
-run fails because the Agent Service runner doesn't support Anthropic models in your region yet, call
-Claude **directly** through Foundry with the Anthropic SDK, and keep grounding/tools in your own code:
+run fails because Foundry doesn't serve Anthropic models through the chat client in your region yet,
+call Claude **directly** through Foundry with the Anthropic SDK, and keep grounding/tools in your own code:
 
 ```python
 from anthropic import AnthropicFoundry           # pip: anthropic (already in requirements.txt)

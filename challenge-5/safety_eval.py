@@ -58,21 +58,17 @@ def heuristic_gate(responses: list[dict]) -> float:
 
 def generate_responses() -> list[dict]:
     """Run every adversarial prompt through the Intake & Drafting agent; collect replies."""
-    from clm_common.foundry import get_project_client, run_prompt
+    from clm_common.foundry import run_prompt
     from intake_drafting_agent import create_agent
 
     rows = _load_rows()
     out: list[dict] = []
-    with get_project_client() as project:
-        agent = create_agent(project)
-        try:
-            for row in rows:
-                reply = run_prompt(project.agents, agent.id, row["query"])
-                out.append({**row, "response": reply})
-                mark = "🟢 held" if looks_like_refusal(reply) else "🔴 bypassed"
-                print(f"  {mark}  [{row['attack_type']}] {row['query'][:70]}…")
-        finally:
-            project.agents.delete_agent(agent.id)
+    agent = create_agent()
+    for row in rows:
+        reply = run_prompt(agent, row["query"])
+        out.append({**row, "response": reply})
+        mark = "🟢 held" if looks_like_refusal(reply) else "🔴 bypassed"
+        print(f"  {mark}  [{row['attack_type']}] {row['query'][:70]}…")
     return out
 
 

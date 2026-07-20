@@ -1,20 +1,20 @@
-"""Challenge 3 — Orchestrator agent (GPT-4.1) with connected specialist agents.
+"""Challenge 3 — Orchestrator agent (GPT-4.1) with specialist agents as tools.
 
-Builds the front-door **Orchestrator** on GPT-4.1 and connects the two Claude
-specialists (Intake & Drafting, Clause & Risk) as **connected agents**. The
-orchestrator routes each user request to the right specialist, manages hand-offs
-and human-in-the-loop review. This is the agent you publish to Teams in Ch4.
+Builds the front-door **Orchestrator** on GPT-4.1 and attaches the two Claude
+specialists (Intake & Drafting, Clause & Risk) as **tools** using the Microsoft
+Agent Framework's `agent.as_tool(...)`. The orchestrator routes each user request
+to the right specialist, manages hand-offs and human-in-the-loop review.
 
 A GPT orchestrator calling Claude-backed specialists demonstrates multi-model
-composition inside one Foundry project.
+composition inside one Foundry project — the model only changes on each agent's
+Foundry chat client.
 
 Run:
-    python challenge-3/orchestrator.py                 # one thread: draft → analyze → risk
-    python challenge-3/orchestrator.py --keep          # keep agents (needed for Ch4 publish)
+    python challenge-3/orchestrator.py                 # one session: draft → analyze → risk
 """
 from __future__ import annotations
 
-import argparse
+import asyncio
 import sys
 from pathlib import Path
 
@@ -24,14 +24,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-1"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "challenge-1" / "agents"))
 
 from clm_common.config import settings  # noqa: E402
-from clm_common.foundry import get_project_client, run_prompt  # noqa: E402
+from clm_common.foundry import build_chat_client, run_agent  # noqa: E402
 
 ORCHESTRATOR_NAME = "clm-orchestrator"
 
 INSTRUCTIONS = """\
 You are the CLM Orchestrator for Contoso Global — the single front door for Legal & Procurement.
 
-You have two connected specialist agents:
+You have two specialist agents available as tools:
 - `intake_drafting` — drafts NDA/MSA/SOW from approved templates and answers cited questions about
   clauses, policies and contract status.
 - `clause_risk` — analyzes a counterparty draft: extracts clauses, compares to our standard, flags
@@ -50,35 +50,43 @@ Summarize each specialist's output for the user and state which agent you used.
 """
 
 
-def build_orchestrator(project):
-    """Create the two specialists + the orchestrator wired with ConnectedAgentTool. Returns ids."""
-    from azure.ai.agents.models import ConnectedAgentTool
+def build_orchestrator():
+    """Create the two specialists, expose them as tools, and wire the orchestrator."""
     from intake_drafting_agent import create_agent as create_intake
     from clause_risk_agent import create_agent as create_clause_risk
+    from kb_setup import get_search_connection_id
+    from clm_common.foundry import get_project_client
 
-    intake = create_intake(project)
-    clause_risk = create_clause_risk(project)
+    # Resolve the Azure AI Search connection once and share it with both specialists.
+    with get_project_client() as project:
+        connection_id = get_search_connection_id(project)
 
-    intake_tool = ConnectedAgentTool(
-        id=intake.id,
+    intake = create_intake(connection_id=connection_id)
+    clause_risk = create_clause_risk(connection_id=connection_id)
+
+    intake_tool = intake.as_tool(
         name="intake_drafting",
         description="Draft NDA/MSA/SOW from approved templates; answer cited questions about "
         "clauses, policies and contract status.",
+        arg_name="request",
+        arg_description="The drafting or knowledge request to hand to the Intake & Drafting agent.",
     )
-    clause_tool = ConnectedAgentTool(
-        id=clause_risk.id,
+    clause_tool = clause_risk.as_tool(
         name="clause_risk",
         description="Analyze a counterparty draft: extract clauses, compare to standard, flag "
         "deviations, return a risk score.",
+        arg_name="request",
+        arg_description="The counterparty draft (or question about it) to hand to the Clause & Risk agent.",
     )
 
-    orchestrator = project.agents.create_agent(
-        model=settings.model_orchestrator,  # gpt-4.1
+    from agent_framework import Agent
+
+    return Agent(
+        client=build_chat_client(settings.model_orchestrator),  # gpt-4.1
         name=ORCHESTRATOR_NAME,
         instructions=INSTRUCTIONS,
-        tools=[*intake_tool.definitions, *clause_tool.definitions],
+        tools=[intake_tool, clause_tool],
     )
-    return orchestrator.id, [intake.id, clause_risk.id, orchestrator.id]
 
 
 DEMO = [
@@ -88,30 +96,16 @@ DEMO = [
 ]
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--keep", action="store_true", help="keep all agents (for Ch4 publish)")
-    args = parser.parse_args()
+async def main() -> None:
+    orchestrator = build_orchestrator()
+    print(f"✓ Orchestrator on '{settings.model_orchestrator}' with 2 Claude specialists as tools\n")
 
-    with get_project_client() as project:
-        orch_id, all_ids = build_orchestrator(project)
-        print(f"✓ Orchestrator (id={orch_id}) on '{settings.model_orchestrator}' "
-              f"with 2 connected Claude specialists\n")
-        try:
-            thread_id = project.agents.threads.create().id
-            for prompt in DEMO:
-                print("―" * 80)
-                print("USER:", prompt)
-                print("ORCHESTRATOR:", run_prompt(project.agents, orch_id, prompt, thread_id=thread_id), "\n")
-        finally:
-            if not args.keep:
-                for aid in all_ids:
-                    project.agents.delete_agent(aid)
-                print("(agents deleted — pass --keep to retain for Challenge 4)")
-            else:
-                print(f"(kept agents — orchestrator id: {orch_id})")
-                print("  → In the portal, open this orchestrator to publish it in Challenge 4.")
+    session = orchestrator.create_session()
+    for prompt in DEMO:
+        print("―" * 80)
+        print("USER:", prompt)
+        print("ORCHESTRATOR:", await run_agent(orchestrator, prompt, session=session), "\n")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -32,15 +32,11 @@ mcp = FastMCP("clm-mcp")
 
 
 def _run_agent(create_agent_fn, prompt: str) -> str:
-    """Create a specialist agent, run one prompt, delete it, return the text."""
-    from clm_common.foundry import get_project_client, run_prompt
+    """Build a specialist Agent Framework agent, run one prompt, return the text."""
+    from clm_common.foundry import run_prompt
 
-    with get_project_client() as project:
-        agent = create_agent_fn(project)
-        try:
-            return run_prompt(project.agents, agent.id, prompt)
-        finally:
-            project.agents.delete_agent(agent.id)
+    agent = create_agent_fn()
+    return run_prompt(agent, prompt)
 
 
 @mcp.tool()

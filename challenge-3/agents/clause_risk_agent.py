@@ -2,16 +2,18 @@
 
 Ingests a counterparty draft, extracts key clauses, compares them to Contoso
 Global's enterprise standard (the clause library in the corpus), flags deviations
-and returns a risk score with rationale. Runs on Claude for long-context legal
-reasoning. Reuses the Ch1 grounding pattern, so it's fast to build.
+and returns a risk score with rationale. Built with the **Microsoft Agent
+Framework** and runs on Claude for long-context legal reasoning. Reuses the Ch1
+grounding pattern, so it's fast to build.
 
 Run:
     python challenge-3/agents/clause_risk_agent.py            # analyze the sample Acme draft
-    python challenge-3/agents/clause_risk_agent.py --keep     # keep the agent for the orchestrator
+    python challenge-3/agents/clause_risk_agent.py --draft path/to/draft.pdf
 """
 from __future__ import annotations
 
 import argparse
+import asyncio
 import sys
 from pathlib import Path
 
@@ -20,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "challenge-1"))
 
 from clm_common.config import settings, DATA_DIR  # noqa: E402
 from clm_common.documents import read_document_text  # noqa: E402
-from clm_common.foundry import get_project_client, run_prompt  # noqa: E402
+from clm_common.foundry import build_chat_client, run_agent  # noqa: E402
 
 AGENT_NAME = "clause-risk-agent"
 
@@ -45,24 +47,23 @@ RULES
 """
 
 
-def create_agent(project):
-    from azure.ai.agents.models import ToolSet
+def create_agent(model: str | None = None, *, connection_id: str | None = None):
+    """Create the Clause & Risk agent grounded on the enterprise clause library."""
+    from agent_framework import Agent
     from kb_setup import build_knowledge_tool
 
-    toolset = ToolSet()
-    toolset.add(build_knowledge_tool(project))
+    knowledge = build_knowledge_tool(connection_id=connection_id)
 
-    return project.agents.create_agent(
-        model=settings.model_clause_risk,  # claude-sonnet-4-5
+    return Agent(
+        client=build_chat_client(model or settings.model_clause_risk),  # claude-sonnet-4-5
         name=AGENT_NAME,
         instructions=INSTRUCTIONS,
-        toolset=toolset,
+        tools=[knowledge],
     )
 
 
-def main() -> None:
+async def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--keep", action="store_true", help="do not delete the agent afterwards")
     parser.add_argument(
         "--draft",
         default=str(DATA_DIR / "counterparty_drafts" / "acme_msa_draft.pdf"),
@@ -77,18 +78,10 @@ def main() -> None:
         f"=== COUNTERPARTY DRAFT ===\n{draft_text}"
     )
 
-    with get_project_client() as project:
-        agent = create_agent(project)
-        print(f"✓ Created {AGENT_NAME} (id={agent.id}) on model '{settings.model_clause_risk}'\n")
-        try:
-            print(run_prompt(project.agents, agent.id, prompt))
-        finally:
-            if not args.keep:
-                project.agents.delete_agent(agent.id)
-                print("\n(agent deleted — pass --keep to retain it for the orchestrator)")
-            else:
-                print(f"\n(kept agent {agent.id})")
+    agent = create_agent()
+    print(f"✓ Built {AGENT_NAME} on model '{settings.model_clause_risk}'\n")
+    print(await run_agent(agent, prompt))
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
