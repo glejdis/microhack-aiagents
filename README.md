@@ -8,6 +8,24 @@ Copilot & Teams** with proactive renewal alerts.
 
 > A 4.5-hour microhack · 5 challenges (+ optional bonus) · code-first (Python) · GitHub Codespaces.
 
+## Introduction
+
+Contract lifecycle management is where enterprises quietly lose time and money: slow intake,
+inconsistent clause review, and missed renewals. In this microhack you'll transform CLM into an
+**AI-native, enterprise-ready** system on **Microsoft Foundry** — turning a manual, weeks-long
+process into a grounded, **agentic** workflow with a human always in the loop.
+
+The build uniquely combines four things: a **multi-model agent fleet** — orchestration on
+**GPT-4.1** with specialist drafting and clause-analysis running on **Anthropic Claude**, all inside
+a single Foundry project; **grounded retrieval with Foundry IQ** over your own contract corpus so
+every answer is cited; **tools and an MCP server** that expose the workflow to **Microsoft 365
+Copilot**, **Teams**, and any MCP-compatible client; and the full **GenAIOps lifecycle** —
+OpenTelemetry tracing to Application Insights, evaluation scorecards with a quality gate, and
+*(bonus)* AI red-teaming plus Content Safety guardrails. From grounded single-agent drafting through
+multi-agent orchestration to an observable, governed, published assistant, you'll master the full
+stack of enterprise agentic AI — and ship something your legal and procurement teams would actually
+use.
+
 ---
 
 ## The scenario — Contoso Global
@@ -86,7 +104,9 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 
 ---
 
-## What you'll learn
+## Learning Objectives 🎯
+
+By participating in this hackathon, you will learn how to:
 
 - **Foundry Agent Service** — build grounded, tool-using agents (on GPT **and** Claude).
 - **Foundry IQ** — agentic retrieval over Azure AI Search with cited answers.
