@@ -1,4 +1,6 @@
-"""Generate the repo hero banner (images/banner.png)."""
+"""Generate the repo hero banner (docs/images/banner.png)."""
+import pathlib
+
 from PIL import Image, ImageDraw, ImageFont
 
 W, H = 1600, 480
@@ -55,5 +57,7 @@ for c in chips:
     draw.text((cx + pad, cy + 8), c, font=f_chip, fill=NAVY)
     cx += cw + pad * 2 + 18
 
-img.save("images/banner.png")
-print("wrote images/banner.png", img.size)
+_out = pathlib.Path("docs/images/banner.png")
+_out.parent.mkdir(parents=True, exist_ok=True)
+img.save(_out)
+print("wrote", _out, img.size)

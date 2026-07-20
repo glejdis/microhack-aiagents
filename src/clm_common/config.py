@@ -23,7 +23,9 @@ except ImportError:  # dotenv is optional at runtime
 
 # Repo root = two levels up from this file (src/clm_common/config.py).
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DATA_DIR = REPO_ROOT / "data"
+# The CLM corpus lives under Challenge 0 (that's where it is provisioned and
+# seeded); every challenge reads it through this single DATA_DIR.
+DATA_DIR = REPO_ROOT / "challenge-0" / "data"
 
 
 def _get(name: str, default: str | None = None, required: bool = False) -> str | None:

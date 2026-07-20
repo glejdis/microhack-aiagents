@@ -44,7 +44,7 @@ tips. Participants never see this file; it's for the people running the room.
 
 | Time | Block | Coach cadence |
 |------|-------|---------------|
-| 09:00 – 10:00 | **Tech talk** — the CLM story, the agentic architecture, multi-model (Claude + GPT), Foundry IQ, tracing/eval, MCP, publish. | Show the [architecture diagram](../images/architecture.png). Set the "human always signs" guardrail expectation. |
+| 09:00 – 10:00 | **Tech talk** — the CLM story, the agentic architecture, multi-model (Claude + GPT), Foundry IQ, tracing/eval, MCP, publish. | Show the [architecture diagram](images/architecture.png). Set the "human always signs" guardrail expectation. |
 | 10:00 – 12:30 | **Hacking — Challenges 0, 1, 2** | **Gate at Ch0:** no team moves on until `smoke_test.py` is green. Float hard here. |
 | 12:30 – 13:30 | Lunch | — |
 | 13:30 – 15:30 | **Hacking — Challenges 3, 4** | Ch4 builds on a working Ch3 orchestrator — make sure Ch3 runs cleanly first. Remind teams before lunch. |

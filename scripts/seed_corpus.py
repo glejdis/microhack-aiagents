@@ -19,9 +19,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from clm_common.config import settings, DATA_DIR, credential  # noqa: E402
 from clm_common.documents import read_document_text  # noqa: E402
 
-# Executed contracts + counterparty drafts are PDFs; Contoso-authored reference
-# material (templates, clause library, policy) is Markdown. Seed both.
-CORPUS_DIRS = ["contract_templates", "clause_library", "policies", "contracts", "counterparty_drafts"]
+# The corpus is delivered as PDF (executed contracts, approved templates, clause
+# library, policy, and inbound counterparty drafts). Seed every subfolder; the
+# glob also accepts .md so authoring sources can be dropped in during a hack.
+CORPUS_DIRS = ["contract_templates", "clause_library", "policies", "contracts", "counterparty_drafts", "playbooks"]
 DOC_GLOBS = ("*.md", "*.pdf")
 
 

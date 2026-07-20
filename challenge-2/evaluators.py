@@ -1,7 +1,7 @@
 """Challenge 2 — evaluation + Claude-vs-GPT bake-off + quality gate.
 
 Runs the Foundry `azure-ai-evaluation` evaluators over
-data/evaluation/evaluation_dataset.jsonl, using a *target* callable that
+challenge-0/data/evaluation/evaluation_dataset.jsonl, using a *target* callable that
 generates the agent's response for each row. Then it does the headline
 **cross-model bake-off**: run the Intake & Drafting agent on **Claude Sonnet
 4.5** vs a **GPT** deployment against the SAME scorecard, and compare quality vs

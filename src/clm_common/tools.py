@@ -6,8 +6,8 @@ them during a run. Used by the Intake & Drafting agent (Ch1) and the Obligation
 & Renewal agent (Ch4).
 
 The contract-status lookup prefers Azure SQL (if AZURE_SQL_CONNECTION_STRING is
-set) and otherwise falls back to data/contracts_seed.json so the hack works with
-no database.
+set) and otherwise falls back to challenge-0/data/contracts_seed.json so the hack
+works with no database.
 """
 from __future__ import annotations
 

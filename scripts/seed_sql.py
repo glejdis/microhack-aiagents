@@ -3,7 +3,7 @@
 
 Only needed if you deployed Azure SQL (`./scripts/deploy.sh --with-sql`). If
 AZURE_SQL_CONNECTION_STRING is empty, the contract-status function tool falls
-back to data/contracts_seed.json, so this step is optional for the hack.
+back to challenge-0/data/contracts_seed.json, so this step is optional for the hack.
 
 Run:  python scripts/seed_sql.py
 """
