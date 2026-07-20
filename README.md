@@ -271,9 +271,9 @@ By participating in this hackathon, you will learn how to:
 ├── .devcontainer/            # Codespaces definition
 ├── azure.yaml                # azd config (points at challenge-0/infra, write-.env hook)
 ├── src/clm_common/           # shared config + Foundry client helpers
-├── scripts/                  # deploy, seed corpus, smoke test, write .env
-├── data/                     # CLM corpus + evaluation dataset
+├── scripts/                  # deploy, seed corpus, make corpus PDFs, smoke test, write .env
 ├── challenge-0/ … challenge-4/   # one folder per challenge (README + code)
+│   └── challenge-0/data/     # CLM corpus (PDF contracts/templates/clauses/policies) + eval datasets
 ├── challenge-5/              # bonus: safety, red-teaming & CI eval gate
 └── docs/                     # coach guide, editable diagrams + rendered images (banner, architecture)
 ```

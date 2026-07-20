@@ -61,7 +61,7 @@ if ($WithSql) {
   $SqlConn = "Driver={ODBC Driver 18 for SQL Server};Server=tcp:$SqlServer.database.windows.net,1433;Database=$SqlDb;Uid=clmadmin;Pwd=$SqlPwd;Encrypt=yes;TrustServerCertificate=no;"
   Write-Host "  ✓ Azure SQL created"
 } else {
-  Write-Host "  · Skipping Azure SQL (-WithSql to provision). Tool falls back to data/contracts_seed.json."
+  Write-Host "  · Skipping Azure SQL (-WithSql to provision). Tool falls back to challenge-0/data/contracts_seed.json."
 }
 
 $ProjectEndpoint = "https://$Foundry.services.ai.azure.com/api/projects/$Project"

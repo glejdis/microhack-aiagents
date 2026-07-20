@@ -103,11 +103,11 @@ Everything the agent "knows" comes from the corpus you seeded in Challenge 0:
 
 | Corpus source | Contents | Role in Challenge 1 |
 |---------------|----------|---------------------|
-| [`data/contract_templates/`](../data/contract_templates/) | Approved **NDA / MSA / SOW** templates (Markdown) | Drafting source — the agent fills placeholders, never invents terms |
-| [`data/clause_library/standard_clauses.md`](../data/clause_library/standard_clauses.md) | Enterprise-standard positions **CL-01…CL-10** | Cited answers about standard clauses (e.g. the liability cap) |
-| [`data/policies/contracting_policy.md`](../data/policies/contracting_policy.md) | Approval thresholds + the **no-legal-advice** rule | Grounds policy answers; reinforces the guardrail |
-| [`data/contracts/`](../data/contracts/) | **5 executed contract PDFs** (text-extractable) | Grounding + narrative basis for status lookups |
-| [`data/contracts_seed.json`](../data/contracts_seed.json) | Structured metadata for the same 5 contracts | Backs `get_contract_status` (SQL fallback) |
+| [`challenge-0/data/contract_templates/`](../challenge-0/data/contract_templates/) | Approved **NDA / MSA / SOW** templates (PDF) | Drafting source — the agent fills placeholders, never invents terms |
+| [`challenge-0/data/clause_library/`](../challenge-0/data/clause_library/) | Enterprise-standard positions **CL-01…CL-12** (PDF) | Cited answers about standard clauses (e.g. the liability cap) |
+| [`challenge-0/data/policies/`](../challenge-0/data/policies/) | Approval thresholds + the **no-legal-advice** rule (plus a delegation-of-authority matrix) | Grounds policy answers; reinforces the guardrail |
+| [`challenge-0/data/contracts/`](../challenge-0/data/contracts/) | **5 executed contract PDFs** (text-extractable) | Grounding + narrative basis for status lookups |
+| [`challenge-0/data/contracts_seed.json`](../challenge-0/data/contracts_seed.json) | Structured metadata for the same 5 contracts | Backs `get_contract_status` (SQL fallback) |
 
 ### Files in this challenge
 
