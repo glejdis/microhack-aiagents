@@ -57,11 +57,12 @@ deploy_model () {  # name  model-name  version  format  sku-capacity
     --sku-name "GlobalStandard" --sku-capacity "${5:-20}" -o none \
     || echo "    ! $1 deployment failed — check the model is available in $LOCATION."
 }
-# gpt-5.3 version: confirm the exact version in your region's Foundry catalog.
-deploy_model "$GPT_ORCH" "gpt-5.3"          "2025-11-01" "OpenAI"    30
+# gpt-5.3 deployment: no base `gpt-5.3` model in swedencentral — use gpt-5.3-chat.
+# Confirm the exact model/version in your region's Foundry catalog.
+deploy_model "$GPT_ORCH" "gpt-5.3-chat"     "2026-03-03" "OpenAI"    30
 deploy_model "$GPT_MINI" "gpt-4o-mini"      "2024-07-18" "OpenAI"    30
-# Claude: model-format Anthropic, version "2" = Hosted on Azure (vs "1" on Anthropic).
-deploy_model "$CLAUDE"   "claude-sonnet-4-5" "2"         "Anthropic" 20
+# Claude: model-format Anthropic; version is the date-stamped Azure catalog version.
+deploy_model "$CLAUDE"   "claude-sonnet-4-5" "20250929"  "Anthropic" 20
 
 # ---- 4. Azure AI Search (Foundry IQ backing store) -----------------------
 az search service create \

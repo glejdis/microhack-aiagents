@@ -179,7 +179,8 @@
             "gptOrchestrator": "gpt-5.3",
             "gptMini": "gpt-4o-mini",
             "claude": "claude-sonnet-4-5",
-            "gptOrchestratorVersion": "2025-11-01",
+            "gptOrchestratorModel": "gpt-5.3-chat",
+            "gptOrchestratorVersion": "2026-03-03",
             "roleAiDeveloper": "64702f94-c441-49e6-a78b-ef80e0188fee",
             "roleCognitiveServicesUser": "a97b65f3-24c7-4388-baec-2e87135dc908",
             "roleSearchIndexDataContributor": "8ebe5a00-799e-43f5-93ac-243d3dce84a7",
@@ -288,7 +289,7 @@
               "properties": {
                 "model": {
                   "format": "OpenAI",
-                  "name": "gpt-5.3",
+                  "name": "[variables('gptOrchestratorModel')]",
                   "version": "[variables('gptOrchestratorVersion')]"
                 }
               },
@@ -328,7 +329,7 @@
                 "model": {
                   "format": "Anthropic",
                   "name": "claude-sonnet-4-5",
-                  "version": "2"
+                  "version": "20250929"
                 }
               },
               "dependsOn": [

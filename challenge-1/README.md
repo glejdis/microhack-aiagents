@@ -181,7 +181,7 @@ and keeps them where the business already curates them. → [Index SharePoint co
 
 ### Model — Anthropic Claude Sonnet 4.5
 
-**What it is:** this agent's LLM — deployment **`claude-sonnet-4-5`** (`format: Anthropic`, **version `2`** =
+**What it is:** this agent's LLM — deployment **`claude-sonnet-4-5`** (`format: Anthropic`, **version `20250929`** =
 Azure-hosted, SKU `GlobalStandard`, capacity 20), read from `settings.model_drafting` (`MODEL_DRAFTING`).
 
 - Strong **instruction-following** + **long-context** reasoning — ideal for careful legal drafting.

@@ -36,12 +36,18 @@ var searchIndexName = 'clm-corpus'
 var searchConnectionName = 'clm-search'
 
 // ---- Model deployment names ----------------------------------------------
+// NOTE: these are the *deployment* names (what the app calls at runtime via the
+// MODEL_* env vars); the underlying catalog model/version is set below. In
+// swedencentral there is no base `gpt-5.3` model — the orchestrator deployment
+// (still named `gpt-5.3`) runs the `gpt-5.3-chat` catalog model.
 var gptOrchestrator = 'gpt-5.3'
 var gptMini = 'gpt-4o-mini'
 var claude = 'claude-sonnet-4-5'
-// gpt-5.3 model version — confirm the exact version offered in your region's
-// Foundry model catalog and update here if needed.
-var gptOrchestratorVersion = '2025-11-01'
+// Orchestrator catalog model + version — confirm the exact model/version offered
+// in your region's Foundry model catalog and update here if needed
+// (`az cognitiveservices model list --location <region>`).
+var gptOrchestratorModel = 'gpt-5.3-chat'
+var gptOrchestratorVersion = '2026-03-03'
 
 // ---- Built-in role definition ids ----------------------------------------
 var roleAiDeveloper = '64702f94-c441-49e6-a78b-ef80e0188fee'            // Azure AI Developer
@@ -146,7 +152,7 @@ resource deployOrchestrator 'Microsoft.CognitiveServices/accounts/deployments@20
   name: gptOrchestrator
   sku: { name: 'GlobalStandard', capacity: 30 }
   properties: {
-    model: { format: 'OpenAI', name: 'gpt-5.3', version: gptOrchestratorVersion }
+    model: { format: 'OpenAI', name: gptOrchestratorModel, version: gptOrchestratorVersion }
   }
 }
 
@@ -160,13 +166,15 @@ resource deployMini 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01
   dependsOn: [ deployOrchestrator ]
 }
 
-// Claude: model-format Anthropic, version "2" = Azure-hosted (vs "1" on Anthropic).
+// Claude: model-format Anthropic. Version is the date-stamped Azure Foundry
+// catalog version (e.g. 20250929 for claude-sonnet-4-5 in swedencentral) — not
+// Anthropic's own "1"/"2" scheme. Verify with `az cognitiveservices model list`.
 resource deployClaude 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01-preview' = {
   parent: account
   name: claude
   sku: { name: 'GlobalStandard', capacity: 20 }
   properties: {
-    model: { format: 'Anthropic', name: 'claude-sonnet-4-5', version: '2' }
+    model: { format: 'Anthropic', name: 'claude-sonnet-4-5', version: '20250929' }
   }
   dependsOn: [ deployMini ]
 }

@@ -35,9 +35,9 @@ function Deploy-Model($name, $model, $version, $format, $cap) {
     --sku-name GlobalStandard --sku-capacity $cap -o none 2>$null
   if ($LASTEXITCODE -ne 0) { Write-Host "    ! $name failed — check availability in $Location." }
 }
-Deploy-Model $GptOrch "gpt-5.3"          "2025-11-01" "OpenAI"    30
+Deploy-Model $GptOrch "gpt-5.3-chat"     "2026-03-03" "OpenAI"    30
 Deploy-Model $GptMini "gpt-4o-mini"      "2024-07-18" "OpenAI"    30
-Deploy-Model $Claude  "claude-sonnet-4-5" "2"         "Anthropic" 20
+Deploy-Model $Claude  "claude-sonnet-4-5" "20250929"  "Anthropic" 20
 
 az search service create -n $Search -g $Rg -l $Location --sku basic --partition-count 1 --replica-count 1 -o none
 Write-Host "  ✓ Azure AI Search created"

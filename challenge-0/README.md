@@ -78,8 +78,8 @@ ID RBAC (Azure AI Developer, Cognitive Services User, Search data roles) — all
 
 | Deployment | Model · format | SKU | Agent it powers | Challenge |
 |------------|----------------|-----|-----------------|-----------|
-| `gpt-5.3` | OpenAI `gpt-5.3` (version per your region's catalog) | GlobalStandard · 30 | **Orchestrator** — routing + hand-offs | C3 |
-| `claude-sonnet-4-5` | Anthropic `claude-sonnet-4-5` (v`2`, Azure-hosted) | GlobalStandard · 20 | **Intake & Drafting** + **Clause & Risk** | C1, C3 |
+| `gpt-5.3` | OpenAI `gpt-5.3-chat` (version per your region's catalog, e.g. `2026-03-03`) | GlobalStandard · 30 | **Orchestrator** — routing + hand-offs | C3 |
+| `claude-sonnet-4-5` | Anthropic `claude-sonnet-4-5` (v`20250929`, Azure-hosted) | GlobalStandard · 20 | **Intake & Drafting** + **Clause & Risk** | C1, C3 |
 | `gpt-4o-mini` | OpenAI `gpt-4o-mini` (`2024-07-18`) | GlobalStandard · 30 | **Obligation & Renewal** — cheap, high-frequency | C3 |
 
 > Specialists run on **Claude** while orchestration runs on **GPT** — all inside **one** Foundry
