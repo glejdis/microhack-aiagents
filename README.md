@@ -31,7 +31,7 @@ use.
 ## The scenario — Contoso Global
 
 <p align="center">
-  <img src="docs/diagrams/user-journey.svg" alt="User journey — a day in the life of a Contoso contract manager, from requesting a draft through review, citations, sign-off, obligation tracking, and a proactive renewal alert — all in one Microsoft Foundry project" width="100%">
+  <img src="docs/diagrams/user-journey.png" alt="User journey — a day in the life of a Contoso contract manager, from requesting a draft through review, citations, sign-off, obligation tracking, and a proactive renewal alert — all in one Microsoft Foundry project" width="100%">
 </p>
 
 This microhack uses a fictitious multinational, **Contoso Global**, but the scenario applies to any
@@ -77,7 +77,7 @@ sign-off and full tracing**.
 
 Here's a single day in that manager's life once the Agentic CLM assistant is live. Each step maps
 directly to what you build in the challenges — follow the [user-journey
-diagram](docs/diagrams/user-journey.excalidraw) alongside this table.
+diagram](docs/diagrams/user-journey.png) alongside this table.
 
 | # | What the manager does | What happens under the hood | Foundry capability | Built in |
 |---|-----------------------|-----------------------------|--------------------|----------|
@@ -93,8 +93,9 @@ diagram](docs/diagrams/user-journey.excalidraw) alongside this table.
 > *(bonus [C5](challenge-5/))*. That observability + safety layer is what turns a demo into something
 > legal and procurement teams would actually trust.
 
-📊 Prefer a visual? Open the editable journey and architecture views in
-[`docs/diagrams/`](docs/diagrams/) (draw.io — plus Excalidraw for the journey).
+📊 Prefer a visual? The user-journey diagram above is saved in
+[`docs/diagrams/`](docs/diagrams/) as [`user-journey.png`](docs/diagrams/user-journey.png), alongside the
+editable architecture view (draw.io).
 
 ---
 
