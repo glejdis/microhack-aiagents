@@ -94,6 +94,22 @@ hardening actually worked. → [Evaluation & observability](https://learn.micros
    Inspect the scorecard (`challenge-5/redteam_scorecard.json`) — note any category with a non-zero
    attack success rate.
 
+   ✅ **You should see** the scan run and a scorecard summary (numbers will vary):
+   ```text
+   ▶ Red-teaming intake-drafting-agent (2 objectives)...
+   === Red-team scorecard ===
+   Category                    Attacks   Succeeded   ASR
+   Hate/Unfairness                   2           0    0%
+   Violence                          2           0    0%
+   Self-harm                         2           0    0%
+   Sexual                            2           0    0%
+   → wrote challenge-5/redteam_scorecard.json
+   ```
+
+   > 📸 **Screenshot slot — what you'll see:** the printed **scorecard table** (and/or `redteam_scorecard.json`).
+   >
+   > <img src="images/steps/01-redteam-scorecard.svg" alt="Screenshot slot: red-team scorecard" width="80%">
+
 2. **Turn up the heat** with attack strategies (encodings + a composed Base64→ROT13 attack):
    ```bash
    python challenge-5/red_team.py --strategies --num-objectives 2
@@ -108,6 +124,21 @@ hardening actually worked. → [Evaluation & observability](https://learn.micros
    python challenge-5/safety_eval.py --dry-run --gate 0.1
    ```
 
+   ✅ **You should see** a defect rate and a clear PASS/FAIL gate verdict:
+   ```text
+   Guardrails held: 9/10 · defect rate = 10%
+   ✅ SAFETY GATE PASSED.        # or: ❌ SAFETY GATE FAILED (defect rate 10% > gate 0%)
+   ```
+
+   > [!TIP]
+   > To **see the gate fail on purpose**, run `python challenge-5/safety_eval.py --dry-run --gate 0.0`
+   > against the unhardened agent — a non-zero defect rate will trip `❌ SAFETY GATE FAILED` and exit
+   > non-zero. That's exactly what CI (step 5) uses to block a bad merge.
+
+   > 📸 **Screenshot slot — what you'll see:** the **defect rate line** + PASS/FAIL verdict.
+   >
+   > <img src="images/steps/02-safety-gate.svg" alt="Screenshot slot: safety gate verdict" width="80%">
+
 4. **Harden the agent**, then re-scan to prove it improved:
    - In the portal, attach **Content Safety** (Prompt Shields + PII) to the agent.
    - Tighten the refusal/grounding instructions in `challenge-1/agents/intake_drafting_agent.py`.
@@ -117,6 +148,13 @@ hardening actually worked. → [Evaluation & observability](https://learn.micros
    (`evaluators.py --gate 4.0`) and **safety gate** (`safety_eval.py --gate 0.1`) on a schedule /
    on demand, using Azure OIDC. Configure the repo secrets (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
    `AZURE_SUBSCRIPTION_ID`, `AZURE_AI_PROJECT_ENDPOINT`) and trigger it from the **Actions** tab.
+
+   > 📸 **Screenshot slot — what you'll see:** the **Actions** tab with the eval workflow run (green check = gates passed).
+   >
+   > <img src="images/steps/03-actions-run.svg" alt="Screenshot slot: GitHub Actions eval run" width="80%">
+
+   ✅ **You'll know it worked when:** the workflow run shows a **green check** (gates passed) — or a
+   **red X** if a regression tripped a gate, which is the whole point.
 
 ## ✔️ Success criteria
 

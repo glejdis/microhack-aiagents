@@ -110,17 +110,54 @@ text at crawl time); regenerate the PDFs with `python scripts/make_corpus_pdfs.p
 
 ## ✅ Tasks
 
+> [!NOTE]
+> **New to Azure or the terminal? Read this first.** This challenge is 100% click-and-paste — you
+> never write code. Do the tasks **in order**, and after each command check the **✅ You should see**
+> block before moving on. The **📸 Screenshot slot** boxes show *what the screen looks like* at that
+> moment (swap in your own screenshots later). If a step doesn't match, jump to
+> [🛠️ Troubleshooting](#️-troubleshooting) — don't push past a red error.
+
+**Before you begin — tick these off:**
+
+- [ ] You can sign in to [github.com](https://github.com).
+- [ ] You can sign in to the [Azure Portal](https://portal.azure.com) with an account that can **create resources**.
+- [ ] Your Azure subscription can deploy **GPT _and_ Anthropic Claude** models (ask your coach if unsure).
+- [ ] You have ~30 minutes and a stable connection (provisioning takes 5–10 min on its own).
+
 ### Task 1 · Fork the repository
 
-[Fork this repository](https://github.com/glejdis/microhack-aiagents/fork) to your GitHub account (the **Fork** button, top-right). This
-lets you make changes and save your progress.
+A **fork** is your own copy of this repo where your changes and progress are saved.
+
+1. Go to **[github.com/glejdis/microhack-aiagents/fork](https://github.com/glejdis/microhack-aiagents/fork)**.
+2. Leave **Owner** as your username and keep the repo name.
+3. Click the green **Create fork** button.
+
+> 📸 **Screenshot slot — what you'll see:** the GitHub *Create a new fork* page with the green **Create fork** button.
+>
+> <img src="images/steps/01-fork.svg" alt="Screenshot slot: GitHub fork page" width="80%">
+
+✅ **You'll know it worked when:** the page reloads at `github.com/<your-username>/microhack-aiagents` (your username, not `glejdis`, in the URL).
 
 ---
 
 ### Task 2 · Launch the development environment
 
-Open the repo in **GitHub Codespaces**: **Code → Codespaces → Create codespace on `main`**. Wait for
-the devcontainer to finish `pip install -r requirements.txt`.
+**GitHub Codespaces** is a full VS Code + terminal running in your browser — no local installs, no
+"works on my machine." Everything below runs inside it.
+
+1. On **your fork's** main page, click the green **`< > Code`** button.
+2. Open the **Codespaces** tab.
+3. Click **Create codespace on `main`**.
+4. Wait for the build to finish — it auto-runs `pip install -r requirements.txt`. First build takes
+   a few minutes. When the terminal at the bottom stops scrolling and shows a prompt, it's ready.
+
+> 📸 **Screenshot slot — what you'll see:** the **Code → Codespaces → Create codespace on main** menu, then the ready Codespace.
+>
+> <img src="images/steps/02-create-codespace.svg" alt="Screenshot slot: create codespace" width="80%">
+> <img src="images/steps/03-codespace-ready.svg" alt="Screenshot slot: codespace ready" width="80%">
+
+✅ **You'll know it worked when:** you see a VS Code editor in the browser with a **Terminal** panel
+at the bottom showing a ready prompt (e.g. `@your-username ➜ /workspaces/microhack-aiagents (main) $`).
 
 > [!NOTE]
 > If GitHub Codespaces is not enabled in your organization, see [enabling or disabling Codespaces](https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/enabling-or-disabling-github-codespaces-for-your-organization), or create a [free personal GitHub account](https://github.com/signup). The Free plan includes 120 core-hours/month.
@@ -132,12 +169,38 @@ the devcontainer to finish `pip install -r requirements.txt`.
 
 ### Task 3 · Log in to Azure
 
-In the Codespace terminal, sign in and select your subscription:
+Now connect the terminal to your Azure account. In the Codespace **Terminal**, type this and press Enter:
 
 ```bash
 az login --use-device-code
+```
+
+It prints a short code and a URL. **Open [microsoft.com/devicelogin](https://microsoft.com/devicelogin)**
+in a new browser tab, paste the code, and sign in with your Azure account.
+
+> 📸 **Screenshot slot — what you'll see:** the device-login page where you paste the code from the terminal.
+>
+> <img src="images/steps/04-az-login-device.svg" alt="Screenshot slot: device-code login" width="80%">
+
+✅ **You should see** (your subscriptions listed, then a table like this):
+
+```text
+Retrieving tenants and subscriptions for the selection...
+[Tenant and subscription selection]
+No     Subscription name        Subscription ID                       Tenant
+-----  -----------------------  ------------------------------------  -------------
+[1] *  My Azure Subscription    2942123c-....-793528767894            Contoso
+```
+
+Then pick the subscription you want to deploy into (replace the id with yours):
+
+```bash
 az account set --subscription "<your-subscription-id>"
 ```
+
+> [!TIP]
+> List your subscriptions any time with `az account list --output table`. Copy the **Subscription ID**
+> (the long `xxxxxxxx-xxxx-...` value), not the name.
 
 ---
 
@@ -147,20 +210,66 @@ az account set --subscription "<your-subscription-id>"
 > Depending on the setup for your event, the Azure resources may already be provisioned for you — in
 > which case you can **skip to Task 6**. Check with your coach what applies.
 
-Choose a region that offers **all three** models (check the Foundry model catalog; `swedencentral` is
-a good default). Then pick **one** option:
+Choose a region that offers **all three** models. This repo's infra is pre-pinned to models that are
+available in **`swedencentral`** today (`gpt-5.3-chat`, `gpt-4o-mini`, `claude-sonnet-4-5`), so
+**`swedencentral` is the safe default** — use it unless your coach says otherwise. Then pick **one** option:
 
-<details>
+> [!TIP]
+> **Want to double-check what your subscription offers in a region?** Run
+> `az cognitiveservices model list --location swedencentral --output table` and look for the model
+> names above. If you switch regions and a model isn't listed, that's what causes a
+> `DeploymentModelNotSupported` error — see [🛠️ Troubleshooting](#️-troubleshooting).
+
+<details open>
 <summary><strong>Option A — <code>azd up</code></strong> (recommended · Bicep in <code>infra/</code>)</summary>
+
+**Step 4a — sign `azd` in** (separate from `az login` above):
 
 ```bash
 azd auth login
-azd up          # prompts for an environment name + region, then provisions everything
 ```
 
-`azd up` deploys the Bicep in [`infra/`](./infra/), assigns the RBAC roles the later challenges need,
-creates the `clm-search` Foundry IQ connection, and runs the `postprovision` hook
-(`scripts/write_env.py`) to write your `.env`.
+**Step 4b — provision everything** with one command:
+
+```bash
+azd up
+```
+
+`azd up` asks you **three questions** the first time. Answer them like this:
+
+| Prompt | What to type |
+|--------|--------------|
+| `Enter a new environment name` | anything short + lowercase, e.g. **`clm-microhack`** |
+| `Select an Azure Subscription` | the subscription you set in Task 3 (arrow keys → Enter) |
+| `Select an Azure location` | **`Sweden Central`** (start typing `sweden` to filter) |
+
+> 📸 **Screenshot slot — what you'll see:** the three `azd up` prompts (environment name, subscription, region).
+>
+> <img src="images/steps/05-azd-up-prompts.svg" alt="Screenshot slot: azd up prompts" width="80%">
+
+Then it provisions for **5–10 minutes**. `azd up` deploys the Bicep in [`infra/`](./infra/), assigns the
+RBAC roles the later challenges need, creates the `clm-search` Foundry IQ connection, and runs the
+`postprovision` hook (`scripts/write_env.py`) to write your `.env`.
+
+> 📸 **Screenshot slot — what you'll see:** the green **SUCCESS** summary with the deployed resources and outputs.
+>
+> <img src="images/steps/06-azd-up-success.svg" alt="Screenshot slot: azd up success" width="80%">
+
+✅ **You should see** (names/values will differ) — the key line is `SUCCESS`:
+
+```text
+  (✓) Done: Deploying service ...
+Deploying services (azd deploy)
+
+  Provisioning Azure resources (azd provision)
+  Resource group: rg-clm-microhack
+  ...
+SUCCESS: Your up workflow to provision and deploy to Azure completed in 8 minutes.
+```
+
+❌ **If it fails with `DeploymentModelNotSupported`** — a model/version isn't offered in your region.
+This repo is already fixed for `swedencentral`; if you changed the region, either switch back or update
+the versions in [`infra/resources.bicep`](./infra/resources.bicep). See [🛠️ Troubleshooting](#️-troubleshooting).
 
 To also provision Azure SQL:
 
@@ -225,10 +334,41 @@ Options A and B write a populated **`.env`** automatically; Option C writes it v
 
 ### Task 5 · Verify your resources
 
-Open the [Azure Portal](https://portal.azure.com/), find your resource group, and confirm it contains
-the resources from the [inventory above](#-context-and-background) — the Foundry account, the 3 model
-deployments, Azure AI Search, and Application Insights. Then open `.env` at the repo root and
-confirm the values are filled in (no empty entries except the SharePoint corpus and Challenge 4 Teams/Bot variables).
+Let's confirm everything landed. Do all three checks:
+
+**5a — Resource group in the Azure Portal.** Open the [Azure Portal](https://portal.azure.com/) →
+search **`rg-clm-microhack`** → click it. You should see ~7 resources (Foundry account, Azure AI Search,
+Application Insights, Log Analytics, and the model deployments live inside the Foundry account).
+
+> 📸 **Screenshot slot — what you'll see:** the `rg-clm-microhack` overview listing the resources.
+>
+> <img src="images/steps/07-portal-resource-group.svg" alt="Screenshot slot: resource group" width="80%">
+
+**5b — Model deployments in the Foundry portal.** Open [ai.azure.com](https://ai.azure.com) → select
+your **`clm-project`** → **Models + endpoints**. Confirm **three** deployments show **Succeeded**:
+`gpt-5.3`, `gpt-4o-mini`, `claude-sonnet-4-5`.
+
+> 📸 **Screenshot slot — what you'll see:** the three model deployments, all "Succeeded".
+>
+> <img src="images/steps/08-foundry-deployments.svg" alt="Screenshot slot: model deployments" width="80%">
+
+**5c — Your `.env` file.** In the Codespace file explorer, open **`.env`** at the repo root. Confirm the
+values are filled in (every entry has a value **except** the `SHAREPOINT_*` corpus and the Challenge 4
+`MICROSOFT_APP_*` / `TEAMS_*` variables, which you fill later).
+
+✅ **`.env` should look like this** (values will differ):
+
+```bash
+AZURE_AI_PROJECT_ENDPOINT=https://clmfoundryab12c.services.ai.azure.com/api/projects/clm-project
+MODEL_ORCHESTRATOR=gpt-5.3
+MODEL_DRAFTING=claude-sonnet-4-5
+MODEL_CLAUSE_RISK=claude-sonnet-4-5
+MODEL_RENEWAL=gpt-4o-mini
+AZURE_SEARCH_ENDPOINT=https://clmsearchab12c.search.windows.net
+AZURE_SEARCH_INDEX=clm-corpus
+AZURE_SEARCH_CONNECTION_NAME=clm-search
+APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=...
+```
 
 > [!CAUTION]
 > For convenience, this hackathon keeps secrets (e.g. the SharePoint app secret) in `.env` and uses
@@ -253,6 +393,19 @@ python scripts/seed_corpus.py
 python scripts/seed_sql.py
 ```
 
+✅ **You should see** the indexer get created and start crawling (wording may vary):
+
+```text
+✓ Created data source 'clm-corpus-sharepoint'
+✓ Created/updated index 'clm-corpus'
+✓ Created indexer 'clm-corpus-indexer' — crawling SharePoint library...
+Done. Give the indexer 1–2 minutes, then check the document count in the portal.
+```
+
+> 📸 **Screenshot slot — what you'll see:** the `clm-corpus` index with a non-zero document count.
+>
+> <img src="images/steps/09-search-index.svg" alt="Screenshot slot: clm-corpus index" width="80%">
+
 > [!NOTE]
 > The entire corpus is **PDF** — Contoso-authored templates, the clause library and policies, the 5
 > executed contracts in `data/contracts/` (one per row seeded into Azure SQL) and the inbound
@@ -265,13 +418,29 @@ python scripts/seed_sql.py
 
 ### Task 7 · Smoke test
 
-Prove the project is reachable and that **both** a GPT and the Claude deployment run:
+The final check — prove the project is reachable and that **both** a GPT and the Claude deployment run:
 
 ```bash
 python scripts/smoke_test.py
 ```
 
-🎉 If it prints **✅ PASS**, your Foundry CLM environment is ready.
+> 📸 **Screenshot slot — what you'll see:** the terminal ending in **`Smoke test: ✅ PASS`**.
+>
+> <img src="images/steps/10-smoke-pass.svg" alt="Screenshot slot: smoke test PASS" width="80%">
+
+✅ **You should see** (this is the finish line for Challenge 0):
+
+```text
+1) Checking environment…            ✓ (all vars present)
+2) Pinging gpt deployment 'gpt-5.3'… ✓ gpt replied: OK
+2) Pinging claude deployment 'claude-sonnet-4-5'… ✓ claude replied: OK
+
+Smoke test: ✅ PASS
+```
+
+🎉 If it prints **✅ PASS**, your Foundry CLM environment is ready. Got **⚠️ PARTIAL** or an error
+instead? See [🛠️ Troubleshooting](#️-troubleshooting) — a failed Claude ping is usually a regional
+chat-client limitation, and Challenge 1 documents a fallback.
 
 ## ✔️ Success criteria
 
@@ -308,7 +477,7 @@ Smoke test: ✅ PASS
 
 | Symptom | Fix |
 |---------|-----|
-| `deployment failed` for a model | The model/version isn't available in your region. Try `eastus2`/`westus3`, or adjust the version in `scripts/deploy.sh`. Check the Foundry catalog. |
+| `DeploymentModelNotSupported` / `deployment failed` for a model | The model **name or version** isn't offered in your region. List what *is* available: `az cognitiveservices model list --location <region> --output table`, then update the model/version in [`infra/resources.bicep`](./infra/resources.bicep) (and `scripts/deploy.sh`). This repo is pre-pinned for `swedencentral`; if you changed regions, switch back or re-pin. |
 | `account project create` unavailable | The CLI project command is preview. Create the project in the **Foundry portal**, then set `AZURE_AI_PROJECT_ENDPOINT` in `.env` manually (Overview → Endpoint). |
 | Claude ping fails in smoke test | Claude may not be served via the **Foundry chat client** in your region yet. You can still proceed — Challenge 1 documents an Anthropic-SDK fallback. |
 | `az login` in Codespaces | Use `az login --use-device-code`. |

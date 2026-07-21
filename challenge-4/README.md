@@ -72,10 +72,21 @@ the user rather than wait to be asked. → [Send proactive notifications](https:
 1. In the **Foundry portal**, open the **`clm-orchestrator`** agent (you kept it in Ch3).
 2. **Details → Channels → "Teams and Microsoft 365 Copilot" → Publish.** This provisions an **Azure
    Bot Service**. (First time: `az provider register --namespace Microsoft.BotService`.)
+
+   > 📸 **Screenshot slot — what you'll see:** the **Channels** page with "Teams and Microsoft 365 Copilot" → **Publish**.
+   >
+   > <img src="images/steps/01-channels-publish.svg" alt="Screenshot slot: publish to Teams" width="80%">
 3. Fill the metadata (name, description, publisher). Choose **direct publish** or **download the
    manifest** and sideload it (`manifest/` has a template).
 4. **Test live**: open the agent in Teams and in M365 Copilot; ask it to draft an NDA and to review
    the Acme draft. Confirm grounded, cited answers come back through the orchestrator.
+
+   > 📸 **Screenshot slot — what you'll see:** the orchestrator answering **live in a Teams chat** with cited output.
+   >
+   > <img src="images/steps/02-teams-live.svg" alt="Screenshot slot: agent live in Teams" width="80%">
+
+   ✅ **You'll know Part A worked when:** you can chat with the agent inside Teams and it returns the
+   same grounded, cited answers you saw in the terminal in Challenges 1 & 3.
 
 ### Part B — Proactive alerts (~30 min)
 5. **Build the Obligation & Renewal agent** and see the alert-ready summary (works with no bot):
@@ -83,6 +94,18 @@ the user rather than wait to be asked. → [Send proactive notifications](https:
    python challenge-4/agents/obligation_renewal_agent.py --days 60
    # preview the exact alert text without sending:
    python challenge-4/proactive_alerts.py --from-renewals --days 30 --dry-run
+   ```
+
+   ✅ **You should see** a renewal summary, then the previewed alert text (no message sent):
+   ```text
+   ✓ Obligation & Renewal agent on 'gpt-4o-mini' — window 60d
+
+   Upcoming renewals (next 60 days):
+     • CT-4821 (Acme MSA) — renews 2026-09-01, auto-renew ON, 90-day notice → notify owner
+     • CT-3390 (Globex NDA) — renews 2026-08-15, 30-day notice → review
+
+   --- alert (dry run) ---
+   🔴 CT-4821 renews in 30 days — high-risk indemnity clause flagged. Recommend legal review.
    ```
 6. **Capture a conversation reference.** In your bot's message handler, on any inbound activity save
    `TurnContext.get_conversation_reference(activity)` and persist `service_url` + `conversation.id`.
@@ -94,6 +117,16 @@ the user rather than wait to be asked. → [Send proactive notifications](https:
    # or generate it from the renewal agent and send:
    python challenge-4/proactive_alerts.py --from-renewals --days 30
    ```
+
+   ✅ **You should see** a send confirmation in the terminal:
+   ```text
+   ✓ Proactive alert sent to Teams.
+   ```
+
+   > 📸 **Screenshot slot — what you'll see:** the **alert message appearing in the Teams channel/chat** without anyone prompting.
+   >
+   > <img src="images/steps/03-proactive-alert.svg" alt="Screenshot slot: proactive alert in Teams" width="80%">
+   > <img src="images/steps/04-renewal-summary.svg" alt="Screenshot slot: renewal summary" width="80%">
 
 ## ✔️ Success criteria
 

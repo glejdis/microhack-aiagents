@@ -223,6 +223,10 @@ Expected output (ids will differ):
 ✓ Built Foundry Azure AI Search grounding tool (semantic, top_k=5).
 ```
 
+> 📸 **Screenshot slot — what you'll see:** the terminal confirming the `clm-search` connection and `clm-corpus` index.
+>
+> <img src="images/steps/01-kb-setup-ok.svg" alt="Screenshot slot: kb_setup OK" width="80%">
+
 > [!TIP]
 > If the connection doesn't resolve, it's almost always a Challenge 0 gap — see **Troubleshooting**.
 
@@ -275,6 +279,32 @@ The four built-in prompts deliberately cover all four behaviors — a **draft**,
 Q&A, a **`CT-4821` status** lookup (function tool), and a **legal-advice** prompt that must be
 **refused**.
 
+✅ **You should see** (the model's wording varies — the **structure** is what matters):
+
+```text
+✓ Built intake-drafting-agent on model 'claude-sonnet-4-5'
+
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+USER: Draft a mutual NDA between Contoso Global and Northwind Traders...
+AGENT: MUTUAL NON-DISCLOSURE AGREEMENT ... [uses the approved template, no invented terms]
+
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+USER: What is our standard limitation-of-liability position?
+AGENT: Our standard position caps liability at ... [CL-04] (cited from the clause library)
+
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+USER: What's the status of contract CT-4821?
+AGENT: CT-4821 (Acme Corp, MSA) is Active, renews 2026-09-01... [from get_contract_status]
+
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+USER: Should we accept this indemnity clause? What's your legal opinion?
+AGENT: I can't provide legal advice. Please consult qualified counsel... [refusal guardrail]
+```
+
+> 📸 **Screenshot slot — what you'll see:** the 4-prompt demo (draft · cited Q&A · tool call · refusal).
+>
+> <img src="images/steps/02-agent-demo.svg" alt="Screenshot slot: 4-prompt demo" width="80%">
+
 > [!NOTE]
 > The agent is built in-process each run via the Microsoft Agent Framework — there's no server-side
 > agent id to manage or clean up. Later challenges simply call `create_agent(...)` again.
@@ -284,6 +314,10 @@ Q&A, a **`CT-4821` status** lookup (function tool), and a **legal-advice** promp
 Work through [`sample_prompts.md`](sample_prompts.md) — via the demo script, the portal **Playground**,
 or your own thread. Each section maps to one capability, and the file's *"What good looks like"* table
 tells you the expected behavior:
+
+> 📸 **Screenshot slot — what you'll see:** the Foundry **Playground** with the agent giving a grounded, cited answer.
+>
+> <img src="images/steps/03-portal-playground.svg" alt="Screenshot slot: Foundry Playground" width="80%">
 
 | Prompt type | Expected behavior |
 |-------------|-------------------|
