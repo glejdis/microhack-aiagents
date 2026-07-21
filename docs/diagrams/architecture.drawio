@@ -112,9 +112,6 @@
         <mxCell id="ic_mgpt4omini" value="" style="sketch=0;html=1;aspect=fixed;image=img/lib/azure2/ai_machine_learning/Azure_OpenAI.svg" vertex="1" parent="1">
           <mxGeometry x="646" y="466" width="28" height="28" as="geometry"/>
         </mxCell>
-        <mxCell id="ic_sources" value="" style="sketch=0;html=1;aspect=fixed;image=img/lib/azure2/storage/Storage_Accounts.svg" vertex="1" parent="1">
-          <mxGeometry x="141" y="636" width="26" height="26" as="geometry"/>
-        </mxCell>
         <mxCell id="ic_iq" value="" style="sketch=0;html=1;aspect=fixed;image=img/lib/azure2/ai_machine_learning/AI_Foundry_IQ.svg" vertex="1" parent="1">
           <mxGeometry x="350" y="636" width="26" height="26" as="geometry"/>
         </mxCell>
