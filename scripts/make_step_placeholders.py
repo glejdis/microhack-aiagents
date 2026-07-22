@@ -40,6 +40,14 @@ SLOTS: list[tuple[str, str, str, str]] = [
      "The clm-corpus search index with a non-zero document count after seeding."),
     ("challenge-0", "10-smoke-pass", "Terminal · Smoke test PASS",
      "The 'Smoke test: PASS' output with both gpt and claude replying OK."),
+    ("challenge-0", "11-appreg-create", "Entra Portal · New app registration",
+     "Microsoft Entra admin center → App registrations → New registration, naming the app 'CLM Microhack Corpus'."),
+    ("challenge-0", "12-api-permissions", "Entra Portal · Graph API permissions",
+     "The app's API permissions blade after adding Microsoft Graph APPLICATION permissions Sites.ReadWrite.All and Files.Read.All."),
+    ("challenge-0", "13-admin-consent", "Entra Portal · Grant admin consent",
+     "The API permissions list showing green 'Granted for <tenant>' checkmarks after clicking 'Grant admin consent'."),
+    ("challenge-0", "14-client-secret", "Entra Portal · Client secret",
+     "Certificates & secrets → New client secret, with the secret Value visible (copy it now — shown only once)."),
 
     # ---- Challenge 1 · Grounded agent --------------------------------------
     ("challenge-1", "01-kb-setup-ok", "Terminal · kb_setup OK",

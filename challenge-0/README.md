@@ -403,27 +403,127 @@ APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=...
 
 Build the `clm-corpus` search index from your **SharePoint** corpus library:
 
-> [!IMPORTANT]
-> **SharePoint prerequisites (bring-your-own):** before seeding, (1) upload the `data/` PDFs to a
-> SharePoint document library, and (2) create a Microsoft Entra **app registration** with Graph
-> application permissions (`Sites.Read.All` / `Files.Read.All`, admin-consented). Put the site URL,
-> library name, app id/secret, and tenant id into `.env` (`SHAREPOINT_*` — see [`.env.example`](../.env.example)).
+The corpus lives in a **SharePoint document library** (bring-your-own — it's Microsoft 365, **not**
+created by `azd`). This is a **one-time setup**: create the library, authorize an app, upload the PDFs,
+then index. Work through **6.1 → 6.5 in order**.
+
+> [!NOTE]
+> Steps 6.1–6.2 are typically done **once by your coach/organizer**, who then hands you the five
+> `SHAREPOINT_*` values. If that's your case, skip to **6.3** and just paste them into `.env`.
+
+#### 6.1 · Create the SharePoint site + document library
+
+1. Go to **[SharePoint](https://www.office.com/launch/sharepoint)** → **+ Create site** → **Team site**.
+2. Name it e.g. **`CLMCorpus`** and finish — it comes with a default **Documents** library.
+3. Copy the site URL from your browser bar, e.g. `https://<tenant>.sharepoint.com/sites/CLMCorpus`
+   (this becomes `SHAREPOINT_SITE_URL`; the library name `Documents` becomes `SHAREPOINT_DOC_LIBRARY`).
+
+#### 6.2 · Authorize an app (Microsoft Entra app registration)
+
+The upload script and the AI Search indexer sign in as an **app** (not as you), so they need an Entra
+app registration with two Microsoft Graph **application** permissions:
+
+| Permission | Why it's needed | Used by |
+|---|---|---|
+| `Sites.ReadWrite.All` | upload PDFs into the library (and read it back) | `upload_corpus_to_sharepoint.py` |
+| `Files.Read.All` | read document content while crawling | `seed_corpus.py` indexer |
+
+<details open>
+<summary><strong>Option A — automate it (one script)</strong> · recommended</summary>
+
+Requires the Azure CLI signed in (`az login`) **and** rights to grant admin consent (Global Admin /
+Privileged Role Admin / Application Administrator — usually your coach/tenant admin):
+
+```bash
+bash scripts/setup_sharepoint_app.sh          # Codespaces / Linux / macOS
+# — or on Windows PowerShell —
+pwsh scripts/setup_sharepoint_app.ps1
+```
+
+It creates the app, adds **both** permissions, **grants admin consent**, mints a **client secret**, and
+prints the three `SHAREPOINT_*` values to paste into `.env`. If you lack consent rights it still creates
+everything and prints the single `az ad app permission admin-consent …` command an admin must run.
+
+✅ **You should see** a block like:
+```text
+SHAREPOINT_TENANT_ID=8f9a...c21
+SHAREPOINT_APP_ID=3d2b...9f4
+SHAREPOINT_APP_SECRET=Xy7Q~....(shown once)
+```
+</details>
+
+<details>
+<summary><strong>Option B — do it by hand in the portal (click-by-click)</strong></summary>
+
+1. Open the **[Microsoft Entra admin center](https://entra.microsoft.com)** → **Identity → Applications
+   → App registrations → + New registration**. Name it **`CLM Microhack Corpus`**, leave the defaults,
+   and click **Register**. On the **Overview** page, copy the **Application (client) ID** and the
+   **Directory (tenant) ID**.
+
+   > 📸 **Screenshot slot:** the *New registration* form / Overview with the client + tenant IDs.
+   >
+   > <img src="images/steps/11-appreg-create.svg" alt="Screenshot slot: new app registration" width="80%">
+
+2. In the app, open **API permissions → + Add a permission → Microsoft Graph → Application
+   permissions**. Search for and tick **`Sites.ReadWrite.All`** and **`Files.Read.All`**, then click
+   **Add permissions**. *(Application, not Delegated.)*
+
+   > 📸 **Screenshot slot:** the API permissions list showing both Graph **Application** permissions added.
+   >
+   > <img src="images/steps/12-api-permissions.svg" alt="Screenshot slot: Graph API permissions" width="80%">
+
+3. Click **Grant admin consent for &lt;tenant&gt;** and confirm — both rows must turn to green
+   **"Granted for &lt;tenant&gt;"**. *(This button is greyed out unless you're a tenant admin — if so,
+   ask your coach to click it.)*
+
+   > 📸 **Screenshot slot:** green "Granted for &lt;tenant&gt;" checkmarks on both permissions.
+   >
+   > <img src="images/steps/13-admin-consent.svg" alt="Screenshot slot: grant admin consent" width="80%">
+
+4. Open **Certificates & secrets → + New client secret**, add one, then **copy the Value immediately**
+   (it's shown only once). That value is your `SHAREPOINT_APP_SECRET`.
+
+   > 📸 **Screenshot slot:** the new client secret with its **Value** visible (copy it now).
+   >
+   > <img src="images/steps/14-client-secret.svg" alt="Screenshot slot: client secret" width="80%">
+</details>
+
+#### 6.3 · Put the values in `.env`
+
+Open the repo-root **`.env`** and fill in what you gathered in 6.1 + 6.2:
+
+```bash
+SHAREPOINT_SITE_URL=https://<tenant>.sharepoint.com/sites/CLMCorpus
+SHAREPOINT_DOC_LIBRARY=Documents
+SHAREPOINT_TENANT_ID=<directory (tenant) id>
+SHAREPOINT_APP_ID=<application (client) id>
+SHAREPOINT_APP_SECRET=<client secret value>
+```
+
+#### 6.4 · Upload the corpus PDFs
+
+Push all 14 corpus PDFs from `challenge-0/data/` into the library — the script recreates the folder
+layout for you:
+
+```bash
+python scripts/upload_corpus_to_sharepoint.py --dry-run   # preview (no changes)
+python scripts/upload_corpus_to_sharepoint.py             # upload for real
+```
+
+✅ **You should see** each file upload, then a summary:
+```text
+  uploaded  contracts/CT-4821_Acme_MSA.pdf
+  ...
+Done. Uploaded 14 PDF(s) to 'Documents'.
+```
 
 > [!TIP]
-> **Step 6a — upload the corpus PDFs automatically (recommended).** Instead of dragging files into
-> SharePoint by hand, run the uploader. It recreates the folder layout and pushes all 14 corpus PDFs
-> from `challenge-0/data/` into your library:
-> ```bash
-> python scripts/upload_corpus_to_sharepoint.py --dry-run   # preview (no changes)
-> python scripts/upload_corpus_to_sharepoint.py             # upload for real
-> ```
-> Uploading needs **write** access, so the app registration must also have Graph
-> `Sites.ReadWrite.All` (or `Files.ReadWrite.All`), admin-consented — the read-only permissions above
-> are enough for the *indexer*, but not for this upload step. You should see `uploaded  contracts/CT-4821_Acme_MSA.pdf`
-> … and a `Uploaded 14 PDF(s)` summary. (Prefer to upload by hand? Skip this and drag the 6 folders
-> from `challenge-0/data/` into the library — but leave out `evaluation/` and `contracts_seed.json`.)
+> Prefer to upload by hand? Skip the script and drag the **6 folders** from `challenge-0/data/` into the
+> library — but leave out `evaluation/` and `contracts_seed.json` (those are read locally, not indexed).
+> A `403 Forbidden` from the script means the app is missing `Sites.ReadWrite.All` **admin consent** —
+> revisit 6.2.
 
-**Step 6b — build the index** from the populated library:
+#### 6.5 · Build the index from the populated library
 
 ```bash
 python scripts/seed_corpus.py
