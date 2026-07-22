@@ -409,6 +409,22 @@ Build the `clm-corpus` search index from your **SharePoint** corpus library:
 > application permissions (`Sites.Read.All` / `Files.Read.All`, admin-consented). Put the site URL,
 > library name, app id/secret, and tenant id into `.env` (`SHAREPOINT_*` — see [`.env.example`](../.env.example)).
 
+> [!TIP]
+> **Step 6a — upload the corpus PDFs automatically (recommended).** Instead of dragging files into
+> SharePoint by hand, run the uploader. It recreates the folder layout and pushes all 14 corpus PDFs
+> from `challenge-0/data/` into your library:
+> ```bash
+> python scripts/upload_corpus_to_sharepoint.py --dry-run   # preview (no changes)
+> python scripts/upload_corpus_to_sharepoint.py             # upload for real
+> ```
+> Uploading needs **write** access, so the app registration must also have Graph
+> `Sites.ReadWrite.All` (or `Files.ReadWrite.All`), admin-consented — the read-only permissions above
+> are enough for the *indexer*, but not for this upload step. You should see `uploaded  contracts/CT-4821_Acme_MSA.pdf`
+> … and a `Uploaded 14 PDF(s)` summary. (Prefer to upload by hand? Skip this and drag the 6 folders
+> from `challenge-0/data/` into the library — but leave out `evaluation/` and `contracts_seed.json`.)
+
+**Step 6b — build the index** from the populated library:
+
 ```bash
 python scripts/seed_corpus.py
 # optional — only if you deployed Azure SQL:

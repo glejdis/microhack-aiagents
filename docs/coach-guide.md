@@ -66,6 +66,12 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 - **Point:** stand up the whole Foundry environment + seed the corpus with **zero local install**.
 - **Done when:** `python scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
   `gpt-5.3` **and** `claude-sonnet-4-5`) and the `clm-corpus` index shows documents in the portal.
+- **Coach prep (before the event):** the corpus lives in a **bring-your-own SharePoint library** —
+  `azd`/`deploy.sh` do **not** create it. Stand up a SharePoint site + document library and an Entra
+  app registration, then populate the library once with
+  **`python scripts/upload_corpus_to_sharepoint.py`** (uploads the 14 corpus PDFs; needs Graph
+  `Sites.ReadWrite.All`). Hand teams the 5 `SHAREPOINT_*` values so their `seed_corpus.py` indexer
+  (read-only `Sites.Read.All`) can crawl it. One shared library for everyone is fine.
 - **Provisioning paths** — all produce the same resources and `.env`: **`azd up`** (Bicep in
   `challenge-0/infra/`), **`scripts/deploy.sh`** (`.ps1` on Windows), or the one-click **Deploy to
   Azure** button / `az deployment sub create` on `infra/azuredeploy.json` (then
