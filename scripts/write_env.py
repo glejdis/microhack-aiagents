@@ -28,7 +28,7 @@ DEFAULTS = {
     "MODEL_ORCHESTRATOR": "gpt-5.3",
     "MODEL_DRAFTING": "claude-sonnet-4-5",
     "MODEL_CLAUSE_RISK": "claude-sonnet-4-5",
-    "MODEL_RENEWAL": "gpt-4o-mini",
+    "MODEL_RENEWAL": "gpt-5-mini",
     "AZURE_SEARCH_INDEX": "clm-corpus",
     "AZURE_SEARCH_CONNECTION_NAME": "clm-search",
     "SHAREPOINT_DOC_LIBRARY": "Documents",

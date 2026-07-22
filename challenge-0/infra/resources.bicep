@@ -16,6 +16,9 @@ param principalId string = ''
 @allowed([ 'User', 'ServicePrincipal' ])
 param principalType string = 'User'
 
+@description('Deploy the Anthropic Claude model ("true"/"false"). Set to "false" (azd env set DEPLOY_CLAUDE_MODEL false) if your subscription has no Claude quota or the Anthropic marketplace offer is unavailable — the two Claude-backed agents then fall back to the GPT orchestrator model.')
+param deployClaudeModel string = 'true'
+
 @description('Provision the optional Azure SQL backing store for the contract-status tool ("true"/"false").')
 param deploySql string = 'false'
 
@@ -41,13 +44,19 @@ var searchConnectionName = 'clm-search'
 // swedencentral there is no base `gpt-5.3` model — the orchestrator deployment
 // (still named `gpt-5.3`) runs the `gpt-5.3-chat` catalog model.
 var gptOrchestrator = 'gpt-5.3'
-var gptMini = 'gpt-4o-mini'
+var gptMini = 'gpt-5-mini'
 var claude = 'claude-sonnet-4-5'
 // Orchestrator catalog model + version — confirm the exact model/version offered
 // in your region's Foundry model catalog and update here if needed
 // (`az cognitiveservices model list --location <region>`).
 var gptOrchestratorModel = 'gpt-5.3-chat'
 var gptOrchestratorVersion = '2026-03-03'
+// Renewal / lightweight agent catalog model. gpt-4o-mini is deprecating in
+// swedencentral (fires ServiceModelDeprecating on new deployments), so the
+// renewal deployment runs gpt-5-mini instead — same GlobalStandard SKU, a later
+// deprecation horizon, and still cheap/fast for the high-frequency agent.
+var gptMiniModel = 'gpt-5-mini'
+var gptMiniVersion = '2025-08-07'
 
 // ---- Built-in role definition ids ----------------------------------------
 var roleAiDeveloper = '64702f94-c441-49e6-a78b-ef80e0188fee'            // Azure AI Developer
@@ -57,6 +66,7 @@ var roleSearchServiceContributor = '7ca78c08-252a-4471-8644-bb5ff32d4ba0'
 var roleSearchIndexDataReader = '1407120a-92aa-4202-b7e9-c0e197c71c8f'
 
 var wantSql = toLower(deploySql) == 'true' && !empty(sqlAdminPassword)
+var wantClaude = toLower(deployClaudeModel) == 'true'
 var assignUserRoles = !empty(principalId)
 
 // ==========================================================================
@@ -131,6 +141,10 @@ resource account 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
     customSubDomainName: foundryName
     publicNetworkAccess: 'Enabled'
     disableLocalAuth: false
+    // Required so the child `projects` resource below can be created under this
+    // AIServices account (otherwise: "Project can only be created under
+    // AIServices Kind account with allowProjectManagement set to true").
+    allowProjectManagement: true
   }
 }
 
@@ -161,7 +175,7 @@ resource deployMini 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01
   name: gptMini
   sku: { name: 'GlobalStandard', capacity: 30 }
   properties: {
-    model: { format: 'OpenAI', name: 'gpt-4o-mini', version: '2024-07-18' }
+    model: { format: 'OpenAI', name: gptMiniModel, version: gptMiniVersion }
   }
   dependsOn: [ deployOrchestrator ]
 }
@@ -169,7 +183,10 @@ resource deployMini 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01
 // Claude: model-format Anthropic. Version is the date-stamped Azure Foundry
 // catalog version (e.g. 20250929 for claude-sonnet-4-5 in swedencentral) — not
 // Anthropic's own "1"/"2" scheme. Verify with `az cognitiveservices model list`.
-resource deployClaude 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01-preview' = {
+// Gated on deployClaudeModel: Anthropic deployments can fail on zero
+// subscription quota or missing marketplace offer data (InvalidModelProviderData)
+// even when every step is correct — set DEPLOY_CLAUDE_MODEL=false to skip.
+resource deployClaude 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01-preview' = if (wantClaude) {
   parent: account
   name: claude
   sku: { name: 'GlobalStandard', capacity: 20 }
@@ -290,8 +307,11 @@ resource raAccountSearchReader 'Microsoft.Authorization/roleAssignments@2022-04-
 output AZURE_AI_PROJECT_ENDPOINT string = 'https://${account.name}.services.ai.azure.com/api/projects/${project.name}'
 
 output MODEL_ORCHESTRATOR string = gptOrchestrator
-output MODEL_DRAFTING string = claude
-output MODEL_CLAUSE_RISK string = claude
+// When Claude is skipped (deployClaudeModel=false) the two Claude-backed agents
+// fall back to the GPT orchestrator deployment so the smoke test + later
+// challenges still run end-to-end.
+output MODEL_DRAFTING string = wantClaude ? claude : gptOrchestrator
+output MODEL_CLAUSE_RISK string = wantClaude ? claude : gptOrchestrator
 output MODEL_RENEWAL string = gptMini
 
 output AZURE_SEARCH_ENDPOINT string = 'https://${search.name}.search.windows.net'

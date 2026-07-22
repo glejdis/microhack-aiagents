@@ -45,7 +45,7 @@ def create_agent(model: str | None = None):
     from agent_framework import Agent
 
     return Agent(
-        client=build_chat_client(model or settings.model_renewal),  # gpt-4o-mini
+        client=build_chat_client(model or settings.model_renewal),  # gpt-5-mini
         name=AGENT_NAME,
         instructions=INSTRUCTIONS,
         tools=[function_tool(get_contract_status), function_tool(list_upcoming_renewals)],

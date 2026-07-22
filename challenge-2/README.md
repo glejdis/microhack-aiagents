@@ -73,7 +73,7 @@ an **Agent Monitoring Dashboard** — no query-writing required.
 
 **What it is:** the library ([`challenge-2/evaluators.py`](evaluators.py)) that **scores** agent responses.
 `GroundednessEvaluator`, `RelevanceEvaluator`, `CoherenceEvaluator` and `FluencyEvaluator` are **LLM-judged**
-by an Azure OpenAI deployment (your `gpt-5.3` / `gpt-4o-mini`); a `target(query)` callable produces the
+by an Azure OpenAI deployment (your `gpt-5.3` / `gpt-5-mini`); a `target(query)` callable produces the
 agent's answer for each of the **16 rows** in `challenge-0/data/evaluation/evaluation_dataset.jsonl`.
 
 - Ready-made **quality** and **safety** evaluators (safety ones take `azure_ai_project` + a credential).

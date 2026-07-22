@@ -26,6 +26,14 @@ Prerequisites (see the Challenge 0 README):
     - .env values: SHAREPOINT_SITE_URL, SHAREPOINT_DOC_LIBRARY,
       SHAREPOINT_APP_ID, SHAREPOINT_APP_SECRET, SHAREPOINT_TENANT_ID.
 
+Local-PDF fallback (no SharePoint):
+    If the SHAREPOINT_* values are not set, this script instead extracts text
+    from the local challenge-0/data/**/*.pdf corpus (pypdf) and pushes those
+    documents straight into the clm-corpus index via the Search SDK — the same
+    Foundry IQ grounding outcome without SharePoint. Use this in sandbox tenants
+    that have no SharePoint Online license or where you can't grant the app's
+    Graph admin consent.
+
 Note: the Azure AI Search SharePoint Online indexer is a preview feature. If
 your search SDK/service rejects the `sharepoint` data-source type, install a
 preview `azure-search-documents` build (or create the data source in the portal)
@@ -33,13 +41,15 @@ and re-run.
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
 # Make `clm_common` importable when run from the repo root.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from clm_common.config import settings, credential  # noqa: E402
+from clm_common.config import settings, credential, DATA_DIR  # noqa: E402
+from clm_common.documents import read_document_text  # noqa: E402
 
 # The corpus subfolders expected inside the SharePoint document library (they
 # mirror the local `challenge-0/data/` layout the PDFs are authored from):
@@ -188,20 +198,97 @@ def create_sharepoint_indexer() -> bool:
     return True
 
 
+def _safe_key(rel_path: str) -> str:
+    """Turn a relative corpus path into a valid Azure AI Search document key.
+
+    Keys may contain only letters, digits, underscore, dash, and equals.
+    """
+    return re.sub(r"[^0-9A-Za-z_\-=]", "_", rel_path)
+
+
+def seed_local_pdfs() -> int:
+    """Fallback: push the local corpus PDFs straight into the clm-corpus index.
+
+    For tenants with no SharePoint Online license (or where you can't grant the
+    app's Graph admin consent): extract text from challenge-0/data/**/*.pdf with
+    pypdf and upload documents via the Search SDK — the same grounding outcome as
+    the SharePoint indexer, minus SharePoint. Requires the caller to hold the
+    'Search Index Data Contributor' role on the search service (the deploy grants
+    it to the deploying user).
+    """
+    from datetime import datetime, timezone
+
+    from azure.search.documents import SearchClient
+
+    pdfs = sorted(DATA_DIR.rglob("*.pdf"))
+    if not pdfs:
+        print(f"  ! no PDFs found under {DATA_DIR} — nothing to seed.")
+        return 0
+
+    client = SearchClient(
+        endpoint=settings.search_endpoint,
+        index_name=settings.search_index,
+        credential=credential(),
+    )
+
+    docs: list[dict] = []
+    for pdf in pdfs:
+        rel = pdf.relative_to(DATA_DIR)
+        try:
+            content = read_document_text(pdf)
+        except Exception as exc:  # noqa: BLE001
+            print(f"  ! skipped {rel.as_posix()} ({exc})")
+            continue
+        mtime = datetime.fromtimestamp(pdf.stat().st_mtime, tz=timezone.utc)
+        docs.append(
+            {
+                "id": _safe_key(rel.as_posix()),
+                "title": pdf.stem,
+                "content": content,
+                "source": rel.parts[0] if len(rel.parts) > 1 else "root",
+                "url": rel.as_posix(),
+                "last_modified": mtime,
+            }
+        )
+
+    if not docs:
+        print("  ! no readable PDFs — nothing uploaded.")
+        return 0
+
+    results = client.upload_documents(documents=docs)
+    ok = sum(1 for r in results if r.succeeded)
+    print(f"  ✓ uploaded {ok}/{len(docs)} local PDF(s) into '{settings.search_index}'")
+    if ok < len(docs):
+        print(
+            "  ! some documents failed — confirm you have the 'Search Index Data "
+            "Contributor' role on the search service, then re-run."
+        )
+    return ok
+
+
 def build_search_index() -> None:
     if not settings.search_endpoint:
         print("· AZURE_SEARCH_ENDPOINT not set — skipping search index.")
         return
     create_index()
-    create_sharepoint_indexer()
+    if _sharepoint_connection_string():
+        create_sharepoint_indexer()
+    else:
+        print(
+            "· SharePoint settings not set — using the LOCAL-PDF fallback\n"
+            "  (extracting challenge-0/data/**/*.pdf straight into the index; no\n"
+            "  SharePoint needed — see the challenge-0 README)."
+        )
+        seed_local_pdfs()
 
 
 def main() -> None:
-    print("Seeding CLM corpus from SharePoint…")
+    print("Seeding CLM corpus…")
     build_search_index()
     print(
-        "Done. Expected: the 'clm-corpus' index populated by the SharePoint "
-        "indexer (check the indexer run status in the Azure portal)."
+        "Done. Expected: the 'clm-corpus' index populated — via the SharePoint "
+        "indexer (check its run status in the Azure portal) or, in the local-PDF "
+        "fallback, directly by this script."
     )
 
 

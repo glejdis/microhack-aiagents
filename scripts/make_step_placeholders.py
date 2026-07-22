@@ -35,7 +35,7 @@ SLOTS: list[tuple[str, str, str, str]] = [
     ("challenge-0", "07-portal-resource-group", "Azure Portal · Resource group",
      "The rg-clm-microhack resource group Overview listing ~7 resources (Foundry, Search, App Insights, Log Analytics...)."),
     ("challenge-0", "08-foundry-deployments", "Foundry Portal · Model deployments",
-     "Foundry portal → Models + endpoints showing gpt-5.3, gpt-4o-mini and claude-sonnet-4-5 as 'Succeeded'."),
+     "Foundry portal → Models + endpoints showing gpt-5.3, gpt-5-mini and claude-sonnet-4-5 as 'Succeeded'."),
     ("challenge-0", "09-search-index", "Foundry/Search · clm-corpus index",
      "The clm-corpus search index with a non-zero document count after seeding."),
     ("challenge-0", "10-smoke-pass", "Terminal · Smoke test PASS",

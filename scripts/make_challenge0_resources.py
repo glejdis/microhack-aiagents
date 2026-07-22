@@ -182,7 +182,7 @@ resource(11, 66.2, 44, 13.6, "GPT", GPT, "gpt-5.3",
          "OpenAI · GlobalStandard 30\nOrchestrator agent", mono_fs=9)
 resource(58, 66.2, 44, 13.6, "CLD", CLAUDE, "claude-sonnet-4-5",
          "Anthropic · GlobalStandard 20\nIntake & Drafting · Clause & Risk", mono_fs=9)
-resource(105, 66.2, 44, 13.6, "GPT", GPT, "gpt-4o-mini",
+resource(105, 66.2, 44, 13.6, "GPT", GPT, "gpt-5-mini",
          "OpenAI · GlobalStandard 30\nObligation & Renewal agent", mono_fs=9)
 
 # capability tags

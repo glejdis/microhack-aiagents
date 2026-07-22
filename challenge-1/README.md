@@ -132,7 +132,7 @@ each is**, the **specifics wired into this repo**, and **why it's in the archite
 your `.env` reaches it through `AZURE_AI_PROJECT_ENDPOINT`
 (`https://<account>.services.ai.azure.com/api/projects/clm-project`).
 
-- **All three models deploy onto that one account** — `gpt-5.3`, `gpt-4o-mini`, `claude-sonnet-4-5` — so a
+- **All three models deploy onto that one account** — `gpt-5.3`, `gpt-5-mini`, `claude-sonnet-4-5` — so a
   single `get_project_client()` ([`src/clm_common/foundry.py`](../src/clm_common/foundry.py)) reaches each.
 - The **Microsoft Agent Framework** (`Agent(client=FoundryChatClient(...))`) runs the agent loop **in your
   process** — planning, tool-calls and retrieval — calling Foundry for model inference.
@@ -188,7 +188,7 @@ Azure-hosted, SKU `GlobalStandard`, capacity 20), read from `settings.model_draf
 - Called through the **same Agents API** as the GPT deployments; only the deployment name differs.
 
 **Why here:** drafting goes to Claude; routing/tool-calling to **`gpt-5.3`** (Ch3) and the renewal scan to
-**`gpt-4o-mini`** (Ch4) — right model per job, one platform. → [Models in Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/)
+**`gpt-5-mini`** (Ch4) — right model per job, one platform. → [Models in Microsoft Foundry](https://learn.microsoft.com/azure/ai-foundry/)
 
 ### Function tools — `get_contract_status`
 

@@ -11,7 +11,7 @@ targetScope = 'subscription'
 param environmentName string
 
 @minLength(1)
-@description('Azure region for all resources. Must offer gpt-5.3-chat, gpt-4o-mini AND Claude Sonnet 4.5.')
+@description('Azure region for all resources. Must offer gpt-5.3-chat and gpt-5-mini (and Claude Sonnet 4.5 unless DEPLOY_CLAUDE_MODEL=false).')
 param location string
 
 @description('Object id of the user/service principal running the deployment (azd provides AZURE_PRINCIPAL_ID). Used for RBAC.')
@@ -20,6 +20,9 @@ param principalId string = ''
 @description('Principal type for RBAC assignments: User (interactive azd) or ServicePrincipal (CI).')
 @allowed([ 'User', 'ServicePrincipal' ])
 param principalType string = 'User'
+
+@description('Deploy the Anthropic Claude model ("true"/"false"). Set DEPLOY_CLAUDE_MODEL=false to skip it when your subscription has no Claude quota / marketplace offer; the Claude-backed agents then use the GPT orchestrator.')
+param deployClaudeModel string = 'true'
 
 @description('Provision the optional Azure SQL backing store for the contract-status tool ("true"/"false").')
 param deploySql string = 'false'
@@ -48,6 +51,7 @@ module resources 'resources.bicep' = {
     resourceToken: resourceToken
     principalId: principalId
     principalType: principalType
+    deployClaudeModel: deployClaudeModel
     deploySql: deploySql
     sqlAdminPassword: sqlAdminPassword
     tags: tags

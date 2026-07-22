@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "4921665624004274040"
+      "templateHash": "3573948596672357620"
     }
   },
   "parameters": {
@@ -21,7 +21,7 @@
       "type": "string",
       "minLength": 1,
       "metadata": {
-        "description": "Azure region for all resources. Must offer gpt-5.3, gpt-4o-mini AND Claude Sonnet 4.5."
+        "description": "Azure region for all resources. Must offer gpt-5.3-chat and gpt-5-mini (and Claude Sonnet 4.5 unless DEPLOY_CLAUDE_MODEL=false)."
       }
     },
     "principalId": {
@@ -40,6 +40,13 @@
       ],
       "metadata": {
         "description": "Principal type for RBAC assignments: User (interactive azd) or ServicePrincipal (CI)."
+      }
+    },
+    "deployClaudeModel": {
+      "type": "string",
+      "defaultValue": "true",
+      "metadata": {
+        "description": "Deploy the Anthropic Claude model (\"true\"/\"false\"). Set DEPLOY_CLAUDE_MODEL=false to skip it when your subscription has no Claude quota / marketplace offer; the Claude-backed agents then use the GPT orchestrator."
       }
     },
     "deploySql": {
@@ -95,6 +102,9 @@
           "principalType": {
             "value": "[parameters('principalType')]"
           },
+          "deployClaudeModel": {
+            "value": "[parameters('deployClaudeModel')]"
+          },
           "deploySql": {
             "value": "[parameters('deploySql')]"
           },
@@ -112,7 +122,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "5797536079254193630"
+              "templateHash": "12489020765184620620"
             }
           },
           "parameters": {
@@ -146,6 +156,13 @@
                 "description": "Principal type for RBAC assignments: User or ServicePrincipal."
               }
             },
+            "deployClaudeModel": {
+              "type": "string",
+              "defaultValue": "true",
+              "metadata": {
+                "description": "Deploy the Anthropic Claude model (\"true\"/\"false\"). Set to \"false\" (azd env set DEPLOY_CLAUDE_MODEL false) if your subscription has no Claude quota or the Anthropic marketplace offer is unavailable — the two Claude-backed agents then fall back to the GPT orchestrator model."
+              }
+            },
             "deploySql": {
               "type": "string",
               "defaultValue": "false",
@@ -177,16 +194,19 @@
             "searchIndexName": "clm-corpus",
             "searchConnectionName": "clm-search",
             "gptOrchestrator": "gpt-5.3",
-            "gptMini": "gpt-4o-mini",
+            "gptMini": "gpt-5-mini",
             "claude": "claude-sonnet-4-5",
             "gptOrchestratorModel": "gpt-5.3-chat",
             "gptOrchestratorVersion": "2026-03-03",
+            "gptMiniModel": "gpt-5-mini",
+            "gptMiniVersion": "2025-08-07",
             "roleAiDeveloper": "64702f94-c441-49e6-a78b-ef80e0188fee",
             "roleCognitiveServicesUser": "a97b65f3-24c7-4388-baec-2e87135dc908",
             "roleSearchIndexDataContributor": "8ebe5a00-799e-43f5-93ac-243d3dce84a7",
             "roleSearchServiceContributor": "7ca78c08-252a-4471-8644-bb5ff32d4ba0",
             "roleSearchIndexDataReader": "1407120a-92aa-4202-b7e9-c0e197c71c8f",
             "wantSql": "[and(equals(toLower(parameters('deploySql')), 'true'), not(empty(parameters('sqlAdminPassword'))))]",
+            "wantClaude": "[equals(toLower(parameters('deployClaudeModel')), 'true')]",
             "assignUserRoles": "[not(empty(parameters('principalId')))]"
           },
           "resources": [
@@ -258,7 +278,8 @@
               "properties": {
                 "customSubDomainName": "[variables('foundryName')]",
                 "publicNetworkAccess": "Enabled",
-                "disableLocalAuth": false
+                "disableLocalAuth": false,
+                "allowProjectManagement": true
               }
             },
             {
@@ -308,8 +329,8 @@
               "properties": {
                 "model": {
                   "format": "OpenAI",
-                  "name": "gpt-4o-mini",
-                  "version": "2024-07-18"
+                  "name": "[variables('gptMiniModel')]",
+                  "version": "[variables('gptMiniVersion')]"
                 }
               },
               "dependsOn": [
@@ -318,6 +339,7 @@
               ]
             },
             {
+              "condition": "[variables('wantClaude')]",
               "type": "Microsoft.CognitiveServices/accounts/deployments",
               "apiVersion": "2025-04-01-preview",
               "name": "[format('{0}/{1}', variables('foundryName'), variables('claude'))]",
@@ -486,11 +508,11 @@
             },
             "MODEL_DRAFTING": {
               "type": "string",
-              "value": "[variables('claude')]"
+              "value": "[if(variables('wantClaude'), variables('claude'), variables('gptOrchestrator'))]"
             },
             "MODEL_CLAUSE_RISK": {
               "type": "string",
-              "value": "[variables('claude')]"
+              "value": "[if(variables('wantClaude'), variables('claude'), variables('gptOrchestrator'))]"
             },
             "MODEL_RENEWAL": {
               "type": "string",

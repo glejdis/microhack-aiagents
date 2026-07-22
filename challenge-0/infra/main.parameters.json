@@ -14,6 +14,9 @@
     "principalType": {
       "value": "${AZURE_PRINCIPAL_TYPE=User}"
     },
+    "deployClaudeModel": {
+      "value": "${DEPLOY_CLAUDE_MODEL=true}"
+    },
     "deploySql": {
       "value": "${DEPLOY_SQL=false}"
     },

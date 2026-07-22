@@ -22,8 +22,8 @@ tips. Participants never see this file; it's for the people running the room.
 
 | Task | Why it matters |
 |------|----------------|
-| **Pick a region with all 3 models** (`gpt-5.3`, `gpt-4o-mini`, `claude-sonnet-4-5`). `swedencentral` is a good default. | Challenge 0 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** |
-| **Confirm Claude is enabled** in both the **model catalog** *and* the **Foundry chat runner** for that region. | If Foundry can't serve Claude via the chat client, Ch1 needs the Anthropic-SDK fallback (documented in-challenge). Know this before the room does. |
+| **Pick a region with all 3 models** (`gpt-5.3`, `gpt-5-mini`, `claude-sonnet-4-5`). `swedencentral` is a good default. | Challenge 0 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** Model versions drift — the repo tracks non-deprecating pins; if you re-pin, avoid versions with a near/past `deprecation.inference` date (`az cognitiveservices model list`). |
+| **Confirm Claude is enabled** in both the **model catalog** *and* the **Foundry chat runner** for that region, and that you have **Anthropic quota**. | If Foundry can't serve Claude via the chat client, Ch1 needs the Anthropic-SDK fallback. If there's **zero Claude quota** or the marketplace offer is unavailable (`InvalidModelProviderData`), tell teams to deploy with **`DEPLOY_CLAUDE_MODEL=false`** — drafting/clause-risk fall back to `gpt-5.3` and the smoke test still passes. |
 | **Check quota** — Basic Azure AI Search + the model SKUs (TPM for each deployment). Request increases early. | Quota denials are the #1 day-of blocker and can take hours to approve. |
 | **Decide the subscription model** — one sub per team (cleanest) vs a shared sub with per-team resource groups / env names. | `azd up` uses an environment name as the RG suffix; shared subs need unique names per team. |
 | **Do a full dry-run** in the target region, including `azd up` **and** `scripts/deploy.sh`. | You'll hit the region/quota issues before the participants do. |
@@ -74,6 +74,11 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
   **`python scripts/upload_corpus_to_sharepoint.py`** (uploads the 14 corpus PDFs). Hand teams the five
   `SHAREPOINT_*` values so their `seed_corpus.py` indexer can crawl it. One shared library for everyone
   is fine. Admin-consent needs Global Admin / Privileged Role Admin / Application Administrator.
+- **No SharePoint license / no admin-consent rights? (sandbox tenants):** skip all of the above. Teams
+  leave the `SHAREPOINT_*` values blank and run `python scripts/seed_corpus.py`, which falls back to
+  extracting the local `challenge-0/data/**/*.pdf` corpus straight into the `clm-corpus` index (needs the
+  Search Index Data Contributor role, granted by `azd up`). Same grounding outcome, no SharePoint — a
+  reliable default if you're unsure your tenant has an SPO license.
 - **Provisioning paths** — all produce the same resources and `.env`: **`azd up`** (Bicep in
   `challenge-0/infra/`), **`scripts/deploy.sh`** (`.ps1` on Windows), or the one-click **Deploy to
   Azure** button / `az deployment sub create` on `infra/azuredeploy.json` (then

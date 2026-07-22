@@ -7,7 +7,7 @@
 #           rights to deploy GPT and Anthropic Claude models.
 #
 # NOTE: Model + region availability changes over time. Confirm your target
-#       region offers gpt-5.3, gpt-4o-mini AND Claude Sonnet 4.5 in the
+#       region offers gpt-5.3, gpt-5-mini AND Claude Sonnet 4.5 in the
 #       Foundry model catalog before running. See the challenge-0 README.
 # ==========================================================================
 set -euo pipefail
@@ -25,8 +25,18 @@ WITH_SQL="false"
 
 # Model deployments (name=catalog-model:version:format)
 GPT_ORCH="gpt-5.3"
-GPT_MINI="gpt-4o-mini"
+GPT_MINI="gpt-5-mini"
 CLAUDE="claude-sonnet-4-5"
+
+# Claude can be skipped when the subscription has no Anthropic quota or the
+# marketplace offer is unavailable: run with DEPLOY_CLAUDE=false. The two
+# Claude-backed agents then fall back to the GPT orchestrator deployment.
+DEPLOY_CLAUDE="${DEPLOY_CLAUDE:-true}"
+if [[ "$(printf '%s' "$DEPLOY_CLAUDE" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
+  DRAFTING_MODEL="$CLAUDE"
+else
+  DRAFTING_MODEL="$GPT_ORCH"
+fi
 
 echo "▶ Resource group:  $RG ($LOCATION)"
 echo "▶ Foundry account: $FOUNDRY / project $PROJECT"
@@ -60,9 +70,15 @@ deploy_model () {  # name  model-name  version  format  sku-capacity
 # gpt-5.3 deployment: no base `gpt-5.3` model in swedencentral — use gpt-5.3-chat.
 # Confirm the exact model/version in your region's Foundry catalog.
 deploy_model "$GPT_ORCH" "gpt-5.3-chat"     "2026-03-03" "OpenAI"    30
-deploy_model "$GPT_MINI" "gpt-4o-mini"      "2024-07-18" "OpenAI"    30
+# Renewal / lightweight agent: gpt-4o-mini is deprecating in swedencentral, so
+# deploy gpt-5-mini instead (same GlobalStandard SKU, later deprecation date).
+deploy_model "$GPT_MINI" "gpt-5-mini"       "2025-08-07" "OpenAI"    30
 # Claude: model-format Anthropic; version is the date-stamped Azure catalog version.
-deploy_model "$CLAUDE"   "claude-sonnet-4-5" "20250929"  "Anthropic" 20
+if [[ "$DRAFTING_MODEL" == "$CLAUDE" ]]; then
+  deploy_model "$CLAUDE" "claude-sonnet-4-5" "20250929"  "Anthropic" 20
+else
+  echo "  · Skipping Claude (DEPLOY_CLAUDE=false) — MODEL_DRAFTING/MODEL_CLAUSE_RISK use $GPT_ORCH"
+fi
 
 # ---- 4. Azure AI Search (Foundry IQ backing store) -----------------------
 az search service create \
@@ -110,8 +126,8 @@ cat > .env <<ENV
 AZURE_AI_PROJECT_ENDPOINT=${PROJECT_ENDPOINT}
 
 MODEL_ORCHESTRATOR=${GPT_ORCH}
-MODEL_DRAFTING=${CLAUDE}
-MODEL_CLAUSE_RISK=${CLAUDE}
+MODEL_DRAFTING=${DRAFTING_MODEL}
+MODEL_CLAUSE_RISK=${DRAFTING_MODEL}
 MODEL_RENEWAL=${GPT_MINI}
 
 AZURE_SEARCH_ENDPOINT=${SEARCH_ENDPOINT}

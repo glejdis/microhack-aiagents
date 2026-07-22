@@ -63,7 +63,19 @@ def main() -> int:
         return 1
 
     gpt_ok = ping_model(settings.model_orchestrator, "gpt")
-    claude_ok = ping_model(settings.model_drafting, "claude")
+
+    # When Claude was skipped at deploy time (DEPLOY_CLAUDE_MODEL=false), the
+    # drafting/clause-risk deployments fall back to the orchestrator model, so
+    # MODEL_DRAFTING == MODEL_ORCHESTRATOR. Don't ping (or require) Claude then.
+    claude_skipped = settings.model_drafting == settings.model_orchestrator
+    if claude_skipped:
+        print(
+            "2) Claude skipped (MODEL_DRAFTING == MODEL_ORCHESTRATOR) — the drafting\n"
+            "   & clause-risk agents run on the orchestrator model. Skipping Claude ping."
+        )
+        claude_ok = gpt_ok
+    else:
+        claude_ok = ping_model(settings.model_drafting, "claude")
 
     print("\nSmoke test:", "✅ PASS" if (gpt_ok and claude_ok) else "⚠️  PARTIAL (see notes above)")
     return 0 if (gpt_ok and claude_ok) else 2

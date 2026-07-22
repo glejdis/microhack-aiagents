@@ -5,7 +5,7 @@
   <text x="36" y="120" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="600" fill="#222">Foundry Portal · Model deployments</text>
   <foreignObject x="36" y="140" width="828" height="110">
     <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Segoe UI,Arial,sans-serif;font-size:17px;line-height:1.5;color:#444;">
-      Foundry portal → Models + endpoints showing gpt-5.3, gpt-4o-mini and claude-sonnet-4-5 as &#x27;Succeeded&#x27;.
+      Foundry portal → Models + endpoints showing gpt-5.3, gpt-5-mini and claude-sonnet-4-5 as &#x27;Succeeded&#x27;.
     </div>
   </foreignObject>
   <text x="36" y="278" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#7A4FB5">Replace this file with your own screenshot (08-foundry-deployments.png), then point the README &lt;img&gt; at the .png.</text>

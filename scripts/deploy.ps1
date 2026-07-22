@@ -15,7 +15,12 @@ $Project     = $env:PROJECT     ?? "clm-project"
 $Search      = $env:SEARCH      ?? "clmsearch$Suffix"
 $AppInsights = "clm-appinsights"
 
-$GptOrch = "gpt-5.3"; $GptMini = "gpt-4o-mini"; $Claude = "claude-sonnet-4-5"
+$GptOrch = "gpt-5.3"; $GptMini = "gpt-5-mini"; $Claude = "claude-sonnet-4-5"
+
+# Claude can be skipped (no Anthropic quota / marketplace offer): set
+# $env:DEPLOY_CLAUDE = "false". The Claude-backed agents then use the orchestrator.
+$DeployClaude = ($env:DEPLOY_CLAUDE ?? "true").ToLower() -eq "true"
+$DraftingModel = if ($DeployClaude) { $Claude } else { $GptOrch }
 
 Write-Host "▶ Resource group: $Rg ($Location); Foundry $Foundry / project $Project"
 
@@ -36,8 +41,12 @@ function Deploy-Model($name, $model, $version, $format, $cap) {
   if ($LASTEXITCODE -ne 0) { Write-Host "    ! $name failed — check availability in $Location." }
 }
 Deploy-Model $GptOrch "gpt-5.3-chat"     "2026-03-03" "OpenAI"    30
-Deploy-Model $GptMini "gpt-4o-mini"      "2024-07-18" "OpenAI"    30
-Deploy-Model $Claude  "claude-sonnet-4-5" "20250929"  "Anthropic" 20
+Deploy-Model $GptMini "gpt-5-mini"       "2025-08-07" "OpenAI"    30
+if ($DeployClaude) {
+  Deploy-Model $Claude "claude-sonnet-4-5" "20250929"  "Anthropic" 20
+} else {
+  Write-Host "  · Skipping Claude (DEPLOY_CLAUDE=false) — drafting/clause-risk use $GptOrch"
+}
 
 az search service create -n $Search -g $Rg -l $Location --sku basic --partition-count 1 --replica-count 1 -o none
 Write-Host "  ✓ Azure AI Search created"
@@ -70,8 +79,8 @@ $SearchEndpoint  = "https://$Search.search.windows.net"
 AZURE_AI_PROJECT_ENDPOINT=$ProjectEndpoint
 
 MODEL_ORCHESTRATOR=$GptOrch
-MODEL_DRAFTING=$Claude
-MODEL_CLAUSE_RISK=$Claude
+MODEL_DRAFTING=$DraftingModel
+MODEL_CLAUSE_RISK=$DraftingModel
 MODEL_RENEWAL=$GptMini
 
 AZURE_SEARCH_ENDPOINT=$SearchEndpoint
