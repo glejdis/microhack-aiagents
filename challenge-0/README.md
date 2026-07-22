@@ -138,6 +138,14 @@ A **fork** is your own copy of this repo where your changes and progress are sav
 
 ✅ **You'll know it worked when:** the page reloads at `github.com/<your-username>/microhack-aiagents` (your username, not `glejdis`, in the URL).
 
+> [!IMPORTANT]
+> **Already forked this repo a while ago?** Your fork can fall **behind** the original and miss recent
+> fixes (for example the model/region fix in Challenge 0). Before you deploy, **sync your fork**: open
+> your fork on GitHub → click **"Sync fork" → "Update branch"**, or run
+> `gh repo sync <your-username>/microhack-aiagents --branch main`. Then, inside your
+> Codespace/clone, run `git pull`. Skipping this is the #1 cause of a `DeploymentModelNotSupported`
+> error in Task 4.
+
 ---
 
 ### Task 2 · Launch the development environment
@@ -220,6 +228,17 @@ available in **`swedencentral`** today (`gpt-5.3-chat`, `gpt-4o-mini`, `claude-s
 > names above. If you switch regions and a model isn't listed, that's what causes a
 > `DeploymentModelNotSupported` error — see [🛠️ Troubleshooting](#️-troubleshooting).
 
+> [!IMPORTANT]
+> **Preflight (30 seconds, saves 10 minutes):** confirm your checkout has the current model pins
+> *before* you provision. Run:
+> ```bash
+> grep -n "gptOrchestrator" challenge-0/infra/resources.bicep
+> ```
+> ✅ You should see `gpt-5.3-chat` and version `2026-03-03`.
+> ❌ If you instead see `2025-11-01` (or a bare `gpt-5.3`), your fork/checkout is **stale** — go back
+> and **[sync your fork](#task-1--fork-the-repository)** + `git pull`, then re-run this check. Deploying
+> a stale template is what triggers `DeploymentModelNotSupported`.
+
 <details open>
 <summary><strong>Option A — <code>azd up</code></strong> (recommended · Bicep in <code>infra/</code>)</summary>
 
@@ -267,9 +286,12 @@ Deploying services (azd deploy)
 SUCCESS: Your up workflow to provision and deploy to Azure completed in 8 minutes.
 ```
 
-❌ **If it fails with `DeploymentModelNotSupported`** — a model/version isn't offered in your region.
-This repo is already fixed for `swedencentral`; if you changed the region, either switch back or update
-the versions in [`infra/resources.bicep`](./infra/resources.bicep). See [🛠️ Troubleshooting](#️-troubleshooting).
+❌ **If it fails with `DeploymentModelNotSupported`** — first check you're **not on a stale fork**:
+run `grep -n "gptOrchestrator" challenge-0/infra/resources.bicep` and confirm you see `gpt-5.3-chat`
+and `2026-03-03` (if you see `2025-11-01`, [sync your fork](#task-1--fork-the-repository) + `git pull`).
+If your checkout is current, then a model/version simply isn't offered in your region: this repo is
+already fixed for `swedencentral`, so switch back to it, or update the versions in
+[`infra/resources.bicep`](./infra/resources.bicep). See [🛠️ Troubleshooting](#️-troubleshooting).
 
 To also provision Azure SQL:
 
@@ -477,7 +499,7 @@ Smoke test: ✅ PASS
 
 | Symptom | Fix |
 |---------|-----|
-| `DeploymentModelNotSupported` / `deployment failed` for a model | The model **name or version** isn't offered in your region. List what *is* available: `az cognitiveservices model list --location <region> --output table`, then update the model/version in [`infra/resources.bicep`](./infra/resources.bicep) (and `scripts/deploy.sh`). This repo is pre-pinned for `swedencentral`; if you changed regions, switch back or re-pin. |
+| `DeploymentModelNotSupported` / `deployment failed` for a model | **First: are you on a stale fork?** Run `grep -n "gptOrchestrator" challenge-0/infra/resources.bicep` — it must show `gpt-5.3-chat` + `2026-03-03`. If you see `2025-11-01`, [sync your fork](#task-1--fork-the-repository) and `git pull`, then redeploy. **Otherwise** the model **name or version** isn't offered in your region: list what *is* available with `az cognitiveservices model list --location <region> --output table`, then update the model/version in [`infra/resources.bicep`](./infra/resources.bicep) (and `scripts/deploy.sh`). This repo is pre-pinned for `swedencentral`; if you changed regions, switch back or re-pin. |
 | `account project create` unavailable | The CLI project command is preview. Create the project in the **Foundry portal**, then set `AZURE_AI_PROJECT_ENDPOINT` in `.env` manually (Overview → Endpoint). |
 | Claude ping fails in smoke test | Claude may not be served via the **Foundry chat client** in your region yet. You can still proceed — Challenge 1 documents an Anthropic-SDK fallback. |
 | `az login` in Codespaces | Use `az login --use-device-code`. |
