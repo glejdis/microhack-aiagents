@@ -9,13 +9,13 @@ Run:  python scripts/seed_sql.py
 """
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from clm_common.config import settings, DATA_DIR  # noqa: E402
+from clm_common.config import settings  # noqa: E402
+from clm_common.tools import load_contracts  # noqa: E402
 
 DDL = """
 IF OBJECT_ID('dbo.contracts', 'U') IS NULL
@@ -52,7 +52,7 @@ def main() -> None:
 
     import pyodbc
 
-    rows = json.loads((DATA_DIR / "contracts_seed.json").read_text(encoding="utf-8"))["contracts"]
+    rows = load_contracts()  # evergreen: dates materialized relative to today
     conn = pyodbc.connect(settings.sql_connection_string)
     cur = conn.cursor()
     cur.execute(DDL)

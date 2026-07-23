@@ -326,11 +326,13 @@ tells you the expected behavior:
 | **Function tool** | Calls `get_contract_status`; returns **real fields** for `CT-4821` |
 | **Legal advice** | **Brief refusal** + recommends qualified counsel |
 
-For the tool call, `CT-4821` should come back with concrete, structured data — for example:
+For the tool call, `CT-4821` should come back with concrete, structured data. The
+`renewal_date`/`effective_date` are **computed relative to today** (the seed stores
+day-offsets so "upcoming renewals" demos never go stale), so your dates will differ:
 
 ```json
 {"contract_id": "CT-4821", "counterparty": "Acme Corp", "type": "MSA",
- "status": "Active", "renewal_date": "2026-09-01", "auto_renew": true,
+ "status": "Active", "renewal_date": "<~55 days out>", "auto_renew": true,
  "notice_days": 90, "risk": "High", "owner": "legal@contoso.com",
  "_note": "(source: contracts_seed.json)"}
 ```

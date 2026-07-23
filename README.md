@@ -95,7 +95,7 @@ diagram](docs/diagrams/user-journey.png) alongside this table.
 
 📊 Prefer a visual? The user-journey diagram above is saved in
 [`docs/diagrams/`](docs/diagrams/) as [`user-journey.png`](docs/diagrams/user-journey.png), alongside the
-editable architecture view (draw.io).
+finalized [`architecture.png`](docs/diagrams/architecture.png).
 
 ---
 

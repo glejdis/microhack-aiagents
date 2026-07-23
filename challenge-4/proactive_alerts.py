@@ -102,7 +102,7 @@ def main() -> None:
 
         text = summarize_renewals(args.days)
     else:
-        text = args.text or "🔴 Contract CT-4821 renews in 30 days — high-risk indemnity clause flagged. Recommend legal review."
+        text = args.text or "🔴 Contract CT-4821 renewal approaching — high-risk indemnity clause flagged. Recommend legal review."
 
     if args.dry_run:
         print("--- alert (dry run) ---\n" + text)
