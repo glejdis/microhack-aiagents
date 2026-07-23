@@ -1,62 +1,63 @@
 name: ci-eval
 
-# Continuous evaluation gate (Challenge 2 quality + Challenge 5 safety).
-# Runs on demand and nightly. Requires Azure secrets to be configured, so it is
-# guarded: if AZURE_CLIENT_ID is not set, the job no-ops instead of failing.
+# Continuous evaluation gate  (Challenge 2 quality + Challenge 5 safety). 
+# Runs on demand and nightly. Requires Azure  secrets to be configured, so it is
+# guarde d: if AZURE_CLIENT_ID is not set, the job no- ops instead of failing.
 on:
-  workflow_dispatch:
+  workflow_disp atch:
   schedule:
-    - cron: "0 6 * * 1-5" # weekdays 06:00 UTC
+    - cron: "0 6 * * 1-5"  # weekdays 06:00 UTC
 
 permissions:
-  id-token: write # OIDC federated login to Azure
-  contents: read
+  id-t oken: write # OIDC federated login to Azure
+   contents: read
 
 jobs:
   eval-gate:
-    runs-on: ubuntu-latest
+     runs-on: ubuntu-latest
     env:
-      AZURE_AI_PROJECT_ENDPOINT: ${{ secrets.AZURE_AI_PROJECT_ENDPOINT }}
-      MODEL_ORCHESTRATOR: ${{ vars.MODEL_ORCHESTRATOR || 'gpt-5.3' }}
-      MODEL_DRAFTING: ${{ vars.MODEL_DRAFTING || 'claude-sonnet-4-5' }}
-      MODEL_CLAUSE_RISK: ${{ vars.MODEL_CLAUSE_RISK || 'claude-sonnet-4-5' }}
-      MODEL_RENEWAL: ${{ vars.MODEL_RENEWAL || 'gpt-5-mini' }}
-      AZURE_SEARCH_INDEX: ${{ vars.AZURE_SEARCH_INDEX || 'clm-corpus' }}
+      AZURE _AI_PROJECT_ENDPOINT: ${{ secrets.AZURE_AI_PR OJECT_ENDPOINT }}
+      MODEL_ORCHESTRATOR:  ${{ vars.MODEL_ORCHESTRATOR || 'gpt-5.3' }}
+       MODEL_DRAFTING: ${{ vars.MODEL_DRAFTING  || 'claude-sonnet-4-5' }}
+      MODEL_CLAUS E_RISK: ${{ vars.MODEL_CLAUSE_RISK || 'claude -sonnet-4-5' }}
+      MODEL_RENEWAL: ${{ var s.MODEL_RENEWAL || 'gpt-5-mini' }}
+      AZU RE_SEARCH_INDEX: ${{ vars.AZURE_SEARCH_INDEX  || 'clm-corpus' }}
       PYTHONPATH: src
-    steps:
+     steps:
       - uses: actions/checkout@v4
-
-      - name: Skip if Azure isn't configured
+ 
+      - name: Skip if Azure isn't configure d
         id: guard
         run: |
-          if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ]; then
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Azure secrets not set — skipping the eval gate. Configure AZURE_CLIENT_ID / AZURE_TENANT_ID / AZURE_SUBSCRIPTION_ID and AZURE_AI_PROJECT_ENDPOINT to enable."
+           if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ] ; then
+            echo "configured=false" > > "$GITHUB_OUTPUT"
+            echo "::notic e::Azure secrets not set — skipping the eva l gate. Configure AZURE_CLIENT_ID / AZURE_TEN ANT_ID / AZURE_SUBSCRIPTION_ID and AZURE_AI_P ROJECT_ENDPOINT to enable."
           else
-            echo "configured=true" >> "$GITHUB_OUTPUT"
+             echo "configured=true" >> "$GITHU B_OUTPUT"
           fi
 
-      - uses: actions/setup-python@v5
-        if: steps.guard.outputs.configured == 'true'
+      - uses: acti ons/setup-python@v5
+        if: steps.guard. outputs.configured == 'true'
         with:
-          python-version: "3.11"
+           python-version: "3.11"
 
-      - name: Install dependencies
-        if: steps.guard.outputs.configured == 'true'
-        run: pip install -r requirements.txt "azure-ai-evaluation[redteam]"
+      - n ame: Install dependencies
+        if: steps. guard.outputs.configured == 'true'
+        r un: pip install -r requirements.txt "azure-ai -evaluation[redteam]"
 
-      - name: Azure login (OIDC)
-        if: steps.guard.outputs.configured == 'true'
-        uses: azure/login@v2
+      - name: Azure  login (OIDC)
+        if: steps.guard.outputs .configured == 'true'
+        uses: azure/lo gin@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: $ {{ secrets.AZURE_CLIENT_ID }}
+          tena nt-id: ${{ secrets.AZURE_TENANT_ID }}
+           subscription-id: ${{ secrets.AZURE_SUBSCR IPTION_ID }}
 
-      - name: Quality gate (Challenge 2)
-        if: steps.guard.outputs.configured == 'true'
-        run: python challenge-2/evaluators.py --gate 4.0
+      - name: Quality gate (C hallenge 2)
+        if: steps.guard.outputs. configured == 'true'
+        run: python cha llenge-2/evaluators.py --gate 4.0
 
-      - name: Safety gate (Challenge 5)
-        if: steps.guard.outputs.configured == 'true'
-        run: python challenge-5/safety_eval.py --gate 0.1 --safety-evals
+      -  name: Safety gate (Challenge 5)
+        if:  steps.guard.outputs.configured == 'true'
+         run: python challenge-5/safety_eval.py - -gate 0.1 --safety-evals
+ 
