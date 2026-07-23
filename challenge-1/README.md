@@ -54,13 +54,16 @@ retrieval** — it plans sub-queries, searches, reranks, and returns **cited** p
 
 ```mermaid
 flowchart TB
-  A["Corpus in SharePoint library<br/>templates · clauses · policy · contracts"] --> B["Azure AI Search index · clm-corpus<br/>semantic — backing store for the<br/>Foundry IQ knowledge base"]
-  B --> D["AzureAISearchTool = Foundry IQ grounding<br/>agentic retrieval · kb_setup.py"]
+  A["Corpus in SharePoint library<br/>templates · clauses · policy · contracts"] --> B["Azure AI Search index · clm-corpus<br/>semantic · separate service (backing store)"]
+  B --> D
+  subgraph IQ["Foundry IQ — knowledge grounding"]
+    D["AzureAISearchTool<br/>agentic retrieval: plan → search → rerank → cite<br/>kb_setup.py"]
+  end
   D --> E["Intake &amp; Drafting agent<br/>Claude Sonnet 4.5"]
   F["get_contract_status<br/>function tool"] --> E
   E --> G["Cited draft / answer<br/>+ tool results"]
-  style E fill:#EDE4F5,stroke:#7A4FB5,stroke-width:2px,color:#1A1A1A
   style D fill:#FCEBDD,stroke:#E8590C,stroke-width:2px,color:#1A1A1A
+  style E fill:#EDE4F5,stroke:#7A4FB5,stroke-width:2px,color:#1A1A1A
   style F fill:#FCEBDD,stroke:#E8590C,stroke-width:2px,color:#1A1A1A
 ```
 
