@@ -116,6 +116,10 @@ AZURE_SEARCH_ENDPOINT={get("AZURE_SEARCH_ENDPOINT")}
 AZURE_SEARCH_INDEX={get("AZURE_SEARCH_INDEX")}
 AZURE_SEARCH_CONNECTION_NAME={get("AZURE_SEARCH_CONNECTION_NAME")}
 
+# Web grounding (Grounding with Bing Search) — populated only when Bing was
+# provisioned (azd: DEPLOY_BING=true). Empty keeps web search off.
+AZURE_BING_CONNECTION_NAME={get("AZURE_BING_CONNECTION_NAME")}
+
 # SharePoint corpus (BYO) — fill these in; the AI Search SharePoint indexer in
 # scripts/seed_corpus.py uses them. Not provisioned by Bicep (SharePoint is M365).
 SHAREPOINT_SITE_URL={get("SHAREPOINT_SITE_URL")}

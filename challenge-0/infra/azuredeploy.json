@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "5524912574544165791"
+      "templateHash": "4576577048265477267"
     }
   },
   "parameters": {
@@ -62,6 +62,13 @@
       "metadata": {
         "description": "Admin password for the optional Azure SQL server (required when deploySql is true)."
       }
+    },
+    "deployBing": {
+      "type": "string",
+      "defaultValue": "false",
+      "metadata": {
+        "description": "Provision the optional Grounding with Bing Search resource + project connection for web grounding (\"true\"/\"false\")."
+      }
     }
   },
   "variables": {
@@ -111,6 +118,9 @@
           "sqlAdminPassword": {
             "value": "[parameters('sqlAdminPassword')]"
           },
+          "deployBing": {
+            "value": "[parameters('deployBing')]"
+          },
           "tags": {
             "value": "[variables('tags')]"
           }
@@ -122,7 +132,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "8631304980056215861"
+              "templateHash": "12477425049633698294"
             }
           },
           "parameters": {
@@ -177,6 +187,13 @@
                 "description": "Admin password for the optional Azure SQL server (required when deploySql is true)."
               }
             },
+            "deployBing": {
+              "type": "string",
+              "defaultValue": "false",
+              "metadata": {
+                "description": "Provision the optional Grounding with Bing Search resource + project connection for web grounding (\"true\"/\"false\")."
+              }
+            },
             "tags": {
               "type": "object",
               "defaultValue": {},
@@ -193,6 +210,8 @@
             "logAnalyticsName": "[format('clm-logs-{0}', parameters('resourceToken'))]",
             "searchIndexName": "clm-corpus",
             "searchConnectionName": "clm-search",
+            "bingName": "[format('clmbing{0}', parameters('resourceToken'))]",
+            "bingConnectionName": "clm-bing",
             "gptOrchestrator": "gpt-5.4",
             "gptMini": "gpt-5-mini",
             "claude": "claude-sonnet-4-5",
@@ -207,6 +226,7 @@
             "roleSearchIndexDataReader": "1407120a-92aa-4202-b7e9-c0e197c71c8f",
             "wantSql": "[and(equals(toLower(parameters('deploySql')), 'true'), not(empty(parameters('sqlAdminPassword'))))]",
             "wantClaude": "[equals(toLower(parameters('deployClaudeModel')), 'true')]",
+            "wantBing": "[equals(toLower(parameters('deployBing')), 'true')]",
             "assignUserRoles": "[not(empty(parameters('principalId')))]"
           },
           "resources": [
@@ -380,6 +400,43 @@
               ]
             },
             {
+              "condition": "[variables('wantBing')]",
+              "type": "Microsoft.Bing/accounts",
+              "apiVersion": "2020-06-10",
+              "name": "[variables('bingName')]",
+              "location": "global",
+              "sku": {
+                "name": "G1"
+              },
+              "kind": "Bing.Grounding",
+              "tags": "[parameters('tags')]"
+            },
+            {
+              "condition": "[variables('wantBing')]",
+              "type": "Microsoft.CognitiveServices/accounts/projects/connections",
+              "apiVersion": "2025-04-01-preview",
+              "name": "[format('{0}/{1}/{2}', variables('foundryName'), variables('projectName'), variables('bingConnectionName'))]",
+              "properties": {
+                "category": "ApiKey",
+                "target": "https://api.bing.microsoft.com/",
+                "authType": "ApiKey",
+                "credentials": {
+                  "key": "[listKeys(resourceId('Microsoft.Bing/accounts', variables('bingName')), '2020-06-10').key1]"
+                },
+                "isSharedToAll": true,
+                "metadata": {
+                  "ApiType": "Azure",
+                  "Location": "global",
+                  "ResourceId": "[resourceId('Microsoft.Bing/accounts', variables('bingName'))]",
+                  "type": "bing_grounding"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Bing/accounts', variables('bingName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts/projects', variables('foundryName'), variables('projectName'))]"
+              ]
+            },
+            {
               "condition": "[variables('wantSql')]",
               "type": "Microsoft.Sql/servers",
               "apiVersion": "2023-08-01",
@@ -530,6 +587,10 @@
               "type": "string",
               "value": "[variables('searchConnectionName')]"
             },
+            "AZURE_BING_CONNECTION_NAME": {
+              "type": "string",
+              "value": "[if(variables('wantBing'), variables('bingConnectionName'), '')]"
+            },
             "APPLICATIONINSIGHTS_CONNECTION_STRING": {
               "type": "string",
               "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2020-02-02').ConnectionString]"
@@ -590,6 +651,10 @@
     "AZURE_SEARCH_CONNECTION_NAME": {
       "type": "string",
       "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-clm-microhack'), 'Microsoft.Resources/deployments', 'clm-resources'), '2025-04-01').outputs.AZURE_SEARCH_CONNECTION_NAME.value]"
+    },
+    "AZURE_BING_CONNECTION_NAME": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-clm-microhack'), 'Microsoft.Resources/deployments', 'clm-resources'), '2025-04-01').outputs.AZURE_BING_CONNECTION_NAME.value]"
     },
     "APPLICATIONINSIGHTS_CONNECTION_STRING": {
       "type": "string",

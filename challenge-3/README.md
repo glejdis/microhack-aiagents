@@ -76,6 +76,9 @@ discover and call them.
 - Decouples *who provides a capability* from *who consumes it*.
 - `challenge-3/mcp_server/server.py` serves over **stdio**; VS Code loads it from
   `challenge-3/.vscode/mcp.json` (start **clm-mcp**), exposing `draft_contract` · `analyze_contract` · `get_contract_status`.
+- **An agent can be the client too:** `challenge-3/orchestrator_mcp.py` runs the same GPT-5.3
+  Orchestrator but reaches the workflow over MCP (`MCPStdioTool`) instead of in-process
+  `as_tool()` — proving the tools are consumable by *any* MCP client, editor **or** agent.
 
 **Why here:** it turns your agents into reusable building blocks the rest of the org can call **without
 touching your code**. → [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro)
@@ -168,19 +171,37 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
    ✅ **You'll know it worked when:** `clm-mcp` shows **Running** in *MCP: List Servers*, and
    `#analyze_contract` returns the **same** risk assessment you saw in Task 1.
 
+5. *(Go Further)* **Consume it from an agent.** Run the Orchestrator as an **MCP client** — same
+   GPT-5.3 front door as step 2, but the tools now come from the `clm-mcp` server over the protocol
+   instead of in-process `as_tool()`:
+   ```bash
+   python challenge-3/orchestrator_mcp.py     # launches the stdio server and calls it as a client
+   ```
+   You don't start the server yourself — `MCPStdioTool` spawns `mcp_server/server.py` for you.
+
 ## ✔️ Success criteria
 
 - One orchestrator thread runs **draft → extract → risk** by delegating to the two specialists.
 - The Clause & Risk agent returns a structured risk assessment with citations.
 - The MCP server is **discoverable and callable** from an MCP client (VS Code/Copilot), returning
   the same results as the agents.
+- *(Go Further)* `orchestrator_mcp.py` runs the Orchestrator as an **MCP client** and produces the
+  same draft → analyze → status results as the in-process orchestrator.
 
 ## 🚀 Go Further
 
 - Add the **Review & Negotiation** and **Signature & Repository** agents from the 5-agent vision as
   more agent-as-tool specialists.
-- Expose the MCP server **remotely** (HTTP/SSE behind APIM) instead of stdio, and consume it from a
-  Foundry agent with `MCPTool(server_label=..., server_url=..., require_approval=...)`.
+- **Ground the Clause & Risk agent on the web** for external counterparty due-diligence (corporate
+  status, adverse-media, sanctions, public regulatory references). Provision a **Grounding with Bing
+  Search** resource, add it as a project connection, and set `AZURE_BING_CONNECTION_NAME` in `.env` —
+  `create_agent` then attaches the tool automatically (built in `build_web_search_tool()`, the single
+  place to later swap in **Web IQ**). The corpus stays the authority for Contoso standards; the web is
+  public context only, and Bing search data leaves the Azure compliance boundary.
+- **Consume the MCP server from an agent, not just an editor.** `challenge-3/orchestrator_mcp.py`
+  already does this over **stdio** (`MCPStdioTool` — the Orchestrator as MCP client). Take it fully
+  remote: expose the server over **HTTP/SSE** (behind APIM), then swap in `MCPStreamableHTTPTool`
+  (agent-framework client) or a Foundry hosted `MCPTool(server_label=..., server_url=..., require_approval=...)`.
 - Add an approval step (`require_approval`) before high-impact tools run.
 
 ## 🛠️ Troubleshooting
@@ -191,6 +212,8 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
 | `agent_framework` import error | Install the framework: `pip install agent-framework-core agent-framework-foundry` (see requirements.txt). |
 | MCP server not listed in VS Code | Ensure the MCP feature is enabled and `mcp.json` path is correct; check the server starts standalone first. |
 | MCP tool call times out | Each call spins up + tears down a Foundry agent (a few seconds). Keep drafts short while testing. |
+| `orchestrator_mcp.py` finds no tools / hangs at startup | The stdio server failed to import. Confirm `python challenge-3/mcp_server/server.py` starts standalone; `MCPStdioTool` sets `PYTHONPATH=src`, so run from the repo root. |
+| Web search tool not attaching | Confirm `AZURE_BING_CONNECTION_NAME` matches a **project connection** for your Grounding with Bing Search resource; run `python challenge-1/kb_setup.py` — it prints whether the web-grounding tool built. |
 
 ## 🧠 Reflection
 

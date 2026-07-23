@@ -56,6 +56,16 @@ class Settings:
     search_index: str = field(default_factory=lambda: _get("AZURE_SEARCH_INDEX", "clm-corpus"))
     search_connection_name: str = field(default_factory=lambda: _get("AZURE_SEARCH_CONNECTION_NAME", "clm-search"))
 
+    # Web grounding (Grounding with Bing Search) — OPTIONAL / opt-in. Powers
+    # external, public counterparty due-diligence for the Clause & Risk agent
+    # (Ch3). Foundry has no dedicated Bing connection *type*, so the tool is
+    # resolved by connection NAME (or an explicit id). Provision a "Grounding with
+    # Bing Search" resource, add it as a project connection, then set one of these.
+    # Later swap to Web IQ by changing build_web_search_tool() only — no config
+    # change needed. Leave both blank to keep web search off (zero setup).
+    bing_connection_name: str | None = field(default_factory=lambda: _get("AZURE_BING_CONNECTION_NAME"))
+    bing_connection_id: str | None = field(default_factory=lambda: _get("AZURE_BING_CONNECTION_ID"))
+
     # SharePoint — corpus source of truth (BYO document library). An Azure AI
     # Search SharePoint Online indexer crawls this library into the clm-corpus
     # index (built in Challenge 0 by scripts/seed_corpus.py). The app-registration
@@ -77,6 +87,11 @@ class Settings:
     def require_project(self) -> str:
         """Return the project endpoint or raise a friendly error."""
         return _get("AZURE_AI_PROJECT_ENDPOINT", required=True)  # type: ignore[return-value]
+
+    @property
+    def web_search_enabled(self) -> bool:
+        """True when a Grounding-with-Bing-Search connection has been configured."""
+        return bool(self.bing_connection_id or self.bing_connection_name)
 
 
 settings = Settings()
