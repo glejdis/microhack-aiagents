@@ -52,6 +52,10 @@ Build the **Intake & Drafting agent** on **Anthropic Claude Sonnet 4.5** and mak
 documents; instead you attach a **knowledge base** as a **tool**, and the agent performs **agentic
 retrieval** — it plans sub-queries, searches, reranks, and returns **cited** passages — during a run.
 
+![Foundry IQ architecture — knowledge sources feed the Foundry IQ grounding layer (knowledge sources, access rules, retrieval logic, agentic retrieval), which an AI agent/Copilot queries to produce grounded, cited, permission-checked responses](../docs/diagrams/foundry-iq-architecture.png)
+
+*The general Foundry IQ picture: trusted enterprise knowledge → the grounding layer → an agent → a grounded, cited answer. The diagram below shows how **this microhack** instantiates that chain for contracts.*
+
 ```mermaid
 flowchart TB
   A["Corpus in SharePoint library<br/>templates · clauses · policy · contracts"] --> B["Azure AI Search index · clm-corpus<br/>semantic · separate service (backing store)"]
