@@ -82,7 +82,7 @@ def build_orchestrator():
     from agent_framework import Agent
 
     return Agent(
-        client=build_chat_client(settings.model_orchestrator),  # gpt-5.3
+        client=build_chat_client(settings.model_orchestrator),  # gpt-5.4
         name=ORCHESTRATOR_NAME,
         instructions=INSTRUCTIONS,
         tools=[intake_tool, clause_tool],

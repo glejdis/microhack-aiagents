@@ -41,16 +41,16 @@ var searchConnectionName = 'clm-search'
 // ---- Model deployment names ----------------------------------------------
 // NOTE: these are the *deployment* names (what the app calls at runtime via the
 // MODEL_* env vars); the underlying catalog model/version is set below. In
-// swedencentral there is no base `gpt-5.3` model — the orchestrator deployment
-// (still named `gpt-5.3`) runs the `gpt-5.3-chat` catalog model.
-var gptOrchestrator = 'gpt-5.3'
+// swedencentral offers the base `gpt-5.4` flagship, so the orchestrator
+// deployment (named `gpt-5.4`) runs the `gpt-5.4` catalog model directly.
+var gptOrchestrator = 'gpt-5.4'
 var gptMini = 'gpt-5-mini'
 var claude = 'claude-sonnet-4-5'
 // Orchestrator catalog model + version — confirm the exact model/version offered
 // in your region's Foundry model catalog and update here if needed
 // (`az cognitiveservices model list --location <region>`).
-var gptOrchestratorModel = 'gpt-5.3-chat'
-var gptOrchestratorVersion = '2026-03-03'
+var gptOrchestratorModel = 'gpt-5.4'
+var gptOrchestratorVersion = '2026-03-05'
 // Renewal / lightweight agent catalog model. gpt-4o-mini is deprecating in
 // swedencentral (fires ServiceModelDeprecating on new deployments), so the
 // renewal deployment runs gpt-5-mini instead — same GlobalStandard SKU, a later

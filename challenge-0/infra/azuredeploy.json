@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "3573948596672357620"
+      "templateHash": "5524912574544165791"
     }
   },
   "parameters": {
@@ -21,7 +21,7 @@
       "type": "string",
       "minLength": 1,
       "metadata": {
-        "description": "Azure region for all resources. Must offer gpt-5.3-chat and gpt-5-mini (and Claude Sonnet 4.5 unless DEPLOY_CLAUDE_MODEL=false)."
+        "description": "Azure region for all resources. Must offer gpt-5.4 and gpt-5-mini (and Claude Sonnet 4.5 unless DEPLOY_CLAUDE_MODEL=false)."
       }
     },
     "principalId": {
@@ -122,7 +122,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "12489020765184620620"
+              "templateHash": "8631304980056215861"
             }
           },
           "parameters": {
@@ -193,11 +193,11 @@
             "logAnalyticsName": "[format('clm-logs-{0}', parameters('resourceToken'))]",
             "searchIndexName": "clm-corpus",
             "searchConnectionName": "clm-search",
-            "gptOrchestrator": "gpt-5.3",
+            "gptOrchestrator": "gpt-5.4",
             "gptMini": "gpt-5-mini",
             "claude": "claude-sonnet-4-5",
-            "gptOrchestratorModel": "gpt-5.3-chat",
-            "gptOrchestratorVersion": "2026-03-03",
+            "gptOrchestratorModel": "gpt-5.4",
+            "gptOrchestratorVersion": "2026-03-05",
             "gptMiniModel": "gpt-5-mini",
             "gptMiniVersion": "2025-08-07",
             "roleAiDeveloper": "64702f94-c441-49e6-a78b-ef80e0188fee",

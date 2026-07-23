@@ -43,7 +43,7 @@ All resources reside in a **single resource group** (default name `rg-clm-microh
 
 - A **Microsoft Foundry** account (Azure AI Services · S0) with a **Foundry project** (`clm-project`)
   — one identity, billing, tracing, and governance plane for the whole system.
-- Three **model deployments** — the multi-model fleet the agents run on: **`gpt-5.3`**,
+- Three **model deployments** — the multi-model fleet the agents run on: **`gpt-5.4`**,
   **`gpt-5-mini`**, and **`claude-sonnet-4-5`** (Claude is GA in Microsoft Foundry; it can be
   skipped if your subscription lacks Anthropic quota — see Task 4).
 - **Azure AI Search** (Basic) — the backing store for the **Foundry IQ** knowledge base (`clm-corpus`
@@ -79,13 +79,13 @@ ID RBAC (Azure AI Developer, Cognitive Services User, Search data roles) — all
 
 | Deployment | Model · format | SKU | Agent it powers | Challenge |
 |------------|----------------|-----|-----------------|-----------|
-| `gpt-5.3` | OpenAI `gpt-5.3-chat` (version per your region's catalog, e.g. `2026-03-03`) | GlobalStandard · 30 | **Orchestrator** — routing + hand-offs | C3 |
+| `gpt-5.4` | OpenAI `gpt-5.4` (`2026-03-05`) | GlobalStandard · 30 | **Orchestrator** — routing + hand-offs | C3 |
 | `claude-sonnet-4-5` | Anthropic `claude-sonnet-4-5` (v`20250929`, Azure-hosted) · *optional — skip with `DEPLOY_CLAUDE_MODEL=false`* | GlobalStandard · 20 | **Intake & Drafting** + **Clause & Risk** | C1, C3 |
 | `gpt-5-mini` | OpenAI `gpt-5-mini` (`2025-08-07`) | GlobalStandard · 30 | **Obligation & Renewal** — cheap, high-frequency | C3 |
 
 > Specialists run on **Claude** while orchestration runs on **GPT** — all inside **one** Foundry
 > project. That's the multi-model fleet you'll build agents on. *(No Claude quota? Set
-> `DEPLOY_CLAUDE_MODEL=false` and the two specialists fall back to the `gpt-5.3` orchestrator.)*
+> `DEPLOY_CLAUDE_MODEL=false` and the two specialists fall back to the `gpt-5.4` orchestrator.)*
 
 </details>
 
@@ -221,7 +221,7 @@ az account set --subscription "<your-subscription-id>"
 > which case you can **skip to Task 6**. Check with your coach what applies.
 
 Choose a region that offers **all three** models. This repo's infra is pre-pinned to models that are
-available in **`swedencentral`** today (`gpt-5.3-chat`, `gpt-5-mini`, `claude-sonnet-4-5`), so
+available in **`swedencentral`** today (`gpt-5.4`, `gpt-5-mini`, `claude-sonnet-4-5`), so
 **`swedencentral` is the safe default** — use it unless your coach says otherwise. Then pick **one** option:
 
 > [!TIP]
@@ -236,9 +236,9 @@ available in **`swedencentral`** today (`gpt-5.3-chat`, `gpt-5-mini`, `claude-so
 > ```bash
 > grep -nE "gptOrchestratorVersion|gptMiniModel|gptMiniVersion|claude-sonnet-4-5" challenge-0/infra/resources.bicep
 > ```
-> ✅ You should see **all three** pins: orchestrator `gpt-5.3-chat` `2026-03-03`, renewal `gpt-5-mini`
+> ✅ You should see **all three** pins: orchestrator `gpt-5.4` `2026-03-05`, renewal `gpt-5-mini`
 > `2025-08-07`, and Claude `claude-sonnet-4-5` `20250929`.
-> ❌ If you instead see `2025-11-01`, a bare `gpt-5.3`, or `gpt-4o-mini` `2024-07-18`, your fork/checkout
+> ❌ If you instead see `gpt-5.3-chat`, `2026-03-03`, `2025-11-01`, or `gpt-4o-mini` `2024-07-18`, your fork/checkout
 > is **stale** — go back and **[sync your fork](#task-1--fork-the-repository)** + `git pull`, then re-run
 > this check. Deploying a stale template is what triggers `DeploymentModelNotSupported` /
 > `ServiceModelDeprecating`.
@@ -291,8 +291,8 @@ SUCCESS: Your up workflow to provision and deploy to Azure completed in 8 minute
 ```
 
 ❌ **If it fails with `DeploymentModelNotSupported`** — first check you're **not on a stale fork**:
-run `grep -n "gptOrchestrator" challenge-0/infra/resources.bicep` and confirm you see `gpt-5.3-chat`
-and `2026-03-03` (if you see `2025-11-01`, [sync your fork](#task-1--fork-the-repository) + `git pull`).
+run `grep -n "gptOrchestrator" challenge-0/infra/resources.bicep` and confirm you see `gpt-5.4`
+and `2026-03-05` (if you see `2025-11-01` or `gpt-5.3-chat`, [sync your fork](#task-1--fork-the-repository) + `git pull`).
 If your checkout is current, then a model/version simply isn't offered in your region: this repo is
 already fixed for `swedencentral`, so switch back to it, or update the versions in
 [`infra/resources.bicep`](./infra/resources.bicep). See [🛠️ Troubleshooting](#️-troubleshooting).
@@ -308,12 +308,12 @@ azd up
 > [!TIP]
 > **No Anthropic/Claude quota?** Claude deployments can fail on **zero subscription quota** or a missing
 > marketplace offer (`InvalidModelProviderData`) even when every step is correct. Skip Claude and keep
-> going — the drafting & clause-risk agents fall back to the `gpt-5.3` orchestrator:
+> going — the drafting & clause-risk agents fall back to the `gpt-5.4` orchestrator:
 > ```bash
 > azd env set DEPLOY_CLAUDE_MODEL false
 > azd up
 > ```
-> Your `.env` is written with `MODEL_DRAFTING=gpt-5.3` and `MODEL_CLAUSE_RISK=gpt-5.3` automatically, and
+> Your `.env` is written with `MODEL_DRAFTING=gpt-5.4` and `MODEL_CLAUSE_RISK=gpt-5.4` automatically, and
 > the smoke test passes without a Claude ping. *(deploy.sh / deploy.ps1 equivalent: `DEPLOY_CLAUDE=false`.)*
 
 </details>
@@ -323,7 +323,7 @@ azd up
 
 ```bash
 LOCATION=swedencentral ./scripts/deploy.sh          # add --with-sql to also provision Azure SQL
-# no Claude quota? skip it (drafting/clause-risk fall back to gpt-5.3):
+# no Claude quota? skip it (drafting/clause-risk fall back to gpt-5.4):
 DEPLOY_CLAUDE=false LOCATION=swedencentral ./scripts/deploy.sh
 ```
 
@@ -385,7 +385,7 @@ Application Insights, Log Analytics, and the model deployments live inside the F
 
 **5b — Model deployments in the Foundry portal.** Open [ai.azure.com](https://ai.azure.com) → select
 your **`clm-project`** → **Models + endpoints**. Confirm the deployments show **Succeeded**:
-`gpt-5.3`, `gpt-5-mini`, and `claude-sonnet-4-5` (**two** instead of three if you set
+`gpt-5.4`, `gpt-5-mini`, and `claude-sonnet-4-5` (**two** instead of three if you set
 `DEPLOY_CLAUDE_MODEL=false`).
 
 > 📸 **Screenshot slot — what you'll see:** the three model deployments, all "Succeeded".
@@ -400,9 +400,9 @@ values are filled in (every entry has a value **except** the `SHAREPOINT_*` corp
 
 ```bash
 AZURE_AI_PROJECT_ENDPOINT=https://clmfoundryab12c.services.ai.azure.com/api/projects/clm-project
-MODEL_ORCHESTRATOR=gpt-5.3
-MODEL_DRAFTING=claude-sonnet-4-5      # =gpt-5.3 if you skipped Claude
-MODEL_CLAUSE_RISK=claude-sonnet-4-5   # =gpt-5.3 if you skipped Claude
+MODEL_ORCHESTRATOR=gpt-5.4
+MODEL_DRAFTING=claude-sonnet-4-5      # =gpt-5.4 if you skipped Claude
+MODEL_CLAUSE_RISK=claude-sonnet-4-5   # =gpt-5.4 if you skipped Claude
 MODEL_RENEWAL=gpt-5-mini
 AZURE_SEARCH_ENDPOINT=https://clmsearchab12c.search.windows.net
 AZURE_SEARCH_INDEX=clm-corpus
@@ -607,7 +607,7 @@ python scripts/smoke_test.py
 
 ```text
 1) Checking environment…            ✓ (all vars present)
-2) Pinging gpt deployment 'gpt-5.3'… ✓ gpt replied: OK
+2) Pinging gpt deployment 'gpt-5.4'… ✓ gpt replied: OK
 2) Pinging claude deployment 'claude-sonnet-4-5'… ✓ claude replied: OK
 
 Smoke test: ✅ PASS
@@ -623,8 +623,8 @@ chat-client limitation, and Challenge 1 documents a fallback.
 ## ✔️ Success criteria
 
 - `.env` is populated (project endpoint + connection strings).
-- `python scripts/smoke_test.py` prints **✅ PASS** — a tiny agent runs on `gpt-5.3` **and** on
-  `claude-sonnet-4-5` (or on `gpt-5.3` alone if you skipped Claude with `DEPLOY_CLAUDE_MODEL=false`).
+- `python scripts/smoke_test.py` prints **✅ PASS** — a tiny agent runs on `gpt-5.4` **and** on
+  `claude-sonnet-4-5` (or on `gpt-5.4` alone if you skipped Claude with `DEPLOY_CLAUDE_MODEL=false`).
 - In the Foundry portal you can see the project, the model deployments (3, or 2 without Claude), and the
   `clm-corpus` index with documents.
 
@@ -632,7 +632,7 @@ Expected smoke-test output:
 
 ```
 1) Checking environment…            ✓ (all vars present)
-2) Pinging gpt deployment 'gpt-5.3'… ✓ gpt replied: OK
+2) Pinging gpt deployment 'gpt-5.4'… ✓ gpt replied: OK
 2) Pinging claude deployment 'claude-sonnet-4-5'… ✓ claude replied: OK
 Smoke test: ✅ PASS
 ```
@@ -655,13 +655,13 @@ Smoke test: ✅ PASS
 
 | Symptom | Fix |
 |---------|-----|
-| `DeploymentModelNotSupported` / `deployment failed` for a model | **First: are you on a stale fork?** Run the [preflight grep](#task-4--deploy-the-resources) — it must show `gpt-5.3-chat`+`2026-03-03`, `gpt-5-mini`+`2025-08-07`, and `claude-sonnet-4-5`+`20250929`. If you see `2025-11-01`, a bare `gpt-5.3`, or `gpt-4o-mini`, [sync your fork](#task-1--fork-the-repository) and `git pull`, then redeploy. **Otherwise** the model **name or version** isn't offered in your region: list what *is* available with `az cognitiveservices model list --location <region> --output table`, then update the model/version in [`infra/resources.bicep`](./infra/resources.bicep) (and `scripts/deploy.sh`). This repo is pre-pinned for `swedencentral`; if you changed regions, switch back or re-pin. |
+| `DeploymentModelNotSupported` / `deployment failed` for a model | **First: are you on a stale fork?** Run the [preflight grep](#task-4--deploy-the-resources) — it must show `gpt-5.4`+`2026-03-05`, `gpt-5-mini`+`2025-08-07`, and `claude-sonnet-4-5`+`20250929`. If you see `gpt-5.3-chat`, `2026-03-03`, `2025-11-01`, or `gpt-4o-mini`, [sync your fork](#task-1--fork-the-repository) and `git pull`, then redeploy. **Otherwise** the model **name or version** isn't offered in your region: list what *is* available with `az cognitiveservices model list --location <region> --output table`, then update the model/version in [`infra/resources.bicep`](./infra/resources.bicep) (and `scripts/deploy.sh`). This repo is pre-pinned for `swedencentral`; if you changed regions, switch back or re-pin. |
 | `ServiceModelDeprecating` for `gpt-4o-mini` (or another model) | You're on a **stale template** pinning a deprecating model. The repo now uses `gpt-5-mini` `2025-08-07` for the renewal agent — sync your fork + `git pull`. If you deliberately changed a version, pick a current one from `az cognitiveservices model list --location <region> --output table` (avoid ones with a near/past `deprecation.inference` date). |
-| Claude: **zero quota** in every region, or `InvalidModelProviderData` (marketplace `industry`/`organizationName`/`countryCode`) | Anthropic deployment via ARM needs Claude quota **and** the marketplace offer accepted (normally a Foundry-portal click-through, which also needs quota). If you can't get either, **skip Claude**: `azd env set DEPLOY_CLAUDE_MODEL false` (or `DEPLOY_CLAUDE=false` for the deploy scripts) and redeploy — the drafting & clause-risk agents fall back to the `gpt-5.3` orchestrator and the smoke test still passes. |
+| Claude: **zero quota** in every region, or `InvalidModelProviderData` (marketplace `industry`/`organizationName`/`countryCode`) | Anthropic deployment via ARM needs Claude quota **and** the marketplace offer accepted (normally a Foundry-portal click-through, which also needs quota). If you can't get either, **skip Claude**: `azd env set DEPLOY_CLAUDE_MODEL false` (or `DEPLOY_CLAUDE=false` for the deploy scripts) and redeploy — the drafting & clause-risk agents fall back to the `gpt-5.4` orchestrator and the smoke test still passes. |
 | `Project can only be created under AIServices Kind account with allowProjectManagement set to true` | Fixed in the template (`account.properties.allowProjectManagement: true`). If you hit it, you're on a stale fork — sync + `git pull` and redeploy. |
 | SharePoint: *"Tenant does not have a SPO license"*, or you can't grant the app's Graph **admin consent** (only Global Reader) | Skip SharePoint entirely — use the **local-PDF fallback**: leave the `SHAREPOINT_*` values blank in `.env` and run `python scripts/seed_corpus.py`. It extracts `challenge-0/data/**/*.pdf` and populates `clm-corpus` directly (needs the Search Index Data Contributor role, granted by `azd up`). See [Task 6, Path 2](#task-6--seed-the-corpus). |
 | `account project create` unavailable | The CLI project command is preview. Create the project in the **Foundry portal**, then set `AZURE_AI_PROJECT_ENDPOINT` in `.env` manually (Overview → Endpoint). |
-| Claude ping fails in smoke test | Claude may not be served via the **Foundry chat client** in your region yet. You can still proceed — Challenge 1 documents an Anthropic-SDK fallback, or skip Claude with `DEPLOY_CLAUDE_MODEL=false` (drafting/clause-risk then run on `gpt-5.3`). |
+| Claude ping fails in smoke test | Claude may not be served via the **Foundry chat client** in your region yet. You can still proceed — Challenge 1 documents an Anthropic-SDK fallback, or skip Claude with `DEPLOY_CLAUDE_MODEL=false` (drafting/clause-risk then run on `gpt-5.4`). |
 | `az login` in Codespaces | Use `az login --use-device-code`. |
 | Search / quota errors | Ensure the subscription has quota for Basic Search + the model SKUs; request quota if needed. |
 | `PermissionDenied` after deploy | RBAC can take 5–10 min to propagate. Wait, run `az login --use-device-code` again, and retry. |

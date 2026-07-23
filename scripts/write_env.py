@@ -25,7 +25,7 @@ ENV_PATH = REPO_ROOT / ".env"
 # Keys sourced from Bicep outputs (via azd env). Fall back to the .env.example
 # defaults for the constant-valued ones if an output is missing.
 DEFAULTS = {
-    "MODEL_ORCHESTRATOR": "gpt-5.3",
+    "MODEL_ORCHESTRATOR": "gpt-5.4",
     "MODEL_DRAFTING": "claude-sonnet-4-5",
     "MODEL_CLAUSE_RISK": "claude-sonnet-4-5",
     "MODEL_RENEWAL": "gpt-5-mini",

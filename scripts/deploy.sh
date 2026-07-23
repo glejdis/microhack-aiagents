@@ -7,7 +7,7 @@
 #           rights to deploy GPT and Anthropic Claude models.
 #
 # NOTE: Model + region availability changes over time. Confirm your target
-#       region offers gpt-5.3, gpt-5-mini AND Claude Sonnet 4.5 in the
+#       region offers gpt-5.4, gpt-5-mini AND Claude Sonnet 4.5 in the
 #       Foundry model catalog before running. See the challenge-0 README.
 # ==========================================================================
 set -euo pipefail
@@ -24,7 +24,7 @@ WITH_SQL="false"
 [[ "${1:-}" == "--with-sql" ]] && WITH_SQL="true"
 
 # Model deployments (name=catalog-model:version:format)
-GPT_ORCH="gpt-5.3"
+GPT_ORCH="gpt-5.4"
 GPT_MINI="gpt-5-mini"
 CLAUDE="claude-sonnet-4-5"
 
@@ -67,9 +67,9 @@ deploy_model () {  # name  model-name  version  format  sku-capacity
     --sku-name "GlobalStandard" --sku-capacity "${5:-20}" -o none \
     || echo "    ! $1 deployment failed — check the model is available in $LOCATION."
 }
-# gpt-5.3 deployment: no base `gpt-5.3` model in swedencentral — use gpt-5.3-chat.
+# gpt-5.4 orchestrator: swedencentral offers the base gpt-5.4 flagship directly.
 # Confirm the exact model/version in your region's Foundry catalog.
-deploy_model "$GPT_ORCH" "gpt-5.3-chat"     "2026-03-03" "OpenAI"    30
+deploy_model "$GPT_ORCH" "gpt-5.4"          "2026-03-05" "OpenAI"    30
 # Renewal / lightweight agent: gpt-4o-mini is deprecating in swedencentral, so
 # deploy gpt-5-mini instead (same GlobalStandard SKU, later deprecation date).
 deploy_model "$GPT_MINI" "gpt-5-mini"       "2025-08-07" "OpenAI"    30

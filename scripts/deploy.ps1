@@ -15,7 +15,7 @@ $Project     = $env:PROJECT     ?? "clm-project"
 $Search      = $env:SEARCH      ?? "clmsearch$Suffix"
 $AppInsights = "clm-appinsights"
 
-$GptOrch = "gpt-5.3"; $GptMini = "gpt-5-mini"; $Claude = "claude-sonnet-4-5"
+$GptOrch = "gpt-5.4"; $GptMini = "gpt-5-mini"; $Claude = "claude-sonnet-4-5"
 
 # Claude can be skipped (no Anthropic quota / marketplace offer): set
 # $env:DEPLOY_CLAUDE = "false". The Claude-backed agents then use the orchestrator.
@@ -40,7 +40,7 @@ function Deploy-Model($name, $model, $version, $format, $cap) {
     --sku-name GlobalStandard --sku-capacity $cap -o none 2>$null
   if ($LASTEXITCODE -ne 0) { Write-Host "    ! $name failed — check availability in $Location." }
 }
-Deploy-Model $GptOrch "gpt-5.3-chat"     "2026-03-03" "OpenAI"    30
+Deploy-Model $GptOrch "gpt-5.4"          "2026-03-05" "OpenAI"    30
 Deploy-Model $GptMini "gpt-5-mini"       "2025-08-07" "OpenAI"    30
 if ($DeployClaude) {
   Deploy-Model $Claude "claude-sonnet-4-5" "20250929"  "Anthropic" 20

@@ -55,7 +55,7 @@ instead of one bloated mega-agent. → [Microsoft Agent Framework](https://learn
 
 ### Model — GPT-5.3 (the orchestrator)
 
-**What it is:** the LLM behind the Orchestrator (`MODEL_ORCHESTRATOR = gpt-5.3`) — deployment `gpt-5.3`
+**What it is:** the LLM behind the Orchestrator (`MODEL_ORCHESTRATOR = gpt-5.4`) — deployment `gpt-5.4`
 (`format: OpenAI`, version confirmed in your region's Foundry catalog, SKU `GlobalStandard`, capacity 30), sitting alongside the Claude
 specialists on the same account.
 
@@ -133,7 +133,7 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
 
    ✅ **You should see** the orchestrator delegate each turn to the right specialist:
    ```text
-   ✓ Orchestrator on 'gpt-5.3' with 2 Claude specialists as tools
+   ✓ Orchestrator on 'gpt-5.4' with 2 Claude specialists as tools
 
    ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
    USER: Draft an NDA for Northwind, review the Acme MSA draft, and give me CT-4821's status.
