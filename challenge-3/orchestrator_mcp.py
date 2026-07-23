@@ -3,7 +3,7 @@
 This is the mirror image of ``orchestrator.py``. The plain orchestrator wires the
 two specialists in-process with ``agent.as_tool(...)``; this variant reaches the
 **same** workflow over the **Model Context Protocol** instead. The Orchestrator
-(GPT-5.3) is the natural — and only non-circular — MCP consumer: the specialists
+(GPT-5.4) is the natural — and only non-circular — MCP consumer: the specialists
 themselves are what the server *exposes* (``draft_contract`` = Intake & Drafting,
 ``analyze_contract`` = Clause & Risk), so a specialist consuming the server would
 call itself. The orchestrator is the front door and is never an MCP tool, so it
@@ -78,11 +78,11 @@ def build_mcp_tool():
 
 
 def build_orchestrator(mcp_tool):
-    """Wire the GPT-5.3 orchestrator to the CLM workflow via the (connected) MCP tool."""
+    """Wire the GPT-5.4 orchestrator to the CLM workflow via the (connected) MCP tool."""
     from agent_framework import Agent
 
     return Agent(
-        client=build_chat_client(settings.model_orchestrator),  # gpt-5.3
+        client=build_chat_client(settings.model_orchestrator),  # gpt-5.4
         name=ORCHESTRATOR_NAME,
         instructions=INSTRUCTIONS,
         tools=[mcp_tool],

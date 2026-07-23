@@ -1,17 +1,12 @@
 # Diagrams
 
-Source diagrams for the CLM microhack. The **architecture** view is maintained as an
-editable **draw.io** file; the **user journey** view is a finalized image (`user-journey.png`).
+Source diagrams for the CLM microhack. Both the **architecture** and the **user journey** views are
+maintained as finalized images (`architecture.png`, `user-journey.png`).
 
-| View | draw.io | Rendered |
-|------|---------|----------|
-| **Architecture** — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced & evaluated, published to Teams/M365 Copilot | [`architecture.drawio`](architecture.drawio) | [`architecture.svg`](architecture.svg) |
-| **User journey** — the Contoso contract manager's path: draft → review → ask → sign-off → track → proactive renewal alert | — | [`user-journey.png`](user-journey.png) |
-
-## How to open / edit
-
-- **draw.io (`.drawio`)** — open at [app.diagrams.net](https://app.diagrams.net),
-  or in VS Code with the **Draw.io Integration** extension (`hediet.vscode-drawio`).
+| View | Image |
+|------|-------|
+| **Architecture** — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced & evaluated, published to Teams/M365 Copilot | [`architecture.png`](architecture.png) |
+| **User journey** — the Contoso contract manager's path: draft → review → ask → sign-off → track → proactive renewal alert | [`user-journey.png`](user-journey.png) |
 
 ## Legend (architecture)
 
@@ -19,6 +14,6 @@ editable **draw.io** file; the **user journey** view is a finalized image (`user
   🟧 **Orange** = tools / MCP · 🟩 **Green** = data / grounding · ⬜ **Gray** = governance ·
   **dashed grey** = telemetry (traces, eval scorecards) · **dashed red** = alerts / guardrails.
 
-> The **[`architecture.svg`](architecture.svg)** is the rendered image embedded in the top-level
-> README; **[`architecture.drawio`](architecture.drawio)** is its editable equivalent. The
-> **[`user-journey.png`](user-journey.png)** is the finalized user-journey image embedded in the README.
+> The **[`architecture.png`](architecture.png)** is the finalized image embedded in the top-level
+> README; the **[`user-journey.png`](user-journey.png)** is the finalized user-journey image embedded
+> in the README.

@@ -16,7 +16,7 @@ inconsistent clause review, and missed renewals. In this microhack you'll transf
 process into a grounded, **agentic** workflow with a human always in the loop.
 
 The build uniquely combines four things: a **multi-model agent fleet** — orchestration on
-**GPT-5.3** with specialist drafting and clause-analysis running on **Anthropic Claude**, all inside
+**GPT-5.4** with specialist drafting and clause-analysis running on **Anthropic Claude**, all inside
 a single Foundry project; **grounded retrieval with Foundry IQ** over your own contract corpus so
 every answer is cited; **tools and an MCP server** that expose the workflow to **Microsoft 365
 Copilot**, **Teams**, and any MCP-compatible client; and the full **GenAIOps lifecycle** —
@@ -85,7 +85,7 @@ diagram](docs/diagrams/user-journey.png) alongside this table.
 | **2 · Check their draft** | Uploads Acme's counter-draft MSA | **Clause & Risk** agent (Claude Sonnet 4.5) scores every clause against the **Standard Clause Library** and flags deviations | Specialist agent + orchestration | [C3](challenge-3/) |
 | **3 · Ask, with citations** | *"What's our standard indemnity cap?"* | **Foundry IQ** answers over the Contoso corpus — **with sources** | Agentic retrieval (Foundry IQ) | [C1](challenge-1/) |
 | **4 · Review & sign off** | Reads flags + citations, edits, **approves** | **Human-in-the-loop** — nothing is finalized without sign-off | HITL + guardrails | [C1](challenge-1/) · [C3](challenge-3/) |
-| **5 · Track obligations** | Reviews upcoming renewals | **Obligation & Renewal** agent (GPT-4o-mini) **reads** contract status & upcoming renewals via function tools — **Azure SQL** (seed-data fallback) | Function tool / MCP server | [C3](challenge-3/) · [C4](challenge-4/) |
+| **5 · Track obligations** | Reviews upcoming renewals | **Obligation & Renewal** agent (GPT-5-mini) **reads** contract status & upcoming renewals via function tools — **Azure SQL** (seed-data fallback) | Function tool / MCP server | [C3](challenge-3/) · [C4](challenge-4/) |
 | **6 · Proactive alert** | Gets a proactive Teams ping **before the renewal date** | Renew or renegotiate in time — **no missed auto-renewals** | Publish + proactive messaging | [C4](challenge-4/) |
 
 > 🔒 **Under the hood, every step runs in one Microsoft Foundry project** — traced (Application
@@ -103,10 +103,10 @@ editable architecture view (draw.io).
 
 The diagram below shows the end-to-end architecture you'll build — a layered system with the contract
 manager on top, the agent fleet and grounding in a single **Microsoft Foundry** project in the middle,
-and observability underneath. It's rendered from the editable source in
+and observability underneath. The finalized diagram lives in
 [`docs/diagrams/`](docs/diagrams/).
 
-![Architecture — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced and evaluated, published to Teams/M365 Copilot](docs/diagrams/architecture.svg)
+![Architecture — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced and evaluated, published to Teams/M365 Copilot](docs/diagrams/architecture.png)
 
 ❶ **Consumption plane — where the manager already works.** At the top, the contract manager interacts
 through **Microsoft 365 Copilot & Teams** (teal). There's no new app to learn: the assistant meets
@@ -118,22 +118,23 @@ runs inside a *single* Foundry project: shared identity (Entra), model deploymen
 tracing, and safety. Crucially, **GPT** *and* **Anthropic Claude** deployments live side by side here —
 no second platform to operate.
 
-❸ **Orchestrator (GPT-5.3) — the front door.** It receives each request, decides which specialist to
-call, hands off the right context, and composes the final answer. GPT-5.3 is chosen for fast,
+❸ **Orchestrator (GPT-5.4) — the front door.** It receives each request, decides which specialist to
+call, hands off the right context, and composes the final answer. GPT-5.4 is chosen for fast,
 deterministic routing and tool/hand-off calls rather than long-form generation.
 
 ❹ **Specialist agents — each matched to its task *and* its model.** The Orchestrator delegates to three
 grounded specialists: **Intake & Drafting** and **Clause & Risk** run on **Claude Sonnet 4.5** (purple)
 for high-fidelity drafting and 200K-context clause comparison; **Obligation & Renewal** runs on the
-cheaper **GPT-4o-mini** (blue) for high-frequency date and obligation extraction.
+cheaper **GPT-5-mini** (blue) for high-frequency date and obligation extraction.
 
 ❺ **Grounding & tools (blue) — how agents stay factual and act on the world.** **Foundry IQ** (over
 **Azure AI Search**) provides agentic retrieval so drafting and clause agents answer *with citations*
 from the contract corpus — the original PDFs live in a **SharePoint** document library that a SharePoint
 Online indexer crawls into the index; **Azure SQL** is the system of record for contract status, read/written by
-the renewal agent through a function tool; and the **MCP server** (`draft_contract` ·
-`analyze_contract`) re-exposes the whole workflow as Model Context Protocol tools any MCP client —
-including M365 Copilot — can call. The Orchestrator can itself be that client
+the renewal agent through a function tool; an optional **Bing web search** tool gives the Clause & Risk
+agent public web grounding for counterparty due-diligence (off by default); and the **MCP server**
+(`draft_contract` · `analyze_contract`) re-exposes the whole workflow as Model Context Protocol tools
+any MCP client — including M365 Copilot — can call. The Orchestrator can itself be that client
 (`challenge-3/orchestrator_mcp.py`), consuming the workflow over MCP instead of in-process.
 
 ❻ **Observability & governance (gray) — what turns a demo into production.** Every run streams
@@ -147,8 +148,8 @@ loop so renewals are never missed.
 
 > 🎨 **Legend:** 🟦 blue = GPT agents · 🟪 purple = Claude agents · 🟧 orange = tools / MCP ·
 > 🟩 green = data / grounding · ⬜ gray = governance · **dashed grey** = telemetry · **dashed red** =
-> alerts / guardrails. Editable **draw.io** sources — plus the end-to-end **[user
-> journey](docs/diagrams/)** (draw.io + Excalidraw) — live in **[`docs/diagrams/`](docs/diagrams/)**.
+> alerts / guardrails. The finalized architecture image — plus the end-to-end **[user
+> journey](docs/diagrams/)** (Excalidraw) — lives in **[`docs/diagrams/`](docs/diagrams/)**.
 
 <details>
 <summary>Mermaid source</summary>
@@ -170,9 +171,9 @@ flowchart TB
             orch --> renew
         end
         subgraph Farm["LLM farm · model deployments"]
-            gpt53["GPT-5.3<br/>OpenAI · GlobalStandard"]
+            gpt53["GPT-5.4<br/>OpenAI · GlobalStandard"]
             claude["Claude Sonnet 4.5<br/>Anthropic"]
-            gpt4omini["GPT-4o-mini<br/>OpenAI · GlobalStandard"]
+            gpt4omini["GPT-5-mini<br/>OpenAI · GlobalStandard"]
         end
         orch -->|runs on| gpt53
         intake -->|runs on| claude
@@ -185,12 +186,14 @@ flowchart TB
         sources[("Content corpus · SharePoint<br/>Clause Library · Templates")]
         iq[("Foundry IQ<br/>Azure AI Search")]
         sql[("Azure SQL<br/>contract status")]
+        bing["Bing web search<br/>(optional · off by default)"]
         mcp["MCP server<br/>draft_contract · analyze_contract"]
     end
 
     sources -->|SharePoint indexer| iq
     intake --> iq
     clause --> iq
+    clause -. "web grounding" .-> bing
     renew --> sql
     orch --> mcp
     user -. "MCP tools" .-> mcp
@@ -222,10 +225,10 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 
 | Agent | Model | Why this model |
 |-------|-------|----------------|
-| **Orchestrator** | GPT-5.3 | Fast, deterministic routing + tool/hand-off calls |
+| **Orchestrator** | GPT-5.4 | Fast, deterministic routing + tool/hand-off calls |
 | **Intake & Drafting** | **Claude Sonnet 4.5** | High-fidelity, template-grounded drafting |
 | **Clause & Risk** | **Claude Sonnet 4.5** | 200K-context clause comparison + nuanced risk rationale |
-| **Obligation & Renewal** | GPT-4o-mini | Cheap, high-frequency structured extraction + alerts |
+| **Obligation & Renewal** | GPT-5-mini | Cheap, high-frequency structured extraction + alerts |
 
 ---
 

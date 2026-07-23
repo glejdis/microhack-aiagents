@@ -3,10 +3,10 @@ flowchart TB
     user <--> orch
 
     subgraph Foundry["Microsoft Foundry project"]
-        orch["Orchestrator Agent<br/>(GPT-5.3)"]
+        orch["Orchestrator Agent<br/>(GPT-5.4)"]
         intake["Intake & Drafting<br/>(Claude Sonnet 4.5)"]
         clause["Clause & Risk<br/>(Claude Sonnet 4.5)"]
-        renew["Obligation & Renewal<br/>(GPT-4o-mini)"]
+        renew["Obligation & Renewal<br/>(GPT-5-mini)"]
         orch --> intake
         orch --> clause
         orch --> renew

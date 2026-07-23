@@ -1,4 +1,4 @@
-"""Challenge 4 — Obligation & Renewal agent (GPT-4o-mini).
+"""Challenge 4 — Obligation & Renewal agent (GPT-5-mini).
 
 A small, cheap, high-frequency Microsoft Agent Framework agent that scans
 contract renewal dates and obligations (via the contract-status tools) and

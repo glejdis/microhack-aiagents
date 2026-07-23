@@ -9,7 +9,7 @@
 
 ## 🎯 Objective
 
-Add the **2nd specialist** (Clause & Risk on Claude), stand up an **Orchestrator agent** (GPT-5.3)
+Add the **2nd specialist** (Clause & Risk on Claude), stand up an **Orchestrator agent** (GPT-5.4)
 that routes to both specialists via the **agent-as-tool pattern**, then expose the whole workflow as an **MCP
 server** callable from VS Code / GitHub Copilot.
 
@@ -17,14 +17,14 @@ server** callable from VS Code / GitHub Copilot.
 
 - **Clause & Risk agent** reuses the Ch1 grounding pattern → fast to build. It compares a
   counterparty draft to the enterprise standard and returns a **risk score**.
-- **Orchestrator** (GPT-5.3) uses the Agent Framework's **`agent.as_tool(...)`** to call each specialist as a tool. A
+- **Orchestrator** (GPT-5.4) uses the Agent Framework's **`agent.as_tool(...)`** to call each specialist as a tool. A
   **GPT orchestrator coordinating Claude specialists** is multi-model composition in one project. It
   manages routing, hand-offs and human-in-the-loop.
 - **MCP** (Model Context Protocol) lets you expose the workflow as standard tools so *any* MCP client
   can reuse it. You'll run a local **stdio** server and call it from VS Code.
 
 ```
-        ┌────────────── Orchestrator (GPT-5.3) ──────────────┐
+        ┌────────────── Orchestrator (GPT-5.4) ──────────────┐
  user → │  routes + hand-offs + human-in-the-loop            │
         └───────┬───────────────────────────┬───────────────┘
                 │ agent-as-tool             │ agent-as-tool
@@ -53,7 +53,7 @@ calls a function.
 **Why here:** it lets the Orchestrator delegate *drafting* and *clause/risk* to the right specialist
 instead of one bloated mega-agent. → [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview)
 
-### Model — GPT-5.3 (the orchestrator)
+### Model — GPT-5.4 (the orchestrator)
 
 **What it is:** the LLM behind the Orchestrator (`MODEL_ORCHESTRATOR = gpt-5.4`) — deployment `gpt-5.4`
 (`format: OpenAI`, version confirmed in your region's Foundry catalog, SKU `GlobalStandard`, capacity 30), sitting alongside the Claude
@@ -76,7 +76,7 @@ discover and call them.
 - Decouples *who provides a capability* from *who consumes it*.
 - `challenge-3/mcp_server/server.py` serves over **stdio**; VS Code loads it from
   `challenge-3/.vscode/mcp.json` (start **clm-mcp**), exposing `draft_contract` · `analyze_contract` · `get_contract_status`.
-- **An agent can be the client too:** `challenge-3/orchestrator_mcp.py` runs the same GPT-5.3
+- **An agent can be the client too:** `challenge-3/orchestrator_mcp.py` runs the same GPT-5.4
   Orchestrator but reaches the workflow over MCP (`MCPStdioTool`) instead of in-process
   `as_tool()` — proving the tools are consumable by *any* MCP client, editor **or** agent.
 
@@ -172,7 +172,7 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
    `#analyze_contract` returns the **same** risk assessment you saw in Task 1.
 
 5. *(Go Further)* **Consume it from an agent.** Run the Orchestrator as an **MCP client** — same
-   GPT-5.3 front door as step 2, but the tools now come from the `clm-mcp` server over the protocol
+   GPT-5.4 front door as step 2, but the tools now come from the `clm-mcp` server over the protocol
    instead of in-process `as_tool()`:
    ```bash
    python challenge-3/orchestrator_mcp.py     # launches the stdio server and calls it as a client

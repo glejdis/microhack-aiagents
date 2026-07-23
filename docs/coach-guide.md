@@ -144,7 +144,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 
 ### Challenge 3 · Orchestration + MCP Server *(60 min · orchestration · MCP)*
 
-- **Point:** add the **Clause & Risk** specialist (Claude), stand up a **GPT-5.3 Orchestrator** that
+- **Point:** add the **Clause & Risk** specialist (Claude), stand up a **GPT-5.4 Orchestrator** that
   routes to both specialists via the **agent-as-tool pattern**, and expose the workflow as an **MCP server**.
 - **Done when:** one orchestrator thread runs **draft → extract → risk** by delegating; the Clause & Risk
   agent returns a structured, cited risk assessment; the **MCP server is discoverable + callable** from
@@ -161,7 +161,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
     drafts short.
 - **Sample draft is rigged:** the Clause & Risk sample has deliberate red flags (uncapped liability,
   60-day auto-renew) so a **High** risk result is the expected, demo-able outcome.
-- **Go Further — agent as MCP client:** `challenge-3/orchestrator_mcp.py` runs the *same* GPT-5.3
+- **Go Further — agent as MCP client:** `challenge-3/orchestrator_mcp.py` runs the *same* GPT-5.4
   Orchestrator but consumes the workflow over MCP (`MCPStdioTool`) instead of in-process `as_tool()`.
   Great "aha" for the portability point — the tools serve editors **and** agents. Note the only
   non-circular consumer is the Orchestrator: a specialist consuming the server (`analyze_contract` =
