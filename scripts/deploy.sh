@@ -2,7 +2,7 @@
 # ==========================================================================
 # Challenge 0 — provision the Foundry CLM microhack resources and write .env
 # ==========================================================================
-# Usage:   ./scripts/deploy.sh [--with-sql]
+# Usage:   ./scripts/deploy.sh [--with-sql] [--with-bing]
 # Requires: az CLI (logged in via `az login`), an Azure subscription with
 #           rights to deploy GPT and Anthropic Claude models.
 #
@@ -21,7 +21,13 @@ PROJECT="${PROJECT:-clm-project}"
 SEARCH="${SEARCH:-clmsearch${SUFFIX}}"
 APPINSIGHTS="${APPINSIGHTS:-clm-appinsights}"
 WITH_SQL="false"
-[[ "${1:-}" == "--with-sql" ]] && WITH_SQL="true"
+WITH_BING="false"
+for arg in "$@"; do
+  case "$arg" in
+    --with-sql)  WITH_SQL="true" ;;
+    --with-bing) WITH_BING="true" ;;
+  esac
+done
 
 # Model deployments (name=catalog-model:version:format)
 GPT_ORCH="gpt-5.4"
@@ -99,7 +105,37 @@ az monitor app-insights component create \
 APPINSIGHTS_CONN=$(az monitor app-insights component show --app "$APPINSIGHTS" -g "$RG" --query connectionString -o tsv)
 echo "  ✓ Application Insights created"
 
-# ---- 7. Azure SQL (optional) ---------------------------------------------
+# ---- 7. Grounding with Bing Search (optional web grounding) --------------
+# Provisions a Bing.Grounding resource + a Foundry project connection (resolved
+# by name AZURE_BING_CONNECTION_NAME) that the Clause & Risk agent's
+# build_web_search_tool() attaches. Bing search data leaves the Azure compliance
+# boundary — opt in only when web grounding is wanted.
+BING_CONN_NAME=""
+if [[ "$WITH_BING" == "true" ]]; then
+  BING="clmbing${SUFFIX}"
+  BING_CONN_NAME="clm-bing"
+  echo "  → provisioning Grounding with Bing Search ($BING)"
+  az provider register --namespace Microsoft.Bing -o none 2>/dev/null || true
+  az resource create -g "$RG" -n "$BING" \
+    --resource-type "Microsoft.Bing/accounts" --api-version "2020-06-10" --is-full-object \
+    --properties '{"location":"global","sku":{"name":"G1"},"kind":"Bing.Grounding","properties":{}}' -o none \
+    || echo "    ! Bing resource create failed — check the Microsoft.Bing provider is registered and available."
+  BING_ID=$(az resource show -g "$RG" -n "$BING" --resource-type "Microsoft.Bing/accounts" --api-version "2020-06-10" --query id -o tsv 2>/dev/null || true)
+  BING_KEY=$(az resource invoke-action -g "$RG" -n "$BING" --resource-type "Microsoft.Bing/accounts" --api-version "2020-06-10" --action listKeys --query key1 -o tsv 2>/dev/null || true)
+  SUB_ID=$(az account show --query id -o tsv)
+  PROJECT_ARM_ID="/subscriptions/${SUB_ID}/resourceGroups/${RG}/providers/Microsoft.CognitiveServices/accounts/${FOUNDRY}/projects/${PROJECT}"
+  if [[ -n "$BING_ID" && -n "$BING_KEY" ]]; then
+    az rest --method put \
+      --url "https://management.azure.com${PROJECT_ARM_ID}/connections/${BING_CONN_NAME}?api-version=2025-04-01-preview" \
+      --body "{\"properties\":{\"category\":\"ApiKey\",\"target\":\"https://api.bing.microsoft.com/\",\"authType\":\"ApiKey\",\"credentials\":{\"key\":\"${BING_KEY}\"},\"isSharedToAll\":true,\"metadata\":{\"ApiType\":\"Azure\",\"Location\":\"global\",\"ResourceId\":\"${BING_ID}\",\"type\":\"bing_grounding\"}}}" -o none \
+      && echo "  ✓ Bing connection '$BING_CONN_NAME' created on project '$PROJECT'" \
+      || echo "    ! Bing connection create failed — add connection '$BING_CONN_NAME' to project '$PROJECT' in the portal."
+  fi
+else
+  echo "  · Skipping Bing web grounding (run with --with-bing to provision). Clause & Risk runs corpus-only."
+fi
+
+# ---- 8. Azure SQL (optional) ---------------------------------------------
 SQL_CONN=""
 if [[ "$WITH_SQL" == "true" ]]; then
   SQLSERVER="clmsql${SUFFIX}"
@@ -117,7 +153,7 @@ else
   echo "    tool will fall back to challenge-0/data/contracts_seed.json."
 fi
 
-# ---- 8. Resolve endpoints + write .env -----------------------------------
+# ---- 9. Resolve endpoints + write .env -----------------------------------
 PROJECT_ENDPOINT="https://${FOUNDRY}.services.ai.azure.com/api/projects/${PROJECT}"
 SEARCH_ENDPOINT="https://${SEARCH}.search.windows.net"
 
@@ -133,6 +169,9 @@ MODEL_RENEWAL=${GPT_MINI}
 AZURE_SEARCH_ENDPOINT=${SEARCH_ENDPOINT}
 AZURE_SEARCH_INDEX=clm-corpus
 AZURE_SEARCH_CONNECTION_NAME=clm-search
+
+# Web grounding (Grounding with Bing Search) — set when deployed with --with-bing.
+AZURE_BING_CONNECTION_NAME=${BING_CONN_NAME}
 
 # SharePoint corpus (BYO) — fill these in before running seed_corpus.py.
 SHAREPOINT_SITE_URL=

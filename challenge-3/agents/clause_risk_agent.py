@@ -54,21 +54,40 @@ RULES
 - You are NOT a lawyer and do NOT give legal advice or enforceability opinions — you flag risk for
   human counsel to decide. Recommend human review for anything High risk.
 - Output a concise structured summary (clauses table + overall risk + top 3 issues).
+
+WEB / EXTERNAL LOOKUP (only when a web-search tool is attached)
+- Your KNOWLEDGE BASE (corpus) is the SOLE authority for Contoso's standards, clause library, policy
+  and negotiation playbook — never override it with the web.
+- Use web search ONLY for external, PUBLIC context that helps assess the counterparty: corporate
+  status, adverse-media / litigation news, sanctions or watchlist mentions, and current public
+  regulatory references. Cite each web source (title + URL) and its date.
+- PRIVACY: never send the counterparty's confidential draft text to the web tool — search only public
+  facts (company name, jurisdiction, regulation name). Web data leaves the Azure compliance boundary.
+- Web findings are informational only; they never change a clause classification on their own — flag
+  them for human counsel to weigh.
 """
 
 
 def create_agent(model: str | None = None, *, connection_id: str | None = None):
-    """Create the Clause & Risk agent grounded on the enterprise clause library."""
-    from agent_framework import Agent
-    from kb_setup import build_knowledge_tool
+    """Create the Clause & Risk agent grounded on the enterprise clause library.
 
-    knowledge = build_knowledge_tool(connection_id=connection_id)
+    When a Grounding-with-Bing-Search connection is configured (``AZURE_BING_CONNECTION_NAME``),
+    a web-search tool is also attached for external counterparty due-diligence;
+    otherwise the agent runs corpus-only, unchanged.
+    """
+    from agent_framework import Agent
+    from kb_setup import build_knowledge_tool, build_web_search_tool
+
+    tools = [build_knowledge_tool(connection_id=connection_id)]
+    web_search = build_web_search_tool()  # None unless Bing is configured
+    if web_search is not None:
+        tools.append(web_search)
 
     return Agent(
         client=build_chat_client(model or settings.model_clause_risk),  # claude-sonnet-4-5
         name=AGENT_NAME,
         instructions=INSTRUCTIONS,
-        tools=[knowledge],
+        tools=tools,
     )
 
 

@@ -22,6 +22,9 @@
     },
     "sqlAdminPassword": {
       "value": "${SQL_ADMIN_PASSWORD}"
+    },
+    "deployBing": {
+      "value": "${DEPLOY_BING=false}"
     }
   }
 }

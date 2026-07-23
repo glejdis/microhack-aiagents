@@ -52,6 +52,9 @@ All resources reside in a **single resource group** (default name `rg-clm-microh
   contract corpus. An Azure AI Search **SharePoint Online indexer** crawls it into the `clm-corpus` index.
 - **Application Insights** + a **Log Analytics** workspace — OpenTelemetry tracing (Challenge 2).
 - *(Optional)* **Azure SQL Database** (Basic) — backs the contract-status / renewal function tool.
+- *(Optional)* **Grounding with Bing Search** — public web grounding for the Clause & Risk agent
+  (Challenge 3). Off by default; enable with `DEPLOY_BING`/`--with-bing`. Bing data leaves the Azure
+  compliance boundary.
 
 Identity is **keyless** for Azure data planes: system-assigned managed identities plus Microsoft Entra
 ID RBAC (Azure AI Developer, Cognitive Services User, Search data roles) — all assigned for you by
@@ -69,6 +72,7 @@ ID RBAC (Azure AI Developer, Cognitive Services User, Search data roles) — all
 | Application Insights | `web` | `clm-appinsights****` | OpenTelemetry traces |
 | Log Analytics | `PerGB2018` | `clm-logs****` | Backing store for App Insights |
 | Azure SQL *(optional)* | `Basic` | `clmsql****` | Contract status / renewal dates |
+| Grounding with Bing Search *(optional)* | `G1` · `Bing.Grounding` | `clm-bing****` | Public web grounding for Clause & Risk (C3) |
 
 `****` is a short random token so globally-unique names don't collide.
 
@@ -316,18 +320,25 @@ azd up
 > Your `.env` is written with `MODEL_DRAFTING=gpt-5.4` and `MODEL_CLAUSE_RISK=gpt-5.4` automatically, and
 > the smoke test passes without a Claude ping. *(deploy.sh / deploy.ps1 equivalent: `DEPLOY_CLAUDE=false`.)*
 
+To also provision **Grounding with Bing Search** (optional web grounding for the Clause & Risk
+agent — see Challenge 3): `azd env set DEPLOY_BING true` before `azd up`. The `.env` then gets a
+populated `AZURE_BING_CONNECTION_NAME`. Bing search data leaves the Azure compliance boundary.
+
 </details>
 
 <details>
 <summary><strong>Option B — deploy script</strong> (<code>az</code> CLI)</summary>
 
 ```bash
-LOCATION=swedencentral ./scripts/deploy.sh          # add --with-sql to also provision Azure SQL
+```bash
+LOCATION=swedencentral ./scripts/deploy.sh          # add --with-sql and/or --with-bing to also provision those
 # no Claude quota? skip it (drafting/clause-risk fall back to gpt-5.4):
 DEPLOY_CLAUDE=false LOCATION=swedencentral ./scripts/deploy.sh
 ```
 
-> Windows (outside Codespaces): `./scripts/deploy.ps1` (`-WithSql` optional; `$env:DEPLOY_CLAUDE="false"` to skip Claude).
+> Windows (outside Codespaces): `./scripts/deploy.ps1` (`-WithSql` / `-WithBing` optional;
+> `$env:DEPLOY_CLAUDE="false"` to skip Claude). `--with-bing` provisions Grounding with Bing Search
+> (optional web grounding for Challenge 3).
 
 </details>
 
@@ -355,7 +366,8 @@ az deployment sub create \
 
 > Passing your `principalId` assigns the data-plane roles (Search Index Data) you need to
 > seed the corpus. Add `deploySql=true sqlAdminPassword='<StrongP@ssw0rd!>'` to also
-> provision Azure SQL.
+> provision Azure SQL, and/or `deployBing=true` to provision Grounding with Bing Search
+> (optional web grounding for Challenge 3).
 
 Unlike `azd up`, this path does **not** auto-write `.env`. Populate it from the deployment
 outputs (use the same `--name` you deployed with):

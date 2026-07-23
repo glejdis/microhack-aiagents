@@ -133,7 +133,8 @@ from the contract corpus — the original PDFs live in a **SharePoint** document
 Online indexer crawls into the index; **Azure SQL** is the system of record for contract status, read/written by
 the renewal agent through a function tool; and the **MCP server** (`draft_contract` ·
 `analyze_contract`) re-exposes the whole workflow as Model Context Protocol tools any MCP client —
-including M365 Copilot — can call.
+including M365 Copilot — can call. The Orchestrator can itself be that client
+(`challenge-3/orchestrator_mcp.py`), consuming the workflow over MCP instead of in-process.
 
 ❻ **Observability & governance (gray) — what turns a demo into production.** Every run streams
 **OpenTelemetry traces to Application Insights**, while **Evaluations + Content Safety** score answer

@@ -31,6 +31,9 @@ param deploySql string = 'false'
 @secure()
 param sqlAdminPassword string = ''
 
+@description('Provision the optional Grounding with Bing Search resource + project connection for web grounding ("true"/"false").')
+param deployBing string = 'false'
+
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var tags = {
   'azd-env-name': environmentName
@@ -54,6 +57,7 @@ module resources 'resources.bicep' = {
     deployClaudeModel: deployClaudeModel
     deploySql: deploySql
     sqlAdminPassword: sqlAdminPassword
+    deployBing: deployBing
     tags: tags
   }
 }
@@ -72,6 +76,7 @@ output MODEL_RENEWAL string = resources.outputs.MODEL_RENEWAL
 output AZURE_SEARCH_ENDPOINT string = resources.outputs.AZURE_SEARCH_ENDPOINT
 output AZURE_SEARCH_INDEX string = resources.outputs.AZURE_SEARCH_INDEX
 output AZURE_SEARCH_CONNECTION_NAME string = resources.outputs.AZURE_SEARCH_CONNECTION_NAME
+output AZURE_BING_CONNECTION_NAME string = resources.outputs.AZURE_BING_CONNECTION_NAME
 
 #disable-next-line outputs-should-not-contain-secrets
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = resources.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING

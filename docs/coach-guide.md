@@ -83,6 +83,10 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
   `challenge-0/infra/`), **`scripts/deploy.sh`** (`.ps1` on Windows), or the one-click **Deploy to
   Azure** button / `az deployment sub create` on `infra/azuredeploy.json` (then
   `python scripts/write_env.py --deployment <name>` for `.env`). Let teams pick one; don't mix.
+  - *Optional add-ons* (all paths, off by default): Azure SQL for the renewal tool
+    (`DEPLOY_SQL`/`--with-sql`/`-WithSql`) and **Grounding with Bing Search** for the Clause & Risk
+    agent's optional web lookup (`DEPLOY_BING`/`--with-bing`/`-WithBing`). Bing data leaves the Azure
+    compliance boundary — only suggest it for the Challenge 3 "Go Further" web-grounding track.
 - **Watch for:**
   - *Model deploy fails* → the model/version isn't in their region. Switch region (`eastus2`/`westus3`)
     or adjust the version in `deploy.sh`. **This is the single most common Ch0 blocker.**
@@ -157,6 +161,13 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
     drafts short.
 - **Sample draft is rigged:** the Clause & Risk sample has deliberate red flags (uncapped liability,
   60-day auto-renew) so a **High** risk result is the expected, demo-able outcome.
+- **Go Further — agent as MCP client:** `challenge-3/orchestrator_mcp.py` runs the *same* GPT-5.3
+  Orchestrator but consumes the workflow over MCP (`MCPStdioTool`) instead of in-process `as_tool()`.
+  Great "aha" for the portability point — the tools serve editors **and** agents. Note the only
+  non-circular consumer is the Orchestrator: a specialist consuming the server (`analyze_contract` =
+  Clause & Risk) would call itself. It spawns the stdio server automatically; teams don't start it
+  separately. Slower than the in-process orchestrator (each MCP call spins up a fresh Foundry agent in
+  the subprocess) — fine for a demo.
 
 ### Challenge 4 · Publish to M365 Copilot & Teams + Proactive Alerts *(60 min ≈ 30 publish + 30 alerts)*
 

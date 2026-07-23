@@ -26,6 +26,9 @@ param deploySql string = 'false'
 @secure()
 param sqlAdminPassword string = ''
 
+@description('Provision the optional Grounding with Bing Search resource + project connection for web grounding ("true"/"false").')
+param deployBing string = 'false'
+
 @description('Tags applied to every resource.')
 param tags object = {}
 
@@ -37,6 +40,8 @@ var appInsightsName = 'clm-appinsights-${resourceToken}'
 var logAnalyticsName = 'clm-logs-${resourceToken}'
 var searchIndexName = 'clm-corpus'
 var searchConnectionName = 'clm-search'
+var bingName = 'clmbing${resourceToken}'
+var bingConnectionName = 'clm-bing'
 
 // ---- Model deployment names ----------------------------------------------
 // NOTE: these are the *deployment* names (what the app calls at runtime via the
@@ -67,6 +72,7 @@ var roleSearchIndexDataReader = '1407120a-92aa-4202-b7e9-c0e197c71c8f'
 
 var wantSql = toLower(deploySql) == 'true' && !empty(sqlAdminPassword)
 var wantClaude = toLower(deployClaudeModel) == 'true'
+var wantBing = toLower(deployBing) == 'true'
 var assignUserRoles = !empty(principalId)
 
 // ==========================================================================
@@ -215,6 +221,44 @@ resource searchConnection 'Microsoft.CognitiveServices/accounts/projects/connect
 }
 
 // ==========================================================================
+// Grounding with Bing Search (optional) — web grounding for the Clause & Risk
+// agent (Ch3 "Go Further"). The Bing account is a global resource; the project
+// connection (category ApiKey, resolved by name AZURE_BING_CONNECTION_NAME) is
+// what build_web_search_tool() attaches to the agent. Bing search data leaves
+// the Azure compliance boundary — provision only when web grounding is wanted.
+// ==========================================================================
+#disable-next-line BCP081
+resource bing 'Microsoft.Bing/accounts@2020-06-10' = if (wantBing) {
+  name: bingName
+  location: 'global'
+  sku: { name: 'G1' }
+  kind: 'Bing.Grounding'
+  tags: tags
+}
+
+resource bingConnection 'Microsoft.CognitiveServices/accounts/projects/connections@2025-04-01-preview' = if (wantBing) {
+  parent: project
+  name: bingConnectionName
+  properties: {
+    category: 'ApiKey'
+    target: 'https://api.bing.microsoft.com/'
+    authType: 'ApiKey'
+    credentials: {
+      #disable-next-line BCP318 BCP422
+      key: bing.listKeys().key1
+    }
+    isSharedToAll: true
+    metadata: {
+      ApiType: 'Azure'
+      Location: 'global'
+      #disable-next-line BCP318
+      ResourceId: bing.id
+      type: 'bing_grounding'
+    }
+  }
+}
+
+// ==========================================================================
 // Azure SQL (optional) — contract status / renewal dates function tool
 // ==========================================================================
 resource sqlServer 'Microsoft.Sql/servers@2023-08-01' = if (wantSql) {
@@ -317,6 +361,10 @@ output MODEL_RENEWAL string = gptMini
 output AZURE_SEARCH_ENDPOINT string = 'https://${search.name}.search.windows.net'
 output AZURE_SEARCH_INDEX string = searchIndexName
 output AZURE_SEARCH_CONNECTION_NAME string = searchConnectionName
+
+// Empty unless Bing was provisioned — build_web_search_tool() treats an empty
+// value as "web search off", so the Clause & Risk agent stays corpus-only.
+output AZURE_BING_CONNECTION_NAME string = wantBing ? bingConnectionName : ''
 
 #disable-next-line outputs-should-not-contain-secrets
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
