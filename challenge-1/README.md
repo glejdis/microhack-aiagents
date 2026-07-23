@@ -60,9 +60,9 @@ flowchart TB
   D --> E["Intake &amp; Drafting agent<br/>Claude Sonnet 4.5"]
   F["get_contract_status<br/>function tool"] --> E
   E --> G["Cited draft / answer<br/>+ tool results"]
-  style E fill:#EDE4F5,stroke:#7A4FB5,stroke-width:2px
-  style D fill:#FCEBDD,stroke:#E8590C,stroke-width:2px
-  style F fill:#FCEBDD,stroke:#E8590C,stroke-width:2px
+  style E fill:#EDE4F5,stroke:#7A4FB5,stroke-width:2px,color:#1A1A1A
+  style D fill:#FCEBDD,stroke:#E8590C,stroke-width:2px,color:#1A1A1A
+  style F fill:#FCEBDD,stroke:#E8590C,stroke-width:2px,color:#1A1A1A
 ```
 
 The index itself was built in **Challenge 0** by `scripts/seed_corpus.py`. In this challenge you
