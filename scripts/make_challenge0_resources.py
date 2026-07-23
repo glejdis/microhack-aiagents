@@ -178,7 +178,7 @@ text(21, 84.9, "project: clm-project   ·   one identity, billing, tracing & gov
 text(10, 81.4, "Model fleet — LLM deployments", fs=9.5, weight="bold", color=INK)
 
 # three model cards
-resource(11, 66.2, 44, 13.6, "GPT", GPT, "gpt-5.3",
+resource(11, 66.2, 44, 13.6, "GPT", GPT, "gpt-5.4",
          "OpenAI · GlobalStandard 30\nOrchestrator agent", mono_fs=9)
 resource(58, 66.2, 44, 13.6, "CLD", CLAUDE, "claude-sonnet-4-5",
          "Anthropic · GlobalStandard 20\nIntake & Drafting · Clause & Risk", mono_fs=9)
