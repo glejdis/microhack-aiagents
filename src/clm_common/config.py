@@ -23,9 +23,9 @@ except ImportError:  # dotenv is optional at runtime
 
 # Repo root = two levels up from this file (src/clm_common/config.py).
 REPO_ROOT = Path(__file__).resolve().parents[2]
-# The CLM corpus lives under Challenge 0 (that's where it is provisioned and
-# seeded); every challenge reads it through this single DATA_DIR.
-DATA_DIR = REPO_ROOT / "challenge-0" / "data"
+# The CLM corpus lives under src/data (provisioned and seeded from there);
+# every challenge reads it through this single DATA_DIR.
+DATA_DIR = REPO_ROOT / "src" / "data"
 
 
 def _get(name: str, default: str | None = None, required: bool = False) -> str | None:
@@ -33,7 +33,7 @@ def _get(name: str, default: str | None = None, required: bool = False) -> str |
     if required and not value:
         raise RuntimeError(
             f"Missing required environment variable '{name}'. "
-            f"Run Challenge 0's deploy script or copy .env.example → .env and fill it in."
+            f"Run Challenge 1's deploy script or copy .env.example → .env and fill it in."
         )
     return value
 
@@ -58,7 +58,7 @@ class Settings:
 
     # Web grounding (Grounding with Bing Search) — OPTIONAL / opt-in. Powers
     # external, public counterparty due-diligence for the Clause & Risk agent
-    # (Ch3). Foundry has no dedicated Bing connection *type*, so the tool is
+    # (Ch4). Foundry has no dedicated Bing connection *type*, so the tool is
     # resolved by connection NAME (or an explicit id). Provision a "Grounding with
     # Bing Search" resource, add it as a project connection, then set one of these.
     # Later swap to Web IQ by changing build_web_search_tool() only — no config
@@ -68,7 +68,7 @@ class Settings:
 
     # SharePoint — corpus source of truth (BYO document library). An Azure AI
     # Search SharePoint Online indexer crawls this library into the clm-corpus
-    # index (built in Challenge 0 by scripts/seed_corpus.py). The app-registration
+    # index (built in Challenge 1 by labautomation/seed_corpus.py). The app-registration
     # values authorize that indexer (Graph app-only auth).
     sharepoint_site_url: str | None = field(default_factory=lambda: _get("SHAREPOINT_SITE_URL"))
     sharepoint_doc_library: str = field(default_factory=lambda: _get("SHAREPOINT_DOC_LIBRARY", "Documents"))

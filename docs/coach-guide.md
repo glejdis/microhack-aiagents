@@ -12,7 +12,7 @@ tips. Participants never see this file; it's for the people running the room.
 
 ## 1. Who this is for
 
-- **Lead coach** — owns the tech talk, timing, and go/no-go on Challenge 0.
+- **Lead coach** — owns the tech talk, timing, and go/no-go on Challenge 1.
 - **Floating coaches** — 1 per 2–3 teams, unblock environment issues, run the checkpoints below.
 - Assumes coaches have done a **full dry-run** end-to-end at least once in the target region.
 
@@ -22,21 +22,21 @@ tips. Participants never see this file; it's for the people running the room.
 
 | Task | Why it matters |
 |------|----------------|
-| **Pick a region with all 3 models** (`gpt-5.4`, `gpt-5-mini`, `claude-sonnet-4-5`). `swedencentral` is a good default. | Challenge 0 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** Model versions drift — the repo tracks non-deprecating pins; if you re-pin, avoid versions with a near/past `deprecation.inference` date (`az cognitiveservices model list`). |
-| **Confirm Claude is enabled** in both the **model catalog** *and* the **Foundry chat runner** for that region, and that you have **Anthropic quota**. | If Foundry can't serve Claude via the chat client, Ch1 needs the Anthropic-SDK fallback. If there's **zero Claude quota** or the marketplace offer is unavailable (`InvalidModelProviderData`), tell teams to deploy with **`DEPLOY_CLAUDE_MODEL=false`** — drafting/clause-risk fall back to `gpt-5.4` and the smoke test still passes. |
+| **Pick a region with all 3 models** (`gpt-5.4`, `gpt-5-mini`, `claude-sonnet-4-5`). `swedencentral` is a good default. | Challenge 1 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** Model versions drift — the repo tracks non-deprecating pins; if you re-pin, avoid versions with a near/past `deprecation.inference` date (`az cognitiveservices model list`). |
+| **Confirm Claude is enabled** in both the **model catalog** *and* the **Foundry chat runner** for that region, and that you have **Anthropic quota**. | If Foundry can't serve Claude via the chat client, Ch2 needs the Anthropic-SDK fallback. If there's **zero Claude quota** or the marketplace offer is unavailable (`InvalidModelProviderData`), tell teams to deploy with **`DEPLOY_CLAUDE_MODEL=false`** — drafting/clause-risk fall back to `gpt-5.4` and the smoke test still passes. |
 | **Check quota** — Basic Azure AI Search + the model SKUs (TPM for each deployment). Request increases early. | Quota denials are the #1 day-of blocker and can take hours to approve. |
 | **Decide the subscription model** — one sub per team (cleanest) vs a shared sub with per-team resource groups / env names. | `azd up` uses an environment name as the RG suffix; shared subs need unique names per team. |
-| **Do a full dry-run** in the target region, including `azd up` **and** `scripts/deploy.sh`. | You'll hit the region/quota issues before the participants do. |
-| **Pre-provision (optional but recommended)** a subscription per team the night before. | Saves ~20 of Challenge 0's 30 min; teams start on agents, not provisioning. |
+| **Do a full dry-run** in the target region, including `azd up` **and** `labautomation/deploy.sh`. | You'll hit the region/quota issues before the participants do. |
+| **Pre-provision (optional but recommended)** a subscription per team the night before. | Saves ~20 of Challenge 1's 30 min; teams start on agents, not provisioning. |
 | **Cost check** — models are pay-per-token; Search Basic + App Insights are the fixed cost. Tear down with `azd down` / delete the RG after. | Budget approval + a reminder to delete afterwards. |
-| **Teams/M365 tenant** — confirm you (or the participants) can **sideload a custom Teams app** and publish to M365 Copilot. | Challenge 4's publish step needs sideload rights; many corp tenants block it. Have a coach-owned tenant as fallback. |
+| **Teams/M365 tenant** — confirm you (or the participants) can **sideload a custom Teams app** and publish to M365 Copilot. | Challenge 5's publish step needs sideload rights; many corp tenants block it. Have a coach-owned tenant as fallback. |
 
 ### Pre-flight checklist (per team, morning of)
 
 - [ ] Team has an **Azure subscription** with Owner/Contributor + rights to create role assignments.
 - [ ] Region confirmed to offer all three models.
 - [ ] They can **fork** the repo and **open a Codespace** (or have the devcontainer locally).
-- [ ] `Microsoft.BotService` provider registered (needed in Ch4): `az provider register --namespace Microsoft.BotService`.
+- [ ] `Microsoft.BotService` provider registered (needed in Ch5): `az provider register --namespace Microsoft.BotService`.
 
 ---
 
@@ -44,14 +44,14 @@ tips. Participants never see this file; it's for the people running the room.
 
 | Time | Block | Coach cadence |
 |------|-------|---------------|
-| 09:00 – 10:00 | **Tech talk** — the CLM story, the agentic architecture, multi-model (Claude + GPT), Foundry IQ, tracing/eval, MCP, publish. | Show the [architecture diagram](images/architecture.png). Set the "human always signs" guardrail expectation. |
-| 10:00 – 12:30 | **Hacking — Challenges 0, 1, 2** | **Gate at Ch0:** no team moves on until `smoke_test.py` is green. Float hard here. |
+| 09:00 – 10:00 | **Tech talk** — the CLM story, the agentic architecture, multi-model (Claude + GPT), Foundry IQ, tracing/eval, MCP, publish. | Show the [architecture diagram](../images/architecture.png). Set the "human always signs" guardrail expectation. |
+| 10:00 – 12:30 | **Hacking — Challenges 1, 2, 3** | **Gate at Ch1:** no team moves on until `smoke_test.py` is green. Float hard here. |
 | 12:30 – 13:30 | Lunch | — |
-| 13:30 – 15:30 | **Hacking — Challenges 3, 4** | Ch4 builds on a working Ch3 orchestrator — make sure Ch3 runs cleanly first. Remind teams before lunch. |
+| 13:30 – 15:30 | **Hacking — Challenges 4, 5** | Ch5 builds on a working Ch4 orchestrator — make sure Ch4 runs cleanly first. Remind teams before lunch. |
 | 15:30 – 16:00 | **Wrap-up / demos** | Each team demos one thing: a cited draft, a bake-off result, an MCP call, or a live Teams alert. |
-| *Overflow* | **Challenge 5 (bonus)** — Safety, Red-Teaming & CI gate | For fast finishers or as a follow-up; does **not** fit inside 4.5 h. |
+| *Overflow* | **Challenge 6 (bonus)** — Safety, Red-Teaming & CI gate | For fast finishers or as a follow-up; does **not** fit inside 4.5 h. |
 
-**Pace check:** a team should finish **Ch0 by ~10:30**, **Ch1 by ~11:30**, **Ch2 by ~12:30**. If a
+**Pace check:** a team should finish **Ch1 by ~10:30**, **Ch2 by ~11:30**, **Ch3 by ~12:30**. If a
 team is 20+ min behind at a checkpoint, hand them a hint (below) rather than let them grind.
 
 ---
@@ -61,38 +61,38 @@ team is 20+ min behind at a checkpoint, hand them a hint (below) rather than let
 Each challenge README has the full participant instructions. Below is the **coach layer**: the point
 of the challenge, what "done" looks like, where teams get stuck, and the hint to give.
 
-### Challenge 0 · Setup & Foundry Foundations *(30 min · setup)*
+### Challenge 1 · Setup & Foundry Foundations *(30 min · setup)*
 
 - **Point:** stand up the whole Foundry environment + seed the corpus with **zero local install**.
-- **Done when:** `python scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
+- **Done when:** `python labautomation/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
   `gpt-5.4` **and** `claude-sonnet-4-5`) and the `clm-corpus` index shows documents in the portal.
 - **Coach prep (before the event):** the corpus lives in a **bring-your-own SharePoint library** —
   `azd`/`deploy.sh` do **not** create it. (1) Stand up a SharePoint site + document library. (2) Create
-  the Entra app registration with **`scripts/setup_sharepoint_app.sh`** (or `.ps1`) — it adds the Graph
+  the Entra app registration with **`labautomation/setup_sharepoint_app.sh`** (or `.ps1`) — it adds the Graph
   permissions (`Sites.ReadWrite.All` + `Files.Read.All`), grants admin consent, and prints the
   `SHAREPOINT_*` values. (3) Populate the library once with
-  **`python scripts/upload_corpus_to_sharepoint.py`** (uploads the 14 corpus PDFs). Hand teams the five
+  **`python labautomation/upload_corpus_to_sharepoint.py`** (uploads the 14 corpus PDFs). Hand teams the five
   `SHAREPOINT_*` values so their `seed_corpus.py` indexer can crawl it. One shared library for everyone
   is fine. Admin-consent needs Global Admin / Privileged Role Admin / Application Administrator.
 - **No SharePoint license / no admin-consent rights? (sandbox tenants):** skip all of the above. Teams
-  leave the `SHAREPOINT_*` values blank and run `python scripts/seed_corpus.py`, which falls back to
-  extracting the local `challenge-0/data/**/*.pdf` corpus straight into the `clm-corpus` index (needs the
+  leave the `SHAREPOINT_*` values blank and run `python labautomation/seed_corpus.py`, which falls back to
+  extracting the local `src/data/**/*.pdf` corpus straight into the `clm-corpus` index (needs the
   Search Index Data Contributor role, granted by `azd up`). Same grounding outcome, no SharePoint — a
   reliable default if you're unsure your tenant has an SPO license.
 - **Provisioning paths** — all produce the same resources and `.env`: **`azd up`** (Bicep in
-  `challenge-0/infra/`), **`scripts/deploy.sh`** (`.ps1` on Windows), or the one-click **Deploy to
+  `labautomation/infra/`), **`labautomation/deploy.sh`** (`.ps1` on Windows), or the one-click **Deploy to
   Azure** button / `az deployment sub create` on `infra/azuredeploy.json` (then
-  `python scripts/write_env.py --deployment <name>` for `.env`). Let teams pick one; don't mix.
+  `python labautomation/write_env.py --deployment <name>` for `.env`). Let teams pick one; don't mix.
   - *Optional add-ons* (all paths, off by default): Azure SQL for the renewal tool
     (`DEPLOY_SQL`/`--with-sql`/`-WithSql`) and **Grounding with Bing Search** for the Clause & Risk
     agent's optional web lookup (`DEPLOY_BING`/`--with-bing`/`-WithBing`). Bing data leaves the Azure
-    compliance boundary — only suggest it for the Challenge 3 "Go Further" web-grounding track.
+    compliance boundary — only suggest it for the Challenge 4 "Go Further" web-grounding track.
 - **Watch for:**
   - *Model deploy fails* → the model/version isn't in their region. Switch region (`eastus2`/`westus3`)
-    or adjust the version in `deploy.sh`. **This is the single most common Ch0 blocker.**
+    or adjust the version in `deploy.sh`. **This is the single most common Ch1 blocker.**
   - *`account project create` unavailable* → the CLI project command is preview. Create the project in
     the **portal**, then set `AZURE_AI_PROJECT_ENDPOINT` in `.env` by hand.
-  - *Claude ping fails in smoke test* → runner may not host Claude yet; they can still proceed (Ch1 has
+  - *Claude ping fails in smoke test* → runner may not host Claude yet; they can still proceed (Ch2 has
     the fallback). Don't let them rabbit-hole here.
   - *`az login` in Codespaces* → must use `az login --use-device-code`.
   - *RBAC not propagated* → role assignments can take a few minutes; a retry usually fixes "auth" errors
@@ -100,10 +100,10 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 - **Coach hint if stuck on region:** "Open the Foundry model catalog filtered to *your* subscription and
   pick a region that lists all three — don't trust a blog's default."
 
-### Challenge 1 · Grounded Agent with Foundry IQ + Tools *(60 min · grounding · tools · guardrails)*
+### Challenge 2 · Grounded Agent with Foundry IQ + Tools *(60 min · grounding · tools · guardrails)*
 
 - **Point:** build the **Intake & Drafting agent on Claude Sonnet 4.5** — grounded, cited, tool-enabled,
-  and guard-railed (refuses legal advice). Establishes the pattern reused in Ch3/4.
+  and guard-railed (refuses legal advice). Establishes the pattern reused in Ch4/5.
 - **Done when:** answers are **cited** from the corpus; `get_contract_status` fires for **CT-4821**; the
   legal-advice prompt is **refused**; the model shown in the portal is the **Claude** deployment.
 - **Key teaching moment:** the agent/tool/grounding API is **identical** whether `model` points at GPT
@@ -121,7 +121,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 - **Coach hint:** "Run `sample_prompts.md` top to bottom — it deliberately exercises draft → cited Q&A →
   status lookup → refusal, one per capability."
 
-### Challenge 2 · Observability, Tracing & Evaluation *(60 min · tracing · eval)*
+### Challenge 3 · Observability, Tracing & Evaluation *(60 min · tracing · eval)*
 
 - **Point:** make the agent **observable** (OTel traces → App Insights) and **measurable** (evaluation
   scorecard + a **Claude-vs-GPT bake-off** + a **quality gate**).
@@ -142,26 +142,26 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 - **Commands worth demoing:** `evaluators.py --bakeoff` and `evaluators.py --gate 5.0` (watch it fail
   on purpose — exit code 3).
 
-### Challenge 3 · Orchestration + MCP Server *(60 min · orchestration · MCP)*
+### Challenge 4 · Orchestration + MCP Server *(60 min · orchestration · MCP)*
 
 - **Point:** add the **Clause & Risk** specialist (Claude), stand up a **GPT-5.4 Orchestrator** that
   routes to both specialists via the **agent-as-tool pattern**, and expose the workflow as an **MCP server**.
 - **Done when:** one orchestrator thread runs **draft → extract → risk** by delegating; the Clause & Risk
   agent returns a structured, cited risk assessment; the **MCP server is discoverable + callable** from
   VS Code / Copilot Chat (`#draft_contract`, `#analyze_contract`, `#get_contract_status`).
-- **Ch4 builds on this orchestrator:** it publishes the Ch3 orchestrator pattern — make sure it runs cleanly.
+- **Ch5 builds on this orchestrator:** it publishes the Ch4 orchestrator pattern — make sure it runs cleanly.
   Call this out loudly before lunch.
 - **Watch for:**
   - *Orchestrator routes wrong* → sharpen `INSTRUCTIONS` routing rules and make each specialist's
     `as_tool(description=...)` specific.
   - *`agent_framework` import error* → `pip install agent-framework-core agent-framework-foundry` (see requirements.txt).
-  - *MCP server not listed in VS Code* → ensure the MCP feature is on and `challenge-3/.vscode/mcp.json`
-    is picked up; confirm the server starts standalone first (`python challenge-3/mcp_server/server.py`).
+  - *MCP server not listed in VS Code* → ensure the MCP feature is on and `src/.vscode/mcp.json`
+    is picked up; confirm the server starts standalone first (`python src/mcp_server/server.py`).
   - *MCP call times out* → each call spins up + tears down a Foundry agent (a few seconds); keep test
     drafts short.
 - **Sample draft is rigged:** the Clause & Risk sample has deliberate red flags (uncapped liability,
   60-day auto-renew) so a **High** risk result is the expected, demo-able outcome.
-- **Go Further — agent as MCP client:** `challenge-3/orchestrator_mcp.py` runs the *same* GPT-5.4
+- **Go Further — agent as MCP client:** `src/orchestrator_mcp.py` runs the *same* GPT-5.4
   Orchestrator but consumes the workflow over MCP (`MCPStdioTool`) instead of in-process `as_tool()`.
   Great "aha" for the portability point — the tools serve editors **and** agents. Note the only
   non-circular consumer is the Orchestrator: a specialist consuming the server (`analyze_contract` =
@@ -169,7 +169,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
   separately. Slower than the in-process orchestrator (each MCP call spins up a fresh Foundry agent in
   the subprocess) — fine for a demo.
 
-### Challenge 4 · Publish to M365 Copilot & Teams + Proactive Alerts *(60 min ≈ 30 publish + 30 alerts)*
+### Challenge 5 · Publish to M365 Copilot & Teams + Proactive Alerts *(60 min ≈ 30 publish + 30 alerts)*
 
 - **Point:** ship the orchestrator to **Teams / M365 Copilot** (conversational, no bot code) **and**
   push **proactive** renewal/risk alerts into Teams (needs a saved conversation reference).
@@ -188,10 +188,10 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
     message to *this* bot.
 - **No-tenant fallback:** everything alert-related runs with `--dry-run` to print the exact text without
   sending — teams blocked on sideload rights can still complete the *logic*. The manifest template +
-  **branded placeholder icons** live in `challenge-4/manifest/` (regenerate via
-  `python scripts/make_icons.py`), so zipping the app package needs no design work.
+  **branded placeholder icons** live in `src/manifest/` (regenerate via
+  `python src/scripts/make_icons.py`), so zipping the app package needs no design work.
 
-### Challenge 5 · Safety, Red-Teaming & Continuous Eval 🧪 *(bonus · optional · ~45–60 min)*
+### Challenge 6 · Safety, Red-Teaming & Continuous Eval 🧪 *(bonus · optional · ~45–60 min)*
 
 - **Point:** close the responsible-AI loop — attack the agent with the **AI Red Teaming Agent**, add
   **Content Safety / PII** guardrails, and wire a **quality + safety gate into CI**.
@@ -213,26 +213,26 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 | Situation | Fix |
 |-----------|-----|
 | **`.env` looks wrong / half-populated** | Re-run the provision path (`azd up` re-runs the `write_env.py` hook), or hand-set the missing keys from the portal (project endpoint under **Overview → Endpoint**). |
-| **Corpus / index empty** | Re-run `python scripts/seed_corpus.py` (idempotent — recreates the SharePoint indexer and re-crawls the library). Check the indexer run status + that the SharePoint library is populated. |
+| **Corpus / index empty** | Re-run `python labautomation/seed_corpus.py` (idempotent — recreates the SharePoint indexer and re-crawls the library). Check the indexer run status + that the SharePoint library is populated. |
 | **Legacy agents in the project** | The Microsoft Agent Framework builds agents in-process against the Foundry chat client — it registers **no** persistent server-side agents, so there's nothing to clean up. Delete any stragglers from earlier Agent-Service runs in **portal → Agents** if you like. |
 | **Auth / 403 right after provisioning** | RBAC propagation lag — wait 2–3 min and retry before debugging anything else. |
 | **Everything is wedged, start clean** | `azd down` (or delete the resource group), then `azd up` again. Budget ~15 min. |
-| **Region has no Claude runner** | Proceed with the **Anthropic-SDK fallback** in Challenge 1 — the concepts still land; only the *hosting* path differs. |
+| **Region has no Claude runner** | Proceed with the **Anthropic-SDK fallback** in Challenge 2 — the concepts still land; only the *hosting* path differs. |
 | **Cross-challenge script `ModuleNotFoundError`** | Should not happen — the shared-module import paths are fixed and CI byte-compiles all six challenges. If it does, confirm the team didn't move files between folders. |
 
 ---
 
 ## 6. Facilitation tips
 
-- **Gate Challenge 0.** Nobody advances on a red smoke test — a broken env poisons every later challenge.
+- **Gate Challenge 1.** Nobody advances on a red smoke test — a broken env poisons every later challenge.
 - **Hint, don't solve.** Give the *smallest* nudge from the tables above; let teams keep ownership.
-- **Protect the "aha" moments.** Make sure every team sees at least: a **cited** answer (Ch1), the
-  **bake-off** (Ch2), a **routed** orchestrator turn (Ch3), and a **live Teams** response or alert (Ch4).
+- **Protect the "aha" moments.** Make sure every team sees at least: a **cited** answer (Ch2), the
+  **bake-off** (Ch3), a **routed** orchestrator turn (Ch4), and a **live Teams** response or alert (Ch5).
 - **The code is the answer key.** If a team is truly stuck, read the relevant script *with* them — it's
   the reference implementation, fully commented.
 - **Time-box the fallbacks.** Claude-runner and no-tenant fallbacks exist precisely so one environment
   gap doesn't cost a team the whole afternoon. Reach for them early.
-- **Bank Challenge 5** for the one or two teams who fly — it's a great "take it home" extension.
+- **Bank Challenge 6** for the one or two teams who fly — it's a great "take it home" extension.
 
 ---
 
@@ -242,8 +242,8 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 2. **Tracing lag** is 1–2 min; the content-recording flag must be set **before** the SDK import.
 3. **RBAC propagation** lag causes false "auth" failures right after provisioning — retry first.
 4. **Agents are built in-process** with the Microsoft Agent Framework — nothing persists server-side, so each challenge rebuilds its agent (no `--keep`).
-5. **Sideload rights** in the M365 tenant are the Ch4 wildcard — have a coach tenant on standby.
+5. **Sideload rights** in the M365 tenant are the Ch5 wildcard — have a coach tenant on standby.
 
 ---
 
-➡️ Participant docs start at the **[main README](../README.md)** and **[Challenge 0](../challenge-0/)**.
+➡️ Participant docs start at the **[main README](../README.md)** and **[Challenge 1](../challenges/challenge-01.md)**.

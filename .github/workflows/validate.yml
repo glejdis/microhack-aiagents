@@ -16,7 +16,7 @@ jobs:
           python-version: "3.11"
 
       - name: Byte-compile all challenge + shared code
-        run: python -m compileall -q src scripts challenge-0 challenge-1 challenge-2 challenge-3 challenge-4 challenge-5
+        run: python -m compileall -q src labautomation
 
       - name: Validate JSON + evaluation dataset
         run: |
@@ -31,7 +31,7 @@ jobs:
                   json.loads(p.read_text(encoding="utf-8"))
               except Exception as e:
                   print(f"BAD JSON {p}: {e}"); bad += 1
-          ds = root / "challenge-0" / "data" / "evaluation" / "evaluation_dataset.jsonl"
+          ds = root / "src" / "data" / "evaluation" / "evaluation_dataset.jsonl"
           rows = [l for l in ds.read_text(encoding="utf-8").splitlines() if l.strip()]
           for i, line in enumerate(rows, 1):
               try:
@@ -42,6 +42,6 @@ jobs:
           sys.exit(1 if bad else 0)
           PY
 
-      # Go Further: run the Challenge 2 quality gate on a schedule/PR once Azure
+      # Go Further: run the Challenge 3 quality gate on a schedule/PR once Azure
       # secrets (AZURE_AI_PROJECT_ENDPOINT, etc.) are configured as repo secrets:
-      #   python challenge-2/evaluators.py --gate 4.0
+      #   python src/evaluators.py --gate 4.0

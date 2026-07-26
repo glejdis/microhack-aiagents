@@ -1,4 +1,4 @@
-![Agentic AI Hacks · Contract Lifecycle Management](docs/images/banner.png)
+![Agentic AI Hacks · Contract Lifecycle Management](images/banner.png)
 
 # Agentic AI Hacks · Contract Lifecycle Management
 
@@ -31,7 +31,7 @@ use.
 ## The scenario — Contoso Global
 
 <p align="center">
-  <img src="docs/diagrams/user-journey.png" alt="User journey — a day in the life of a Contoso contract manager, from requesting a draft through review, citations, sign-off, obligation tracking, and a proactive renewal alert — all in one Microsoft Foundry project" width="100%">
+  <img src="images/diagrams/user-journey.png" alt="User journey — a day in the life of a Contoso contract manager, from requesting a draft through review, citations, sign-off, obligation tracking, and a proactive renewal alert — all in one Microsoft Foundry project" width="100%">
 </p>
 
 This microhack uses a fictitious multinational, **Contoso Global**, but the scenario applies to any
@@ -77,25 +77,25 @@ sign-off and full tracing**.
 
 Here's a single day in that manager's life once the Agentic CLM assistant is live. Each step maps
 directly to what you build in the challenges — follow the [user-journey
-diagram](docs/diagrams/user-journey.png) alongside this table.
+diagram](images/diagrams/user-journey.png) alongside this table.
 
 | # | What the manager does | What happens under the hood | Foundry capability | Built in |
 |---|-----------------------|-----------------------------|--------------------|----------|
-| **1 · Request a draft** | *"Draft a mutual NDA with Acme, 2-yr term."* | **Intake & Drafting** agent (Claude Sonnet 4.5) drafts from an **approved template** | Grounded agent + tools | [C1](challenge-1/) |
-| **2 · Check their draft** | Uploads Acme's counter-draft MSA | **Clause & Risk** agent (Claude Sonnet 4.5) scores every clause against the **Standard Clause Library** and flags deviations | Specialist agent + orchestration | [C3](challenge-3/) |
-| **3 · Ask, with citations** | *"What's our standard indemnity cap?"* | **Foundry IQ** answers over the Contoso corpus — **with sources** | Agentic retrieval (Foundry IQ) | [C1](challenge-1/) |
-| **4 · Review & sign off** | Reads flags + citations, edits, **approves** | **Human-in-the-loop** — nothing is finalized without sign-off | HITL + guardrails | [C1](challenge-1/) · [C3](challenge-3/) |
-| **5 · Track obligations** | Reviews upcoming renewals | **Obligation & Renewal** agent (GPT-5-mini) **reads** contract status & upcoming renewals via function tools — **Azure SQL** (seed-data fallback) | Function tool / MCP server | [C3](challenge-3/) · [C4](challenge-4/) |
-| **6 · Proactive alert** | Gets a proactive Teams ping **before the renewal date** | Renew or renegotiate in time — **no missed auto-renewals** | Publish + proactive messaging | [C4](challenge-4/) |
+| **1 · Request a draft** | *"Draft a mutual NDA with Acme, 2-yr term."* | **Intake & Drafting** agent (Claude Sonnet 4.5) drafts from an **approved template** | Grounded agent + tools | [C2](challenges/challenge-02.md) |
+| **2 · Check their draft** | Uploads Acme's counter-draft MSA | **Clause & Risk** agent (Claude Sonnet 4.5) scores every clause against the **Standard Clause Library** and flags deviations | Specialist agent + orchestration | [C4](challenges/challenge-04.md) |
+| **3 · Ask, with citations** | *"What's our standard indemnity cap?"* | **Foundry IQ** answers over the Contoso corpus — **with sources** | Agentic retrieval (Foundry IQ) | [C2](challenges/challenge-02.md) |
+| **4 · Review & sign off** | Reads flags + citations, edits, **approves** | **Human-in-the-loop** — nothing is finalized without sign-off | HITL + guardrails | [C2](challenges/challenge-02.md) · [C4](challenges/challenge-04.md) |
+| **5 · Track obligations** | Reviews upcoming renewals | **Obligation & Renewal** agent (GPT-5-mini) **reads** contract status & upcoming renewals via function tools — **Azure SQL** (seed-data fallback) | Function tool / MCP server | [C4](challenges/challenge-04.md) · [C5](challenges/challenge-05.md) |
+| **6 · Proactive alert** | Gets a proactive Teams ping **before the renewal date** | Renew or renegotiate in time — **no missed auto-renewals** | Publish + proactive messaging | [C5](challenges/challenge-05.md) |
 
 > 🔒 **Under the hood, every step runs in one Microsoft Foundry project** — traced (Application
-> Insights), scored by **evaluations** *([C2](challenge-2/))*, and guarded by **Content Safety**
-> *(bonus [C5](challenge-5/))*. That observability + safety layer is what turns a demo into something
+> Insights), scored by **evaluations** *([C3](challenges/challenge-03.md))*, and guarded by **Content Safety**
+> *(bonus [C6](challenges/challenge-06.md))*. That observability + safety layer is what turns a demo into something
 > legal and procurement teams would actually trust.
 
 📊 Prefer a visual? The user-journey diagram above is saved in
-[`docs/diagrams/`](docs/diagrams/) as [`user-journey.png`](docs/diagrams/user-journey.png), alongside the
-finalized [`architecture.png`](docs/diagrams/architecture.png).
+[`images/diagrams/`](images/diagrams/) as [`user-journey.png`](images/diagrams/user-journey.png), alongside the
+finalized [`architecture.png`](images/diagrams/architecture.png).
 
 ---
 
@@ -104,9 +104,9 @@ finalized [`architecture.png`](docs/diagrams/architecture.png).
 The diagram below shows the end-to-end architecture you'll build — a layered system with the contract
 manager on top, the agent fleet and grounding in a single **Microsoft Foundry** project in the middle,
 and observability underneath. The finalized diagram lives in
-[`docs/diagrams/`](docs/diagrams/).
+[`images/diagrams/`](images/diagrams/).
 
-![Architecture — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced and evaluated, published to Teams/M365 Copilot](docs/diagrams/architecture.png)
+![Architecture — Orchestrator + specialist agents on Microsoft Foundry, grounded by Foundry IQ, traced and evaluated, published to Teams/M365 Copilot](images/diagrams/architecture.png)
 
 ❶ **Consumption plane — where the manager already works.** At the top, the contract manager interacts
 through **Microsoft 365 Copilot & Teams** (teal). There's no new app to learn: the assistant meets
@@ -135,7 +135,7 @@ the renewal agent through a function tool; an optional **Bing web search** tool 
 agent public web grounding for counterparty due-diligence (off by default); and the **MCP server**
 (`draft_contract` · `analyze_contract`) re-exposes the whole workflow as Model Context Protocol tools
 any MCP client — including M365 Copilot — can call. The Orchestrator can itself be that client
-(`challenge-3/orchestrator_mcp.py`), consuming the workflow over MCP instead of in-process.
+(`src/orchestrator_mcp.py`), consuming the workflow over MCP instead of in-process.
 
 ❻ **Observability & governance (gray) — what turns a demo into production.** Every run streams
 **OpenTelemetry traces to Application Insights**, while **Evaluations + Content Safety** score answer
@@ -149,7 +149,7 @@ loop so renewals are never missed.
 > 🎨 **Legend:** 🟦 blue = GPT agents · 🟪 purple = Claude agents · 🟧 orange = tools / MCP ·
 > 🟩 green = data / grounding · ⬜ gray = governance · **dashed grey** = telemetry · **dashed red** =
 > alerts / guardrails. The finalized architecture image — plus the end-to-end **[user
-> journey](docs/diagrams/)** (Excalidraw) — lives in **[`docs/diagrams/`](docs/diagrams/)**.
+> journey](images/diagrams/)** (Excalidraw) — lives in **[`images/diagrams/`](images/diagrams/)**.
 
 <details>
 <summary>Mermaid source</summary>
@@ -236,13 +236,13 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 
 By participating in this hackathon, you will learn how to:
 
-- **Build grounded, tool-using agents with the [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview)** — author agents with instructions, tools, and safety on Foundry as the chat-client provider, and run the *same* patterns across **GPT** *and* **Anthropic Claude** deployments from the [Foundry model catalog](https://learn.microsoft.com/azure/ai-foundry/concepts/foundry-models-overview). *(Challenges [1](challenge-1/), [3](challenge-3/))*
-- **Ground answers with [Foundry IQ](https://learn.microsoft.com/azure/ai-foundry/agents/concepts/what-is-foundry-iq)** — connect a knowledge source over your contract corpus and use [agentic retrieval](https://learn.microsoft.com/azure/search/search-agentic-retrieval-concept) on [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search) so every answer is **cited**, not hallucinated. *(Challenge [1](challenge-1/))*
-- **Connect tools and expose an [MCP server](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/model-context-protocol)** — add a [function tool](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/function-calling) that reads contract status from [Azure SQL](https://learn.microsoft.com/azure/azure-sql/database/sql-database-paas-overview), then publish the workflow as a **Model Context Protocol** server any MCP client can call. *(Challenge [3](challenge-3/))*
-- **Orchestrate a multi-agent system with the [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview) agent-as-tool pattern** — an **Orchestrator** delegating to specialist drafting, clause-risk, and renewal agents via `agent.as_tool(...)` (reinforced by this [multi-agent training module](https://learn.microsoft.com/training/modules/develop-multi-agent-azure-ai-foundry/)). *(Challenge [3](challenge-3/))*
-- **Practice GenAIOps — [tracing](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/trace-agents-sdk) & [observability](https://learn.microsoft.com/azure/ai-foundry/concepts/observability)** — emit **OpenTelemetry** traces to **Application Insights**, then run [evaluations](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/evaluate-sdk) to score quality, add a **quality gate**, and run a **Claude-vs-GPT bake-off**. *(Challenge [2](challenge-2/))*
-- **Publish to [Microsoft 365 Copilot & Teams](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/agent-365)** — surface the assistant where contract managers already work and push **proactive renewal alerts**. *(Challenge [4](challenge-4/))*
-- **Apply Responsible AI** *(bonus)* — [red-team the agent](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/run-scans-ai-red-teaming-agent), add [Azure AI Content Safety](https://learn.microsoft.com/azure/ai-services/content-safety/overview) / PII guardrails, and gate releases on a **quality + safety** check in CI. *(Challenge [5](challenge-5/))*
+- **Build grounded, tool-using agents with the [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview)** — author agents with instructions, tools, and safety on Foundry as the chat-client provider, and run the *same* patterns across **GPT** *and* **Anthropic Claude** deployments from the [Foundry model catalog](https://learn.microsoft.com/azure/ai-foundry/concepts/foundry-models-overview). *(Challenges [2](challenges/challenge-02.md), [4](challenges/challenge-04.md))*
+- **Ground answers with [Foundry IQ](https://learn.microsoft.com/azure/ai-foundry/agents/concepts/what-is-foundry-iq)** — connect a knowledge source over your contract corpus and use [agentic retrieval](https://learn.microsoft.com/azure/search/search-agentic-retrieval-concept) on [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search) so every answer is **cited**, not hallucinated. *(Challenge [2](challenges/challenge-02.md))*
+- **Connect tools and expose an [MCP server](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/model-context-protocol)** — add a [function tool](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/function-calling) that reads contract status from [Azure SQL](https://learn.microsoft.com/azure/azure-sql/database/sql-database-paas-overview), then publish the workflow as a **Model Context Protocol** server any MCP client can call. *(Challenge [4](challenges/challenge-04.md))*
+- **Orchestrate a multi-agent system with the [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/overview/agent-framework-overview) agent-as-tool pattern** — an **Orchestrator** delegating to specialist drafting, clause-risk, and renewal agents via `agent.as_tool(...)` (reinforced by this [multi-agent training module](https://learn.microsoft.com/training/modules/develop-multi-agent-azure-ai-foundry/)). *(Challenge [4](challenges/challenge-04.md))*
+- **Practice GenAIOps — [tracing](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/trace-agents-sdk) & [observability](https://learn.microsoft.com/azure/ai-foundry/concepts/observability)** — emit **OpenTelemetry** traces to **Application Insights**, then run [evaluations](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/evaluate-sdk) to score quality, add a **quality gate**, and run a **Claude-vs-GPT bake-off**. *(Challenge [3](challenges/challenge-03.md))*
+- **Publish to [Microsoft 365 Copilot & Teams](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/agent-365)** — surface the assistant where contract managers already work and push **proactive renewal alerts**. *(Challenge [5](challenges/challenge-05.md))*
+- **Apply Responsible AI** *(bonus)* — [red-team the agent](https://learn.microsoft.com/azure/ai-foundry/how-to/develop/run-scans-ai-red-teaming-agent), add [Azure AI Content Safety](https://learn.microsoft.com/azure/ai-services/content-safety/overview) / PII guardrails, and gate releases on a **quality + safety** check in CI. *(Challenge [6](challenges/challenge-06.md))*
 
 ---
 
@@ -250,24 +250,24 @@ By participating in this hackathon, you will learn how to:
 
 | # | Challenge | Focus | Duration |
 |---|-----------|-------|----------|
-| [0](challenge-0/) | Resource deployment · Codespaces · `.env` · corpus seeding | Setup | 30 min |
-| [1](challenge-1/) | Intake & Drafting agent + Foundry IQ + tools | Grounding · tools · guardrails | 60 min |
-| [2](challenge-2/) | Observability, tracing & evaluation | Tracing · eval | 60 min |
-| [3](challenge-3/) | Clause & Risk agent + Orchestrator + MCP server | Orchestration · MCP | 60 min |
-| [4](challenge-4/) | Publish to M365 Copilot & Teams + proactive alerts | Publish · alerts | 60 min |
-| [5](challenge-5/) 🧪 | *Bonus:* Safety, Red-Teaming & Continuous Eval | Responsible AI · CI gate | optional |
+| [1](challenges/challenge-01.md) | Resource deployment · Codespaces · `.env` · corpus seeding | Setup | 30 min |
+| [2](challenges/challenge-02.md) | Intake & Drafting agent + Foundry IQ + tools | Grounding · tools · guardrails | 60 min |
+| [3](challenges/challenge-03.md) | Observability, tracing & evaluation | Tracing · eval | 60 min |
+| [4](challenges/challenge-04.md) | Clause & Risk agent + Orchestrator + MCP server | Orchestration · MCP | 60 min |
+| [5](challenges/challenge-05.md) | Publish to M365 Copilot & Teams + proactive alerts | Publish · alerts | 60 min |
+| [6](challenges/challenge-06.md) 🧪 | *Bonus:* Safety, Red-Teaming & Continuous Eval | Responsible AI · CI gate | optional |
 
 ## Suggested agenda (4.5h)
 
 | Time | Activity |
 |------|----------|
 | 09:00 – 10:00 | Tech Talk |
-| 10:00 – 12:30 | Team hacking — Challenges 0, 1, 2 |
+| 10:00 – 12:30 | Team hacking — Challenges 1, 2, 3 |
 | 12:30 – 13:30 | Lunch break |
-| 13:30 – 15:30 | Team hacking — Challenges 3, 4 |
+| 13:30 – 15:30 | Team hacking — Challenges 4, 5 |
 | 15:30 – 16:00 | Final discussion / wrap up |
 
-> 🧪 **Bonus [Challenge 5](challenge-5/)** (Safety, Red-Teaming & Continuous Eval) is optional — for
+> 🧪 **Bonus [Challenge 6](challenges/challenge-06.md)** (Safety, Red-Teaming & Continuous Eval) is optional — for
 > teams who finish early. It doesn't fit inside the 4.5h; tackle it if you have time or as follow-up.
 
 > 👩‍🏫 **Running this event?** See the **[Coach & Facilitator Guide](docs/coach-guide.md)** — before-the-day
@@ -281,17 +281,17 @@ By participating in this hackathon, you will learn how to:
   Anthropic Claude — confirm Claude availability in your target region via the model catalog).
 - **GitHub account** (to fork + open in Codespaces).
 - Basic Python. No local install needed — the devcontainer has everything.
-- For Challenge 4: a Microsoft 365 tenant where you can sideload a Teams app (or a coach-provided one).
+- For Challenge 5: a Microsoft 365 tenant where you can sideload a Teams app (or a coach-provided one).
 
 ## Getting started
 
 1. **Fork** this repo, then **Code → Codespaces → Create codespace**. The devcontainer installs
    Python 3.11, Azure CLI, `azd`, Node, and `requirements.txt` automatically.
 2. `az login` (and `azd auth login` if you use the `azd up` path)
-3. Do **[Challenge 0](challenge-0/)** to deploy resources and seed the corpus — provision with
-   **`azd up`** (Bicep in `challenge-0/infra/`), the **`scripts/deploy`** script, or the one-click
+3. Do **[Challenge 1](challenges/challenge-01.md)** to deploy resources and seed the corpus — provision with
+   **`azd up`** (Bicep in `labautomation/infra/`), the **`labautomation/deploy`** script, or the one-click
    **Deploy to Azure** button (`infra/azuredeploy.json`). The first two autofill your `.env`.
-4. Work through Challenges 1 → 4.
+4. Work through Challenges 2 → 5.
 
 ---
 
@@ -300,18 +300,20 @@ By participating in this hackathon, you will learn how to:
 ```
 .
 ├── .devcontainer/            # Codespaces definition
-├── azure.yaml                # azd config (points at challenge-0/infra, write-.env hook)
-├── src/clm_common/           # shared config + Foundry client helpers
-├── scripts/                  # deploy, seed corpus, make corpus PDFs, smoke test, write .env
-├── challenge-0/ … challenge-4/   # one folder per challenge (README + code)
-│   └── challenge-0/data/     # CLM corpus (PDF contracts/templates/clauses/policies) + eval datasets
-├── challenge-5/              # bonus: safety, red-teaming & CI eval gate
-└── docs/                     # coach guide, editable diagrams + rendered images (banner, architecture)
+├── azure.yaml                # azd config (points at labautomation/infra, write-.env hook)
+├── README.md                 # this file
+├── challenges/               # challenge-01 … challenge-06 (one markdown brief per challenge)
+├── walkthrough/              # challenge-0N/solution-0N.md — reference solution per challenge
+├── src/                      # all source code: agents/, clm_common/, mcp_server/, data/, scripts/ …
+│   └── data/                 # CLM corpus (PDF contracts/templates/clauses/policies) + eval datasets
+├── labautomation/            # infra (Bicep) + deploy, seed corpus/SQL, write .env, smoke test
+├── images/                   # rendered images + per-challenge screenshots + diagrams
+└── docs/                     # coach guide, marketing
 ```
 
-> Generate images locally with `python scripts/make_banner.py` and
-> `mmdc -i scripts/architecture.mmd -o docs/images/architecture.png -b white -s 3 -w 1600`. Regenerate the
-> Teams app icons with `python scripts/make_icons.py`.
+> Generate images locally with `python src/scripts/make_banner.py` and
+> `mmdc -i src/scripts/architecture.mmd -o images/architecture.png -b white -s 3 -w 1600`. Regenerate the
+> Teams app icons with `python src/scripts/make_icons.py`.
 
 Each challenge README follows the same anatomy: **🎯 Objective · 🧭 Context · ✅ Tasks · ✔️ Success
 criteria · 🚀 Go Further · 🛠️ Troubleshooting · 🧠 Reflection**.
