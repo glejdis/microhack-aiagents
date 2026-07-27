@@ -4,6 +4,21 @@ Everything a coach or `azd` runs to stand up a team's environment lives here: th
 **Bicep infrastructure**, the **deploy scripts** that autofill `.env`, and the
 **seed** scripts that load the CLM corpus and contract-status data.
 
+## Platform entry point (EMEA MicroHack)
+
+The [microsoft/MicroHack](https://github.com/microsoft/MicroHack) platform provisions each
+team's environment by invoking **`deploy-lab.ps1`** with a fixed parameter contract and reading
+**`lab-defaults.json`** for its configuration:
+
+| File | Role |
+|------|------|
+| [`deploy-lab.ps1`](deploy-lab.ps1) | **Platform entry point.** Deploys [`infra/resources.bicep`](infra/) into the platform-provided resource group and returns the Foundry / Search endpoints to the user dashboard. Do **not** rename or change its parameter block — the platform silently skips scripts that don't match. |
+| [`lab-defaults.json`](lab-defaults.json) | Platform config (`$schema`-validated): deployment type, region priority, per-user daily cost estimate. |
+
+`deploy-lab.ps1` is the **platform** path; `deploy.sh` / `deploy.ps1` below remain the
+**local / Codespaces** path (they autofill `.env` via `az` after `az login`). Both provision the
+same resources from `infra/`.
+
 ## What gets provisioned
 
 [`infra/`](infra/) holds the Bicep templates (plus `azuredeploy.json` for the
