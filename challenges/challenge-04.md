@@ -1,5 +1,7 @@
 # Challenge 4 · Orchestration + MCP Server
 
+**[🏠 Home](../README.md)**  ·  [← Challenge 3: Observability](challenge-03.md)  ·  [Challenge 5: Publish to M365 →](challenge-05.md)
+
 > **Duration:** 60 min · **Prerequisites:** Challenge 2 pattern understood (grounded agent), Ch2
 > optional but recommended (you'll see orchestration spans).
 
@@ -97,7 +99,7 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
 
 ## ✅ Tasks
 
-1. **Build the Clause & Risk agent** and analyze the (deliberately red-flag) sample drafts. By
+1. **Build the Clause & Risk agent** (~15 min) and analyze the (deliberately red-flag) sample drafts. By
    default it analyzes **both** inbound drafts (`acme_msa_draft.pdf` and `globex_nda_redline.pdf`),
    reusing one agent:
    ```bash
@@ -127,7 +129,7 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
    >
    > <img src="../images/challenge-04/steps/01-clause-risk.svg" alt="Screenshot slot: Clause & Risk output" width="80%">
 
-2. **Build the Orchestrator** with both specialists connected, and run a multi-step thread
+2. **Build the Orchestrator** (~15 min) with both specialists connected, and run a multi-step thread
    (draft → analyze → status):
    ```bash
    python src/orchestrator.py
@@ -148,7 +150,7 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
    >
    > <img src="../images/challenge-04/steps/02-orchestrator.svg" alt="Screenshot slot: orchestrator thread" width="80%">
 
-3. **Run the MCP server** and inspect its tools:
+3. **Run the MCP server** (~10 min) and inspect its tools:
    ```bash
    python src/mcp_server/server.py       # serves over stdio (Ctrl-C to stop)
    ```
@@ -158,7 +160,7 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
    > client (VS Code, next step) to connect over stdin/stdout. Leave it running, or stop it with
    > `Ctrl-C` since VS Code will start its own copy from `mcp.json`.
 
-4. **Consume it from VS Code.** Open this repo in VS Code, ensure `src/.vscode/mcp.json`
+4. **Consume it from VS Code.** (~15 min) Open this repo in VS Code, ensure `src/.vscode/mcp.json`
    is picked up (Command Palette → *MCP: List Servers* → start **clm-mcp**), then in Copilot Chat
    (Agent mode) call `#draft_contract` / `#analyze_contract` / `#get_contract_status`. This proves
    the workflow is reusable outside your script.
@@ -171,7 +173,7 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
    ✅ **You'll know it worked when:** `clm-mcp` shows **Running** in *MCP: List Servers*, and
    `#analyze_contract` returns the **same** risk assessment you saw in Task 1.
 
-5. *(Go Further)* **Consume it from an agent.** Run the Orchestrator as an **MCP client** — same
+5. *(Go Further)* **Consume it from an agent.** (~5 min) Run the Orchestrator as an **MCP client** — same
    GPT-5.4 front door as step 2, but the tools now come from the `clm-mcp` server over the protocol
    instead of in-process `as_tool()`:
    ```bash

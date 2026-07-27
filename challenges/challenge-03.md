@@ -1,5 +1,7 @@
 # Challenge 3 · Observability, Tracing & Evaluation
 
+**[🏠 Home](../README.md)**  ·  [← Challenge 2: Grounded Agent](challenge-02.md)  ·  [Challenge 4: Orchestration + MCP →](challenge-04.md)
+
 > **Duration:** 60 min · **Prerequisites:** Challenge 2 complete (Intake & Drafting agent runs).
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
@@ -85,7 +87,7 @@ agent's answer for each of the **16 rows** in `src/data/evaluation/evaluation_da
 
 ## ✅ Tasks
 
-1. **Enable tracing** and confirm the exporter wires up:
+1. **Enable tracing** (~5 min) and confirm the exporter wires up:
    ```bash
    python src/tracing_setup.py
    ```
@@ -102,7 +104,7 @@ agent's answer for each of the **16 rows** in `src/data/evaluation/evaluation_da
    >
    > <img src="../images/challenge-03/steps/01-tracing-on.svg" alt="Screenshot slot: tracing enabled" width="75%">
 
-2. **Generate traffic**, then open **Foundry portal → Tracing**. Run a few prompts (e.g. re-run the
+2. **Generate traffic** (~15 min), then open **Foundry portal → Tracing**. Run a few prompts (e.g. re-run the
    Ch1 demo) and inspect the **prompt / retrieval / tool** spans and the token counts.
 
    > 📸 **Screenshot slot — what you'll see:** a run's span timeline in **Tracing**, and the **Agent Monitoring** dashboard.
@@ -113,7 +115,7 @@ agent's answer for each of the **16 rows** in `src/data/evaluation/evaluation_da
    > [!NOTE]
    > Spans take **1–2 minutes** to appear after a run — refresh if the timeline is empty at first.
 
-3. **Run the evaluation** over the 16-row dataset (`src/data/evaluation/evaluation_dataset.jsonl`):
+3. **Run the evaluation** (~10 min) over the 16-row dataset (`src/data/evaluation/evaluation_dataset.jsonl`):
    ```bash
    python src/evaluators.py
    ```
@@ -133,7 +135,7 @@ agent's answer for each of the **16 rows** in `src/data/evaluation/evaluation_da
    >
    > <img src="../images/challenge-03/steps/04-scorecard.svg" alt="Screenshot slot: evaluation scorecard" width="75%">
 
-4. **Run the bake-off** — Claude vs GPT on the same scorecard:
+4. **Run the bake-off** (~10 min) — Claude vs GPT on the same scorecard:
    ```bash
    python src/evaluators.py --bakeoff
    ```
@@ -147,7 +149,7 @@ agent's answer for each of the **16 rows** in `src/data/evaluation/evaluation_da
      mean latency (s)                         claude=3.2   gpt=1.9
    ```
 
-5. **Add a quality gate** (this is what a CI job would run):
+5. **Add a quality gate** (~10 min) — this is what a CI job would run:
    ```bash
    python src/evaluators.py --gate 4.0   # exit code 3 if groundedness < 4.0
    ```
@@ -165,7 +167,7 @@ agent's answer for each of the **16 rows** in `src/data/evaluation/evaluation_da
    >
    > <img src="../images/challenge-03/steps/05-gate-fail.svg" alt="Screenshot slot: quality gate fails" width="75%">
 
-6. **(Portal) Continuous evaluation.** In the portal, enable **continuous/online evaluation** on the
+6. **(Portal) Continuous evaluation.** (~10 min) In the portal, enable **continuous/online evaluation** on the
    agent so production traffic is scored automatically. (This is portal-only preview — no stable
    Python API yet; the `--gate` flag is the code-first equivalent for CI.)
 

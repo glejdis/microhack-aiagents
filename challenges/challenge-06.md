@@ -1,5 +1,7 @@
 # Challenge 6 · Safety, Red-Teaming & Continuous Evaluation 🧪 *(Bonus — optional)*
 
+**[🏠 Home](../README.md)**  ·  [← Challenge 5: Publish to M365](challenge-05.md)
+
 > **Duration:** ~45–60 min · **Optional stretch** for teams who finish Challenges 1–5 early.
 > **Prerequisites:** Challenge 2 (agent runs) and Challenge 3 (evaluation) complete.
 
@@ -86,7 +88,7 @@ hardening actually worked. → [Evaluation & observability](https://learn.micros
 
 ## ✅ Tasks
 
-1. **Baseline red-team scan** against the Intake & Drafting agent (auto-generated attacks):
+1. **Baseline red-team scan** (~10 min) against the Intake & Drafting agent (auto-generated attacks):
    ```bash
    pip install "azure-ai-evaluation[redteam]"     # pulls PyRIT (one-time)
    python src/red_team.py --num-objectives 2
@@ -110,13 +112,13 @@ hardening actually worked. → [Evaluation & observability](https://learn.micros
    >
    > <img src="../images/challenge-06/steps/01-redteam-scorecard.svg" alt="Screenshot slot: red-team scorecard" width="80%">
 
-2. **Turn up the heat** with attack strategies (encodings + a composed Base64→ROT13 attack):
+2. **Turn up the heat** (~10 min) with attack strategies (encodings + a composed Base64→ROT13 attack):
    ```bash
    python src/red_team.py --strategies --num-objectives 2
    ```
    Which strategies slip past the guardrails that baseline prompts don't?
 
-3. **Score CLM-specific attacks** (legal-advice bypass, PII exfiltration, prompt injection, policy
+3. **Score CLM-specific attacks** (~10 min) (legal-advice bypass, PII exfiltration, prompt injection, policy
    override) and get a **guardrail defect rate**:
    ```bash
    python src/safety_eval.py --safety-evals
@@ -139,12 +141,12 @@ hardening actually worked. → [Evaluation & observability](https://learn.micros
    >
    > <img src="../images/challenge-06/steps/02-safety-gate.svg" alt="Screenshot slot: safety gate verdict" width="80%">
 
-4. **Harden the agent**, then re-scan to prove it improved:
+4. **Harden the agent** (~15 min), then re-scan to prove it improved:
    - In the portal, attach **Content Safety** (Prompt Shields + PII) to the agent.
    - Tighten the refusal/grounding instructions in `src/agents/intake_drafting_agent.py`.
    - Re-run steps 1–3 and confirm the attack success / defect rate **drops**.
 
-5. **Wire the gate into CI.** Review `.github/workflows/ci-eval.yml` — it runs the **quality gate**
+5. **Wire the gate into CI.** (~10 min) Review `.github/workflows/ci-eval.yml` — it runs the **quality gate**
    (`evaluators.py --gate 4.0`) and **safety gate** (`safety_eval.py --gate 0.1`) on a schedule /
    on demand, using Azure OIDC. Configure the repo secrets (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
    `AZURE_SUBSCRIPTION_ID`, `AZURE_AI_PROJECT_ENDPOINT`) and trigger it from the **Actions** tab.

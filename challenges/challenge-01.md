@@ -1,5 +1,7 @@
 # Challenge 1 · Setup & Foundry Foundations
 
+**[🏠 Home](../README.md)**  ·  [Challenge 2: Grounded Agent →](challenge-02.md)
+
 Welcome to your very first challenge! Here you lay the foundation for the whole microhack: you'll
 deploy the Azure resources, wire up your development environment, and seed the contract corpus the
 later challenges build on. By the end you'll have the full **Microsoft Foundry** environment
@@ -130,7 +132,7 @@ text at crawl time); regenerate the PDFs with `python src/scripts/make_corpus_pd
 - [ ] Your Azure subscription can deploy **GPT _and_ Anthropic Claude** models (ask your coach if unsure).
 - [ ] You have ~30 minutes and a stable connection (provisioning takes 5–10 min on its own).
 
-### Task 1 · Fork the repository
+### Task 1 · Fork the repository (~2 min)
 
 A **fork** is your own copy of this repo where your changes and progress are saved.
 
@@ -154,7 +156,7 @@ A **fork** is your own copy of this repo where your changes and progress are sav
 
 ---
 
-### Task 2 · Launch the development environment
+### Task 2 · Launch the development environment (~5 min)
 
 **GitHub Codespaces** is a full VS Code + terminal running in your browser — no local installs, no
 "works on my machine." Everything below runs inside it.
@@ -181,7 +183,7 @@ at the bottom showing a ready prompt (e.g. `@your-username ➜ /workspaces/micro
 
 ---
 
-### Task 3 · Log in to Azure
+### Task 3 · Log in to Azure (~3 min)
 
 Now connect the terminal to your Azure account. In the Codespace **Terminal**, type this and press Enter:
 
@@ -218,7 +220,7 @@ az account set --subscription "<your-subscription-id>"
 
 ---
 
-### Task 4 · Deploy the resources
+### Task 4 · Deploy the resources (~8 min)
 
 > [!IMPORTANT]
 > Depending on the setup for your event, the Azure resources may already be provisioned for you — in
@@ -383,7 +385,7 @@ Options A and B write a populated **`.env`** automatically; Option C writes it v
 
 ---
 
-### Task 5 · Verify your resources
+### Task 5 · Verify your resources (~3 min)
 
 Let's confirm everything landed. Do all three checks:
 
@@ -429,7 +431,7 @@ APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=...
 
 ---
 
-### Task 6 · Seed the corpus
+### Task 6 · Seed the corpus (~7 min)
 
 Build the `clm-corpus` search index. There are **two paths** — pick the one that fits your tenant:
 
@@ -603,7 +605,7 @@ the index is populated immediately.)*
 
 ---
 
-### Task 7 · Smoke test
+### Task 7 · Smoke test (~2 min)
 
 The final check — prove the project is reachable and that **both** a GPT and the Claude deployment run:
 

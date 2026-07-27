@@ -1,5 +1,7 @@
 # Challenge 5 · Publish to M365 Copilot & Teams + Proactive Alerts
 
+**[🏠 Home](../README.md)**  ·  [← Challenge 4: Orchestration + MCP](challenge-04.md)  ·  [Challenge 6: Safety (Bonus) →](challenge-06.md)
+
 > **Duration:** 60 min (≈30 publish · ≈30 alerts) · **Prerequisites:** Challenge 4 complete (you can
 > build and run the orchestrator).
 
