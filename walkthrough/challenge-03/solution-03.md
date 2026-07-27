@@ -15,6 +15,96 @@ Application Insights, an evaluation scorecard over a labelled dataset, a
 - The bake-off compares Claude vs GPT on the same prompts.
 - The gate `python src/evaluators.py --gate 4.0` **exits 3** if groundedness < 4.0.
 
+## 🛠️ Task-by-task walkthrough
+
+### Task 1 · Enable tracing
+[`src/tracing_setup.py`](../../src/tracing_setup.py) sets the content-recording flag **on import** (must happen before the agents SDK loads), then wires the Azure Monitor exporter and Agent Framework instrumentation:
+```python
+# src/tracing_setup.py — set BEFORE importing the agent framework anywhere
+os.environ.setdefault("ENABLE_SENSITIVE_DATA", "true")
+os.environ.setdefault("AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED", "true")
+
+def enable_tracing(project=None):
+    conn = settings.appinsights_connection_string \
+        or (project and project.telemetry.get_application_insights_connection_string())
+    configure_azure_monitor(connection_string=conn)   # 1) register exporters
+    enable_instrumentation(enable_sensitive_data=True) # 2) emit invoke_agent / chat / execute_tool spans
+```
+```bash
+python src/tracing_setup.py
+```
+✅ **You should see:**
+```text
+✓ Tracing enabled → Application Insights (content recording ON).
+Run an agent now; open Foundry portal → Tracing to see spans.
+```
+
+### Task 2 · Generate traffic, inspect spans
+Re-run any agent (e.g. the Ch2 demo), then open **Foundry portal → Tracing**. Inspect the **prompt / retrieval / tool** spans and token counts. Spans take **1–2 min** to appear — refresh if empty.
+
+### Task 3 · Run the evaluation
+[`src/evaluators.py`](../../src/evaluators.py) builds a *target* that runs the agent per row, then scores with the Foundry evaluators over `evaluation_dataset.jsonl`:
+```python
+# src/evaluators.py
+def evaluators_dict():
+    cfg = judge_model_config()      # an Azure OpenAI GPT deployment as the LLM judge
+    return {
+        "groundedness": GroundednessEvaluator(model_config=cfg),
+        "relevance":    RelevanceEvaluator(model_config=cfg),
+        "coherence":    CoherenceEvaluator(model_config=cfg),
+        "fluency":      FluencyEvaluator(model_config=cfg),
+    }
+
+result = evaluate(data=str(DATASET), target=target, evaluators=evaluators_dict(), ...)
+```
+```bash
+python src/evaluators.py
+```
+✅ **You should see** (scores 1–5; your numbers differ):
+```text
+=== Intake & Drafting (claude-sonnet-4-5) ===
+  groundedness                             4.6
+  relevance                                4.4
+  coherence                                4.7
+  fluency                                  4.8
+  mean latency (s)                         3.2
+```
+
+### Task 4 · Run the bake-off
+`--bakeoff` runs the **same** target on the GPT deployment and prints Claude vs GPT side by side:
+```bash
+python src/evaluators.py --bakeoff
+```
+```text
+--- Bake-off (Claude vs GPT) ---
+  groundedness                             claude=4.6   gpt=4.5
+  relevance                                claude=4.4   gpt=4.3
+  mean latency (s)                         claude=3.2   gpt=1.9
+```
+
+### Task 5 · Add a quality gate (for CI)
+The gate reads mean groundedness and **exits 3** if it's below the threshold — the crux from `main()`:
+```python
+# src/evaluators.py
+if args.gate is not None:
+    score = claude.get("groundedness.groundedness") or claude.get("groundedness")
+    if float(score) < args.gate:
+        print("❌ GATE FAILED — groundedness below threshold. Blocking release.")
+        return 3   # non-zero exit fails the CI job
+    print("✅ GATE PASSED.")
+```
+```bash
+python src/evaluators.py --gate 4.0     # passes
+python src/evaluators.py --gate 5.0     # prove it can fail:
+```
+```text
+Quality gate: groundedness=4.6 threshold=5.0
+❌ GATE FAILED — groundedness below threshold. Blocking release.
+```
+
+### Task 6 · (Portal) Continuous evaluation
+Enable **continuous/online evaluation** on the agent in the portal so production traffic is scored automatically. Portal-only preview today — the `--gate` flag is the code-first equivalent for CI.
+
 ## Key files
 
 | Path | Role |
