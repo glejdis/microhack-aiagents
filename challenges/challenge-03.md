@@ -2,7 +2,17 @@
 
 **[🏠 Home](../README.md)**  ·  [← Challenge 2: Grounded Agent](challenge-02.md)  ·  [Challenge 4: Orchestration + MCP →](challenge-04.md)
 
-> **Duration:** 60 min · **Prerequisites:** Challenge 2 complete (Intake & Drafting agent runs).
+Welcome back! In Challenge 2 you built the grounded **Intake & Drafting** agent. Now you'll make it
+**observable and measurable** — instrument it with end-to-end **OpenTelemetry** traces to Application
+Insights, score it against a labelled dataset, run a **Claude-vs-GPT bake-off**, and add a **quality
+gate** that blocks a bad build. This is the GenAIOps layer that turns a demo into something you trust.
+
+If something isn't working as expected, please let your coach know.
+
+> **⏱️ Duration:** ~60 min
+
+> **📋 Prerequisites:**
+> - **Challenge 2 complete** — the Intake & Drafting agent runs against your Foundry project.
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
 > implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*

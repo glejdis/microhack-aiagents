@@ -2,8 +2,17 @@
 
 **[🏠 Home](../README.md)**  ·  [← Challenge 4: Orchestration + MCP](challenge-04.md)  ·  [Challenge 6: Safety (Bonus) →](challenge-06.md)
 
-> **Duration:** 60 min (≈30 publish · ≈30 alerts) · **Prerequisites:** Challenge 4 complete (you can
-> build and run the orchestrator).
+Welcome back! Your multi-agent orchestrator works from the terminal — now it's time to put it where
+people actually work. In this challenge you'll **publish the Orchestrator to Microsoft 365 Copilot &
+Teams** for live chat, **and** push **proactive renewal/risk alerts** into Teams from the Obligation &
+Renewal agent — so nobody misses a key date again.
+
+If something isn't working as expected, please let your coach know.
+
+> **⏱️ Duration:** ~60 min · ≈30 min publish · ≈30 min alerts
+
+> **📋 Prerequisites:**
+> - **Challenge 4 complete** — you can build and run the orchestrator.
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
 > implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*

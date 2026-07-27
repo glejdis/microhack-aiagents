@@ -2,8 +2,18 @@
 
 **[🏠 Home](../README.md)**  ·  [← Challenge 5: Publish to M365](challenge-05.md)
 
-> **Duration:** ~45–60 min · **Optional stretch** for teams who finish Challenges 1–5 early.
-> **Prerequisites:** Challenge 2 (agent runs) and Challenge 3 (evaluation) complete.
+Welcome to the bonus challenge! Your assistant works — now make it **production-safe**. You'll
+adversarially attack it with the **AI Red Teaming Agent**, add **Content Safety / PII guardrails**,
+and wire a **quality + safety gate into CI** so a risky change can never ship. This is the Responsible
+AI layer that separates a prototype from something legal and procurement would actually approve.
+
+If something isn't working as expected, please let your coach know.
+
+> **⏱️ Duration:** ~45–60 min · *optional stretch for teams who finish Challenges 1–5 early*
+
+> **📋 Prerequisites:**
+> - **Challenge 2** complete — the agent runs.
+> - **Challenge 3** complete — evaluation in place.
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
 > implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*

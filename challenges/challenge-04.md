@@ -2,8 +2,18 @@
 
 **[🏠 Home](../README.md)**  ·  [← Challenge 3: Observability](challenge-03.md)  ·  [Challenge 5: Publish to M365 →](challenge-05.md)
 
-> **Duration:** 60 min · **Prerequisites:** Challenge 2 pattern understood (grounded agent), Ch2
-> optional but recommended (you'll see orchestration spans).
+Welcome back! You have one grounded specialist so far. In this challenge you'll add the **second
+specialist** — **Clause & Risk** on Claude — then stand up an **Orchestrator** (GPT-5.4) that routes
+to both via the **agent-as-tool pattern**, and finally expose the whole workflow as an **MCP server**
+any client (VS Code, GitHub Copilot) can call. This is where the system becomes truly **multi-agent**.
+
+If something isn't working as expected, please let your coach know.
+
+> **⏱️ Duration:** ~60 min
+
+> **📋 Prerequisites:**
+> - **Challenge 2 pattern understood** — you know how a grounded agent is built.
+> - *Recommended:* Challenge 3 (you'll see orchestration spans in Tracing).
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
 > implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
