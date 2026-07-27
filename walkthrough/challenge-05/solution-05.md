@@ -27,6 +27,11 @@ by the **Obligation & Renewal** agent.
 3. Fill the metadata, then **direct publish** or download & sideload the manifest from [`src/manifest/`](../../src/manifest/).
 4. **Test live** in Teams and M365 Copilot: ask it to draft an NDA and review the Acme draft. ✅ Part A worked when the agent returns the **same grounded, cited answers** you saw in the terminal in Ch2 & Ch4.
 
+> 📸 **Screenshot slot:** the **Channels** page ("Teams and Microsoft 365 Copilot" → **Publish**), then the orchestrator answering **live in a Teams chat** with cited output.
+>
+> <img src="../../images/challenge-05/steps/01-channels-publish.svg" alt="Screenshot slot: publish to Teams" width="80%">
+> <img src="../../images/challenge-05/steps/02-teams-live.svg" alt="Screenshot slot: agent live in Teams" width="80%">
+
 ### Part B, Task 5 · Build the Obligation & Renewal agent
 [`src/agents/obligation_renewal_agent.py`](../../src/agents/obligation_renewal_agent.py) is a small, cheap GPT-5-mini agent with two function tools:
 ```python
@@ -60,6 +65,10 @@ python src/proactive_alerts.py --from-renewals --days 30 --dry-run    # preview 
 🔴 CT-6033 auto-renews soon (90-day notice) — HIGH risk. Send notice before the window closes; recommend legal review.
 ```
 
+> 📸 **Screenshot slot:** the **renewal summary** (prioritized, emoji-tagged).
+>
+> <img src="../../images/challenge-05/steps/04-renewal-summary.svg" alt="Screenshot slot: renewal summary" width="80%">
+
 ### Task 6 · Capture a conversation reference
 In your bot's message handler, on **any** inbound activity save `TurnContext.get_conversation_reference(activity)` and persist `service_url` + `conversation.id` into `.env` as `TEAMS_SERVICE_URL` / `TEAMS_CONVERSATION_ID` (plus `MICROSOFT_APP_ID` / `MICROSOFT_APP_PASSWORD` / `MICROSOFT_APP_TENANT_ID`). [`src/proactive_alerts.py`](../../src/proactive_alerts.py) rebuilds the reference from those vars:
 ```python
@@ -87,6 +96,10 @@ python src/proactive_alerts.py --from-renewals --days 30      # generate from th
 ```text
 ✓ Proactive alert sent to Teams.
 ```
+
+> 📸 **Screenshot slot:** the **alert message appearing in the Teams channel/chat** without anyone prompting.
+>
+> <img src="../../images/challenge-05/steps/03-proactive-alert.svg" alt="Screenshot slot: proactive alert in Teams" width="80%">
 
 ## Key files
 

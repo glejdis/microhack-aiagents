@@ -48,6 +48,10 @@ Risk: HIGH · Top issues: uncapped liability, long auto-renew, one-sided indemni
 Required approver: VP Legal (delegation-of-authority matrix)
 ```
 
+> 📸 **Screenshot slot:** the clause table + High-risk verdict with citations.
+>
+> <img src="../../images/challenge-04/steps/01-clause-risk.svg" alt="Screenshot slot: Clause & Risk output" width="80%">
+
 ### Task 2 · Build the Orchestrator
 [`src/orchestrator.py`](../../src/orchestrator.py) builds both specialists once and exposes each as a tool via `agent.as_tool(...)` — the GPT-5.4 front door then routes:
 ```python
@@ -71,6 +75,10 @@ python src/orchestrator.py
 ORCHESTRATOR: [→ intake_drafting] Draft ready... [→ clause_risk] Acme draft is HIGH risk...
               [→ get_contract_status] CT-4821 is Active, renews 2026-09-01.
 ```
+
+> 📸 **Screenshot slot:** the orchestrator thread routing across specialists.
+>
+> <img src="../../images/challenge-04/steps/02-orchestrator.svg" alt="Screenshot slot: orchestrator thread" width="80%">
 
 ### Task 3 · Run the MCP server
 [`src/mcp_server/server.py`](../../src/mcp_server/server.py) wraps the workflow as three MCP tools over stdio using FastMCP:
@@ -104,6 +112,11 @@ VS Code launches the server from [`src/.vscode/mcp.json`](../../src/.vscode/mcp.
     "env": { "PYTHONPATH": "${workspaceFolder}/src" } } } }
 ```
 Command Palette → **MCP: List Servers** → start **clm-mcp**, then in Copilot Chat (Agent mode) call `#draft_contract` / `#analyze_contract` / `#get_contract_status`. ✅ It worked when `clm-mcp` shows **Running** and `#analyze_contract` returns the **same** risk assessment as Task 1.
+
+> 📸 **Screenshot slot:** **MCP: List Servers** with `clm-mcp`, then Copilot Chat calling `#analyze_contract`.
+>
+> <img src="../../images/challenge-04/steps/03-mcp-list.svg" alt="Screenshot slot: VS Code MCP list" width="80%">
+> <img src="../../images/challenge-04/steps/04-copilot-tool.svg" alt="Screenshot slot: Copilot tool call" width="80%">
 
 ### Task 5 · (Go Further) Consume it from an agent
 [`src/orchestrator_mcp.py`](../../src/orchestrator_mcp.py) is the mirror of Task 2, but the tools come over MCP. `MCPStdioTool` spawns the server for you:

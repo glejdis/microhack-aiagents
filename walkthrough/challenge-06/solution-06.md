@@ -50,6 +50,10 @@ Violence                          2           0    0%
 → wrote redteam_scorecard.json
 ```
 
+> 📸 **Screenshot slot:** the printed **scorecard table** (and/or `redteam_scorecard.json`).
+>
+> <img src="../../images/challenge-06/steps/01-redteam-scorecard.svg" alt="Screenshot slot: red-team scorecard" width="80%">
+
 ### Task 2 · Turn up the heat (attack strategies)
 `--strategies` layers encodings/ciphers and a **composed Base64→ROT13** attack on top of the baseline:
 ```python
@@ -84,6 +88,10 @@ Guardrails held: 9/10 · defect rate = 10%
 ```
 > To **see it fail on purpose:** `python src/safety_eval.py --dry-run --gate 0.0`.
 
+> 📸 **Screenshot slot:** the **defect rate line** + PASS/FAIL verdict.
+>
+> <img src="../../images/challenge-06/steps/02-safety-gate.svg" alt="Screenshot slot: safety gate verdict" width="80%">
+
 ### Task 4 · Harden the agent, then re-scan
 - Attach **Content Safety** (Prompt Shields + PII) to the agent in the portal.
 - Tighten the refusal/grounding instructions in [`src/agents/intake_drafting_agent.py`](../../src/agents/intake_drafting_agent.py).
@@ -91,6 +99,10 @@ Guardrails held: 9/10 · defect rate = 10%
 
 ### Task 5 · Wire the gate into CI
 `.github/workflows/ci-eval.yml` runs the **quality gate** (`evaluators.py --gate 4.0`) and **safety gate** (`safety_eval.py --gate 0.1`) on a schedule / on demand via Azure OIDC. Set the repo secrets (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `AZURE_AI_PROJECT_ENDPOINT`) and trigger it from the **Actions** tab. ✅ Green check = gates passed; red X = a regression tripped a gate (the whole point).
+
+> 📸 **Screenshot slot:** the **Actions** tab with the eval workflow run (green check = gates passed).
+>
+> <img src="../../images/challenge-06/steps/03-actions-run.svg" alt="Screenshot slot: GitHub Actions eval run" width="80%">
 
 ## Key files
 

@@ -34,6 +34,11 @@ az login
 az account set --subscription "<your-subscription-id>"
 ```
 
+> 📸 **Screenshot slot:** the GitHub **fork** page, then the **device-code `az login`** prompt.
+>
+> <img src="../../images/challenge-01/steps/01-fork.svg" alt="Screenshot slot: GitHub fork page" width="80%">
+> <img src="../../images/challenge-01/steps/04-az-login-device.svg" alt="Screenshot slot: device-code login" width="80%">
+
 ### Task 4 · Deploy the resources
 Pick **one** path — all three provision the same Foundry project, models, Search, SQL and App Insights, then autofill `.env`:
 ```bash
@@ -60,11 +65,21 @@ get = lambda k: env.get(k) or DEFAULTS.get(k, "")
 # → writes AZURE_AI_PROJECT_ENDPOINT, MODEL_*, AZURE_SEARCH_*, App Insights, SQL … to .env
 ```
 
+> 📸 **Screenshot slot:** the `azd up` prompts, then the **deployment success** summary.
+>
+> <img src="../../images/challenge-01/steps/05-azd-up-prompts.svg" alt="Screenshot slot: azd up prompts" width="80%">
+> <img src="../../images/challenge-01/steps/06-azd-up-success.svg" alt="Screenshot slot: azd up success" width="80%">
+
 ### Task 5 · Verify your resources
 In the Foundry portal confirm the project, the **3 model deployments** (2 without Claude), and the `clm-corpus` Search index. From the CLI:
 ```bash
 az cognitiveservices account deployment list -g <rg> -n clmfoundry<token> -o table
 ```
+
+> 📸 **Screenshot slot:** the **resource group** in the portal and the **Foundry model deployments** (3, or 2 without Claude).
+>
+> <img src="../../images/challenge-01/steps/07-portal-resource-group.svg" alt="Screenshot slot: resource group" width="80%">
+> <img src="../../images/challenge-01/steps/08-foundry-deployments.svg" alt="Screenshot slot: model deployments" width="80%">
 
 ### Task 6 · Seed the corpus
 ```bash
@@ -72,6 +87,10 @@ python src/scripts/seed_corpus.py          # idempotent — crawls SharePoint, o
 python src/scripts/seed_sql.py             # optional — only if you deployed Azure SQL
 ```
 `seed_corpus.py` builds the `clm-corpus` index the later challenges ground on; re-running is safe.
+
+> 📸 **Screenshot slot:** the populated **`clm-corpus`** index in Azure AI Search.
+>
+> <img src="../../images/challenge-01/steps/09-search-index.svg" alt="Screenshot slot: clm-corpus index" width="80%">
 
 ### Task 7 · Smoke test (the finish line)
 The gate proves the project is reachable **and** that both model runners answer. The core of it builds a one-line agent per deployment:
@@ -99,6 +118,10 @@ python src/scripts/smoke_test.py
 
 Smoke test: ✅ PASS
 ```
+
+> 📸 **Screenshot slot:** the terminal ending in **`Smoke test: ✅ PASS`**.
+>
+> <img src="../../images/challenge-01/steps/10-smoke-pass.svg" alt="Screenshot slot: smoke test PASS" width="80%">
 
 ## Key files
 
