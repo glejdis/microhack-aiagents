@@ -1,8 +1,10 @@
 # labautomation — provisioning & seeding
 
 Everything a coach or `azd` runs to stand up a team's environment lives here: the
-**Bicep infrastructure**, the **deploy scripts** that autofill `.env`, and the
-**seed** scripts that load the CLM corpus and contract-status data.
+**platform entry point** (`deploy-lab.ps1`), the **Bicep infrastructure**, and the
+**local deploy scripts** that autofill `.env`. The **seed / setup / smoke-test**
+helpers now live in [`../src/scripts/`](../src/scripts/) (they are run by
+participants/coaches during the hack, never by the platform).
 
 ## Platform entry point (EMEA MicroHack)
 
@@ -12,12 +14,27 @@ team's environment by invoking **`deploy-lab.ps1`** with a fixed parameter contr
 
 | File | Role |
 |------|------|
-| [`deploy-lab.ps1`](deploy-lab.ps1) | **Platform entry point.** Deploys [`infra/resources.bicep`](infra/) into the platform-provided resource group and returns the Foundry / Search endpoints to the user dashboard. Do **not** rename or change its parameter block — the platform silently skips scripts that don't match. |
+| [`deploy-lab.ps1`](deploy-lab.ps1) | **Platform entry point.** Deploys [`infra/resources.bicep`](infra/) into the platform-provided resource group and returns the Foundry / Search endpoints (and model names) to the user dashboard. Do **not** rename or change its parameter block — the platform silently skips scripts that don't match. |
 | [`lab-defaults.json`](lab-defaults.json) | Platform config (`$schema`-validated): deployment type, region priority, per-user daily cost estimate. |
 
 `deploy-lab.ps1` is the **platform** path; `deploy.sh` / `deploy.ps1` below remain the
 **local / Codespaces** path (they autofill `.env` via `az` after `az login`). Both provision the
 same resources from `infra/`.
+
+**What `deploy-lab.ps1` does beyond a single deployment:**
+
+- **Region fallback** — retries the deployment across `PreferredLocation` (then
+  `swedencentral → westeurope → norwayeast`) until a region succeeds.
+- **Multi-user RBAC** — grants the data-plane roles (Azure AI Developer, Cognitive
+  Services User, Search Index Data Contributor, Search Service Contributor) to **every**
+  id in `AllowedEntraUserIds`, so team labs work for all members (idempotent).
+- **Bicep or ARM** — deploys `infra/resources.bicep` by default; pass **`-UseArm`** to
+  deploy the equivalent `infra/azuredeploy.json` instead. That template is
+  subscription-scoped (creates its own resource group), so `-UseArm` applies to
+  `subscription` mode / manual runs; in `resourcegroup` modes it falls back to Bicep to
+  respect the pre-created RG.
+- **Console output** — emits `[INFO]/[OK]/[WARN]` progress and a summary block, plus a
+  `HackboxCredential` record per endpoint / model name for the attendee dashboard.
 
 ## What gets provisioned
 
@@ -28,23 +45,31 @@ GPT + Claude model deployments, Azure AI Search, Azure SQL, and Application Insi
 
 ## Scripts
 
+Provisioning scripts in **this folder** (local / Codespaces path):
+
 | Path | Role |
 |------|------|
 | [`deploy.sh`](deploy.sh) · [`deploy.ps1`](deploy.ps1) | Provision resources and autofill the repo-root `.env` |
-| [`write_env.py`](write_env.py) | Writes `.env` from deployment outputs (also the `azd` postprovision hook) |
-| [`seed_corpus.py`](seed_corpus.py) | Seeds the `clm-corpus` Azure AI Search index (SharePoint crawl or local-PDF fallback over `../src/data/`) |
-| [`seed_sql.py`](seed_sql.py) | Optional — seeds the contract-status table in Azure SQL |
-| [`setup_sharepoint_app.sh`](setup_sharepoint_app.sh) · [`.ps1`](setup_sharepoint_app.ps1) | Coach setup — the Entra app registration for the SharePoint crawl |
-| [`upload_corpus_to_sharepoint.py`](upload_corpus_to_sharepoint.py) | Coach setup — upload the corpus PDFs into a SharePoint library |
-| [`smoke_test.py`](smoke_test.py) | Gate — confirms a tiny agent runs on **both** the GPT and Claude deployments |
+
+Seeding, setup & gate scripts — run by participants/coaches during the hack — live in
+[`../src/scripts/`](../src/scripts/):
+
+| Path | Role |
+|------|------|
+| [`write_env.py`](../src/scripts/write_env.py) | Writes `.env` from deployment outputs (also the `azd` postprovision hook) |
+| [`seed_corpus.py`](../src/scripts/seed_corpus.py) | Seeds the `clm-corpus` Azure AI Search index (SharePoint crawl or local-PDF fallback over `src/data/`) |
+| [`seed_sql.py`](../src/scripts/seed_sql.py) | Optional — seeds the contract-status table in Azure SQL |
+| [`setup_sharepoint_app.sh`](../src/scripts/setup_sharepoint_app.sh) · [`.ps1`](../src/scripts/setup_sharepoint_app.ps1) | Coach setup — the Entra app registration for the SharePoint crawl |
+| [`upload_corpus_to_sharepoint.py`](../src/scripts/upload_corpus_to_sharepoint.py) | Coach setup — upload the corpus PDFs into a SharePoint library |
+| [`smoke_test.py`](../src/scripts/smoke_test.py) | Gate — confirms a tiny agent runs on **both** the GPT and Claude deployments |
 
 ## Getting started
 
 ```bash
 az login
 ./labautomation/deploy.sh          # or: azd up   (Windows: labautomation\deploy.ps1)
-python labautomation/seed_corpus.py # seed the corpus index (idempotent)
-python labautomation/smoke_test.py  # expect ✅ PASS before starting Challenge 2
+python src/scripts/seed_corpus.py  # seed the corpus index (idempotent)
+python src/scripts/smoke_test.py   # expect ✅ PASS before starting Challenge 2
 ```
 
 > Pick **one** provisioning path (`azd up` **or** the deploy script **or** the

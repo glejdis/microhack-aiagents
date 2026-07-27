@@ -6,14 +6,14 @@ Verifies the environment is wired up before you start building agents:
      and run a tiny agent on a GPT deployment AND on the Claude deployment
      (proving the multi-model fleet).
 
-Run:  python labautomation/smoke_test.py
+Run:  python src/scripts/smoke_test.py
 """
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from clm_common.config import settings  # noqa: E402
 from clm_common.foundry import build_chat_client, run_prompt  # noqa: E402

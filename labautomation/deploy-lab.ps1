@@ -10,9 +10,24 @@
       with a deterministic per-user name via Get-MhhStableHash
     - imported Az.Accounts and Az.Resources for us
 
-  Resources are provisioned from infra/resources.bicep (the resource-group-scoped
-  module also used by `azd up`). deploy.ps1 / deploy.sh remain the local/Codespaces
-  path; this script is the platform path.
+  Provisioning engine (both options are supported):
+    - DEFAULT: deploys infra/resources.bicep (resource-group-scoped) via
+      New-AzResourceGroupDeployment. This is the path used by the platform and by `azd up`.
+    - -UseArm: deploys the equivalent ARM template infra/azuredeploy.json
+      (subscription-scoped) via New-AzSubscriptionDeployment. Because that template
+      creates its own resource group, -UseArm is only honoured in 'subscription' mode
+      (or manual runs); in 'resourcegroup' modes it falls back to Bicep to respect the
+      pre-created RG contract.
+
+  Robustness:
+    - Region fallback: the deployment is retried across $PreferredLocation (then
+      swedencentral -> westeurope -> norwayeast) until one region succeeds.
+    - Multi-user RBAC: every id in $AllowedEntraUserIds is granted the data-plane
+      roles (not just the first), so team labs work for all members. Idempotent.
+    - Console output: [INFO]/[OK]/[WARN] progress plus @{ HackboxCredential = ... }
+      records that surface every endpoint / model name to the team dashboard.
+
+  deploy.ps1 / deploy.sh remain the local/Codespaces path; this script is the platform path.
 #>
 param(
     [Parameter(Mandatory = $true)]
@@ -26,69 +41,200 @@ param(
 
     [string[]]$PreferredLocation = @(),
 
-    [string[]]$AllowedEntraUserIds = @()
+    [string[]]$AllowedEntraUserIds = @(),
+
+    # Opt into the ARM (azuredeploy.json) engine instead of Bicep. Subscription-scoped;
+    # see the header for the resourcegroup-mode fallback behaviour.
+    [switch]$UseArm
 )
 
 $ErrorActionPreference = 'Stop'
 
-# --- Effective region -------------------------------------------------------
-# Priority order from the platform; fall back to swedencentral, which offers the
+# --- Helpers ----------------------------------------------------------------
+function Get-OutVal {
+    param($Outputs, [string]$Key)
+    if ($Outputs -and $Outputs.ContainsKey($Key)) { return "$($Outputs[$Key].Value)" }
+    return ''
+}
+
+function Grant-MhhRole {
+    param([string]$ObjectId, [string]$RoleId, [string]$RoleName, [string]$Scope)
+    if ([string]::IsNullOrWhiteSpace($ObjectId) -or [string]::IsNullOrWhiteSpace($Scope)) { return }
+    $existing = Get-AzRoleAssignment -ObjectId $ObjectId -Scope $Scope -RoleDefinitionId $RoleId -ErrorAction SilentlyContinue
+    if ($existing) { Write-Host "[OK]    '$RoleName' already granted to $ObjectId."; return }
+    try {
+        New-AzRoleAssignment -ObjectId $ObjectId -RoleDefinitionId $RoleId -Scope $Scope -ErrorAction Stop | Out-Null
+        Write-Host "[OK]    Granted '$RoleName' to $ObjectId."
+    }
+    catch {
+        Write-Host "[WARN]  Could not grant '$RoleName' to ${ObjectId}: $_"
+    }
+}
+
+# --- Region fallback list ---------------------------------------------------
+# Honour the platform's ordered preference; fall back across regions that offer the
 # gpt-5.4 / gpt-5-mini deployments and the Anthropic Claude Sonnet 4.5 marketplace offer.
-$effectiveLocation = if ($PreferredLocation.Count -gt 0) { $PreferredLocation[0] } else { 'swedencentral' }
+$candidateRegions = if ($PreferredLocation.Count -gt 0) { $PreferredLocation } else { @('swedencentral', 'westeurope', 'norwayeast') }
 
-# --- Resolve / create the resource group per the platform contract ----------
-if ($DeploymentType -eq 'subscription') {
-    # We own the subscription; create a deterministic, per-user resource group.
-    $hashInput = if ($AllowedEntraUserIds.Count -gt 0) { $AllowedEntraUserIds } else { @($SubscriptionId) }
-    $stableHash = Get-MhhStableHash $hashInput -Length 24
-    $effectiveResourceGroup = "rg-clm-microhack-$stableHash"
-    New-AzResourceGroup -Name $effectiveResourceGroup -Location $effectiveLocation -Force | Out-Null
-}
-else {
-    # 'resourcegroup' / 'resourcegroup-with-subscriptionowner': the RG is pre-created and we hold Owner.
-    $effectiveResourceGroup = $ResourceGroupName
-}
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$bicepFile  = Join-Path $scriptPath 'infra/resources.bicep'
+$armFile    = Join-Path $scriptPath 'infra/azuredeploy.json'
 
-# --- Deterministic token for globally-unique resource names -----------------
-# resources.bicep names Search/Foundry/etc. as clm*${resourceToken}. Bicep's
-# uniqueString() isn't available in PowerShell, so derive a stable lowercase token.
-$resourceToken = (Get-MhhStableHash "$SubscriptionId-$effectiveResourceGroup" -Length 13).ToLower()
-
-# --- RBAC principal ---------------------------------------------------------
-# Grant the first allowed lab user data-plane roles (resources.bicep skips role
-# assignments when principalId is empty).
-$principalId = if ($AllowedEntraUserIds.Count -gt 0) { $AllowedEntraUserIds[0] } else { '' }
-
-# --- Deploy -----------------------------------------------------------------
-$scriptPath   = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$templateFile = Join-Path $scriptPath 'infra/resources.bicep'
+# Primary RBAC principal — passed into the template (which grants the first user).
+# The multi-user loop below covers every remaining member of a team lab.
+$primaryPrincipalId = if ($AllowedEntraUserIds.Count -gt 0) { $AllowedEntraUserIds[0] } else { '' }
 $tags = @{ project = 'foundry-clm-microhack'; 'lab-deployment-type' = $DeploymentType }
 
-Write-Host "Deploying Foundry CLM microhack -> RG '$effectiveResourceGroup' ($effectiveLocation), token '$resourceToken'"
+# --- Choose the engine ------------------------------------------------------
+$armRequested = $UseArm.IsPresent
+if ($armRequested -and $DeploymentType -ne 'subscription') {
+    Write-Host "[WARN]  -UseArm uses the subscription-scoped ARM template (creates its own resource group), which conflicts with '$DeploymentType' mode (RG pre-created). Falling back to the resource-group-scoped Bicep template."
+    $armRequested = $false
+}
 
-$deployment = New-AzResourceGroupDeployment `
-    -ResourceGroupName $effectiveResourceGroup `
-    -TemplateFile $templateFile `
-    -location $effectiveLocation `
-    -resourceToken $resourceToken `
-    -principalId $principalId `
-    -principalType 'User' `
-    -deployClaudeModel 'true' `
-    -deploySql 'false' `
-    -deployBing 'false' `
-    -tags $tags `
-    -Verbose
+$deployOutputs          = $null
+$effectiveResourceGroup = $null
+$effectiveLocation      = $null
+
+if ($armRequested) {
+    # ---- ARM path: subscription-scoped azuredeploy.json, region fallback ----
+    Write-Host "[INFO]  Engine: ARM (infra/azuredeploy.json), subscription-scoped."
+    foreach ($region in $candidateRegions) {
+        Write-Host "[INFO]  Deploying ARM template in '$region'..."
+        try {
+            $d = New-AzSubscriptionDeployment `
+                -Location $region `
+                -TemplateFile $armFile `
+                -environmentName 'clm-microhack' `
+                -location $region `
+                -principalId $primaryPrincipalId `
+                -principalType 'User' `
+                -deployClaudeModel 'true' `
+                -deploySql 'false' `
+                -deployBing 'false' `
+                -ErrorAction Stop
+            $deployOutputs     = $d.Outputs
+            $effectiveLocation = $region
+            break
+        }
+        catch {
+            Write-Host "[WARN]  ARM deployment failed in '$region': $_ — trying next region."
+        }
+    }
+    if (-not $deployOutputs) { throw "ARM deployment failed in all candidate regions: $($candidateRegions -join ', ')" }
+    $effectiveResourceGroup = Get-OutVal $deployOutputs 'AZURE_RESOURCE_GROUP'
+}
+else {
+    # ---- Bicep path (default): resource-group-scoped resources.bicep --------
+    Write-Host "[INFO]  Engine: Bicep (infra/resources.bicep), resource-group-scoped."
+
+    # Resolve / create the resource group per the platform contract (once).
+    if ($DeploymentType -eq 'subscription') {
+        $hashInput = if ($AllowedEntraUserIds.Count -gt 0) { $AllowedEntraUserIds } else { @($SubscriptionId) }
+        $stableHash = Get-MhhStableHash $hashInput -Length 24
+        $effectiveResourceGroup = "rg-clm-microhack-$stableHash"
+        New-AzResourceGroup -Name $effectiveResourceGroup -Location $candidateRegions[0] -Force | Out-Null
+    }
+    else {
+        # 'resourcegroup' / 'resourcegroup-with-subscriptionowner': RG pre-created, we hold Owner.
+        $effectiveResourceGroup = $ResourceGroupName
+    }
+
+    # Deterministic token for globally-unique resource names (RG-name based, so it is
+    # stable across region retries). resources.bicep names Search/Foundry as clm*${token}.
+    $resourceToken = (Get-MhhStableHash "$SubscriptionId-$effectiveResourceGroup" -Length 13).ToLower()
+
+    foreach ($region in $candidateRegions) {
+        Write-Host "[INFO]  Deploying Bicep -> RG '$effectiveResourceGroup' in '$region' (token '$resourceToken')..."
+        try {
+            $d = New-AzResourceGroupDeployment `
+                -ResourceGroupName $effectiveResourceGroup `
+                -TemplateFile $bicepFile `
+                -location $region `
+                -resourceToken $resourceToken `
+                -principalId $primaryPrincipalId `
+                -principalType 'User' `
+                -deployClaudeModel 'true' `
+                -deploySql 'false' `
+                -deployBing 'false' `
+                -tags $tags `
+                -ErrorAction Stop
+            $deployOutputs     = $d.Outputs
+            $effectiveLocation = $region
+            break
+        }
+        catch {
+            Write-Host "[WARN]  Bicep deployment failed in '$region': $_ — trying next region."
+        }
+    }
+    if (-not $deployOutputs) { throw "Bicep deployment failed in all candidate regions: $($candidateRegions -join ', ')" }
+}
+
+Write-Host "[OK]    Provisioning complete in '$effectiveLocation' (resource group '$effectiveResourceGroup')."
+
+# --- Multi-user data-plane RBAC ---------------------------------------------
+# The template grants roles to the first user; re-granting is idempotent and — by
+# looping every id — extends access to the whole team. Resources are discovered from
+# the RG so this works identically for the Bicep and ARM engines.
+if ($AllowedEntraUserIds.Count -gt 0 -and $effectiveResourceGroup) {
+    $account = Get-AzResource -ResourceGroupName $effectiveResourceGroup -ResourceType 'Microsoft.CognitiveServices/accounts' -ErrorAction SilentlyContinue | Select-Object -First 1
+    $search  = Get-AzResource -ResourceGroupName $effectiveResourceGroup -ResourceType 'Microsoft.Search/searchServices' -ErrorAction SilentlyContinue | Select-Object -First 1
+
+    # Built-in role definition ids (match infra/resources.bicep).
+    $accountRoles = [ordered]@{
+        'Azure AI Developer'      = '64702f94-c441-49e6-a78b-ef80e0188fee'
+        'Cognitive Services User' = 'a97b65f3-24c7-4388-baec-2e87135dc908'
+    }
+    $searchRoles = [ordered]@{
+        'Search Index Data Contributor' = '8ebe5a00-799e-43f5-93ac-243d3dce84a7'
+        'Search Service Contributor'    = '7ca78c08-252a-4471-8644-bb5ff32d4ba0'
+    }
+
+    foreach ($userId in $AllowedEntraUserIds) {
+        if ($account) {
+            foreach ($roleName in $accountRoles.Keys) { Grant-MhhRole -ObjectId $userId -RoleId $accountRoles[$roleName] -RoleName $roleName -Scope $account.ResourceId }
+        }
+        if ($search) {
+            foreach ($roleName in $searchRoles.Keys) { Grant-MhhRole -ObjectId $userId -RoleId $searchRoles[$roleName] -RoleName $roleName -Scope $search.ResourceId }
+        }
+    }
+}
 
 # --- Return credentials / endpoints to the user dashboard -------------------
 # The platform captures every @{ HackboxCredential = ... } written to the output stream.
+$projectEndpoint = Get-OutVal $deployOutputs 'AZURE_AI_PROJECT_ENDPOINT'
+$searchEndpoint  = Get-OutVal $deployOutputs 'AZURE_SEARCH_ENDPOINT'
+$searchIndex     = Get-OutVal $deployOutputs 'AZURE_SEARCH_INDEX'
+$modelOrch       = Get-OutVal $deployOutputs 'MODEL_ORCHESTRATOR'
+$modelDraft      = Get-OutVal $deployOutputs 'MODEL_DRAFTING'
+$modelRenewal    = Get-OutVal $deployOutputs 'MODEL_RENEWAL'
+
+Write-Host ""
+Write-Host "==================== Your CLM microhack environment ===================="
+Write-Host "  Resource group          : $effectiveResourceGroup ($effectiveLocation)"
+Write-Host "  Foundry project endpoint: $projectEndpoint"
+Write-Host "  Azure AI Search endpoint: $searchEndpoint (index '$searchIndex')"
+Write-Host "  Models                  : orchestrator=$modelOrch, drafting=$modelDraft, renewal=$modelRenewal"
+Write-Host "  Next                    : paste these into the repo-root .env (see Challenge 1)."
+Write-Host "========================================================================"
+
 @{ HackboxCredential = @{ name = 'ResourceGroup'; value = $effectiveResourceGroup; note = 'Resource group holding your CLM microhack resources' } }
 
-$projectEndpoint = "$($deployment.Outputs.AZURE_AI_PROJECT_ENDPOINT.Value)"
 if ($projectEndpoint) {
     @{ HackboxCredential = @{ name = 'FoundryProjectEndpoint'; value = $projectEndpoint; note = 'Microsoft Foundry project endpoint -> AZURE_AI_PROJECT_ENDPOINT in .env' } }
 }
-
-$searchEndpoint = "$($deployment.Outputs.AZURE_SEARCH_ENDPOINT.Value)"
 if ($searchEndpoint) {
     @{ HackboxCredential = @{ name = 'SearchEndpoint'; value = $searchEndpoint; note = 'Azure AI Search endpoint -> AZURE_SEARCH_ENDPOINT in .env' } }
+}
+if ($searchIndex) {
+    @{ HackboxCredential = @{ name = 'SearchIndex'; value = $searchIndex; note = 'Azure AI Search index name -> AZURE_SEARCH_INDEX in .env' } }
+}
+if ($modelOrch) {
+    @{ HackboxCredential = @{ name = 'ModelOrchestrator'; value = $modelOrch; note = 'Orchestrator model deployment -> MODEL_ORCHESTRATOR in .env' } }
+}
+if ($modelDraft) {
+    @{ HackboxCredential = @{ name = 'ModelDrafting'; value = $modelDraft; note = 'Drafting model deployment -> MODEL_DRAFTING in .env' } }
+}
+if ($modelRenewal) {
+    @{ HackboxCredential = @{ name = 'ModelRenewal'; value = $modelRenewal; note = 'Renewal model deployment -> MODEL_RENEWAL in .env' } }
 }

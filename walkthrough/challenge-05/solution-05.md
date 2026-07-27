@@ -40,5 +40,5 @@ python src/proactive_alerts.py --from-renewals --days 30       # live send
 | Symptom | Cause / fix |
 |---------|-------------|
 | Can't sideload the Teams app | Many corp tenants block sideloading — use a coach-provided tenant. |
-| No renewals found | Seed Azure SQL (`labautomation/seed_sql.py`) or rely on the seed-data fallback. |
+| No renewals found | Seed Azure SQL (`src/scripts/seed_sql.py`) or rely on the seed-data fallback. |
 | `Microsoft.BotService` errors | Register the provider: `az provider register --namespace Microsoft.BotService`. |

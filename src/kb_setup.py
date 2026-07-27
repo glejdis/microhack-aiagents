@@ -1,7 +1,7 @@
 """Challenge 2 — Foundry IQ / knowledge grounding setup.
 
 Foundry IQ grounds an agent on your corpus. Under the hood the agent uses an
-**Azure AI Search** index (built in Challenge 1 by labautomation/seed_corpus.py, which
+**Azure AI Search** index (built in Challenge 1 by src/scripts/seed_corpus.py, which
 crawls the SharePoint contract library with a SharePoint Online indexer) via
 agentic retrieval (plan → search → rerank → cite).
 

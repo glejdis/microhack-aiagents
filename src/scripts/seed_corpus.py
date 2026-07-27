@@ -16,7 +16,7 @@ Foundry IQ (Challenge 2) then grounds the agents on that index with cited
 answers — no document upload happens here; SharePoint stays the system of
 record. Populate the library first (bring-your-own), then run:
 
-    python labautomation/seed_corpus.py
+    python src/scripts/seed_corpus.py
 
 Prerequisites (see the Challenge 1 README):
     - A SharePoint site + document library holding the corpus PDFs, arranged in
@@ -45,8 +45,8 @@ import re
 import sys
 from pathlib import Path
 
-# Make `clm_common` importable when run from the repo root.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+# Make `clm_common` importable regardless of the working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from clm_common.config import settings, credential, DATA_DIR  # noqa: E402
 from clm_common.documents import read_document_text  # noqa: E402

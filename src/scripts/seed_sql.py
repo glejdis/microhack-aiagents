@@ -5,14 +5,14 @@ Only needed if you deployed Azure SQL (`./labautomation/deploy.sh --with-sql`). 
 AZURE_SQL_CONNECTION_STRING is empty, the contract-status function tool falls
 back to src/data/contracts_seed.json, so this step is optional for the hack.
 
-Run:  python labautomation/seed_sql.py
+Run:  python src/scripts/seed_sql.py
 """
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from clm_common.config import settings  # noqa: E402
 from clm_common.tools import load_contracts  # noqa: E402

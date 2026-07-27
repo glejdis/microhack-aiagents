@@ -5,7 +5,7 @@
 # client secret. Prints the SHAREPOINT_* values to paste into your repo-root .env.
 #
 # Grants (application / app-only, admin-consented):
-#   - Sites.ReadWrite.All  → lets labautomation/upload_corpus_to_sharepoint.py upload
+#   - Sites.ReadWrite.All  → lets src/scripts/upload_corpus_to_sharepoint.py upload
 #                            the PDFs (and covers the indexer's site read).
 #   - Files.Read.All       → lets the AI Search SharePoint indexer read content.
 #
@@ -16,7 +16,7 @@
 #     rights, the script still creates everything and tells you the one command
 #     an admin must run — or follow the manual portal steps in the Ch1 README.
 #
-# Usage:  bash labautomation/setup_sharepoint_app.sh ["Display Name"]
+# Usage:  bash src/scripts/setup_sharepoint_app.sh ["Display Name"]
 # ==========================================================================
 set -euo pipefail
 
@@ -80,5 +80,5 @@ SHAREPOINT_APP_SECRET=$SECRET
    SHAREPOINT_DOC_LIBRARY=Documents
 ======================================================================
  NOTE: the client secret above is shown ONCE — copy it now.
- Next: python labautomation/upload_corpus_to_sharepoint.py  (then seed_corpus.py)
+ Next: python src/scripts/upload_corpus_to_sharepoint.py  (then seed_corpus.py)
 EOF

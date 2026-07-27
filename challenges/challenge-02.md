@@ -73,7 +73,7 @@ flowchart TB
   style F fill:#FCEBDD,stroke:#E8590C,stroke-width:2px,color:#1A1A1A
 ```
 
-The index itself was built in **Challenge 1** by `labautomation/seed_corpus.py`. In this challenge you
+The index itself was built in **Challenge 1** by `src/scripts/seed_corpus.py`. In this challenge you
 simply **attach it** as a tool and let the agent retrieve from it.
 
 ### Two kinds of tools
@@ -165,7 +165,7 @@ it as a tool and the agent runs **plan → search → rerank → cite** during a
 ### Azure AI Search — the `clm-corpus` index
 
 **What it is:** the **retrieval engine** behind Foundry IQ. Challenge 1 provisions a **`basic`** search
-service (1 partition · 1 replica, `semanticSearch: free`), and `labautomation/seed_corpus.py` creates a
+service (1 partition · 1 replica, `semanticSearch: free`), and `src/scripts/seed_corpus.py` creates a
 **SharePoint Online indexer** that crawls the corpus library and populates the index (no manual upload).
 
 - Index **`clm-corpus`**, semantic config **`clm-semantic`**, fields `id` · `title` · `content` · `source`.
@@ -400,7 +400,7 @@ You're done when:
 | Symptom | Fix |
 |---------|-----|
 | `get_default(AZURE_AI_SEARCH)` returns nothing | Ensure Challenge 1 created the Search resource and connected it to the project (**portal → Connected resources**). Set `AZURE_SEARCH_CONNECTION_NAME` in `.env`. |
-| No citations returned | Confirm `labautomation/seed_corpus.py` populated the index and the semantic config exists; try raising `top_k` in `build_knowledge_tool`. |
+| No citations returned | Confirm `src/scripts/seed_corpus.py` populated the index and the semantic config exists; try raising `top_k` in `build_knowledge_tool`. |
 | Function tool never called | Keep the docstring + type hints (the schema comes from them); ensure it's wrapped with `function_tool(...)` and passed in the Agent's `tools=[...]`, and the prompt actually asks for a specific contract. |
 | `get_contract_status` says "not found" | Use a known id (`CT-4821`, `CT-3390`, `CT-5102`, `CT-2765`, `CT-6033`) — the error message lists them. |
 | Run fails on Claude | Foundry may not serve Anthropic models via the chat client in your region yet — use the **Claude fallback** above. |

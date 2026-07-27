@@ -104,7 +104,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 // ==========================================================================
 // The original contract PDFs live in a SharePoint Online document library, which
 // is Microsoft 365 (not an Azure Resource Manager resource) and therefore not
-// provisioned here. Challenge 1's labautomation/seed_corpus.py creates the Azure AI
+// provisioned here. Challenge 1's src/scripts/seed_corpus.py creates the Azure AI
 // Search SharePoint Online data source + indexer that crawls that library into
 // the clm-corpus index. See the challenge-0 README for the prerequisite Entra
 // app registration and .env values (SHAREPOINT_*).

@@ -139,4 +139,4 @@ TEAMS_SERVICE_URL=
 TEAMS_CONVERSATION_ID=
 "@ | Out-File -FilePath ".env" -Encoding utf8
 
-Write-Host "`n✅ Deployment complete. Wrote .env. Next: python labautomation/seed_corpus.py; python labautomation/smoke_test.py"
+Write-Host "`n✅ Deployment complete. Wrote .env. Next: python src/scripts/seed_corpus.py; python src/scripts/smoke_test.py"
