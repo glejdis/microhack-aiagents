@@ -1,6 +1,6 @@
 """Shared document-reading helpers for the CLM microhack.
 
-The Challenge 0 corpus is delivered as **PDF** contract documents (approved
+The Challenge 1 corpus is delivered as **PDF** contract documents (approved
 templates, clause library, policy, executed contracts, and inbound counterparty
 drafts). `read_document_text` returns plain text for a PDF (or a Markdown/text
 fallback), so the seeding script and the Clause & Risk agent can treat every

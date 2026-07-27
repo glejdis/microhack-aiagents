@@ -1,6 +1,6 @@
 name: ci-eval
 
-# Continuous evaluation gate (Challenge 2 quality + Challenge 5 safety).
+# Continuous evaluation gate (Challenge 3 quality + Challenge 6 safety).
 # Runs on demand and nightly. Requires Azure secrets to be configured, so it is
 # guarded: if AZURE_CLIENT_ID is not set, the job no-ops instead of failing.
 on:
@@ -53,10 +53,10 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Quality gate (Challenge 2)
+      - name: Quality gate (Challenge 3)
         if: steps.guard.outputs.configured == 'true'
-        run: python challenge-2/evaluators.py --gate 4.0
+        run: python src/evaluators.py --gate 4.0
 
-      - name: Safety gate (Challenge 5)
+      - name: Safety gate (Challenge 6)
         if: steps.guard.outputs.configured == 'true'
-        run: python challenge-5/safety_eval.py --gate 0.1 --safety-evals
+        run: python src/safety_eval.py --gate 0.1 --safety-evals

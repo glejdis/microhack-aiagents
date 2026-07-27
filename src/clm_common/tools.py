@@ -2,12 +2,12 @@
 
 These plain Python functions become **Foundry function tools**: the Agents SDK
 generates a JSON schema from the type hints + docstring, and the model calls
-them during a run. Used by the Intake & Drafting agent (Ch1) and the Obligation
-& Renewal agent (Ch4).
+them during a run. Used by the Intake & Drafting agent (Ch2) and the Obligation
+& Renewal agent (Ch5).
 
 Both the status lookup (`get_contract_status`) and the renewal scan
 (`list_upcoming_renewals`) prefer Azure SQL (if AZURE_SQL_CONNECTION_STRING is
-set) and otherwise fall back to challenge-0/data/contracts_seed.json so the hack
+set) and otherwise fall back to src/data/contracts_seed.json so the hack
 works with no database. The seed stores renewal/effective dates as day-offsets
 from *today*, materialized by `load_contracts()`, so the "upcoming renewals"
 demo stays non-empty no matter when the microhack is run.
@@ -50,7 +50,7 @@ def _materialize_dates(rec: dict[str, Any]) -> dict[str, Any]:
 def load_contracts() -> list[dict[str, Any]]:
     """All seed contracts with effective/renewal dates materialized for *today*.
 
-    Shared by the function tools and by ``scripts/seed_sql.py`` so the JSON
+    Shared by the function tools and by ``labautomation/seed_sql.py`` so the JSON
     fallback and the Azure SQL table are seeded from one evergreen source.
     """
     return [_materialize_dates(c) for c in _seed_raw()]
