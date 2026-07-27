@@ -39,8 +39,17 @@ python src/tracing_setup.py
 Run an agent now; open Foundry portal → Tracing to see spans.
 ```
 
+> 📸 **Screenshot slot:** the "Tracing enabled" confirmation.
+>
+> <img src="../../images/challenge-03/steps/01-tracing-on.svg" alt="Screenshot slot: tracing enabled" width="75%">
+
 ### Task 2 · Generate traffic, inspect spans
 Re-run any agent (e.g. the Ch2 demo), then open **Foundry portal → Tracing**. Inspect the **prompt / retrieval / tool** spans and token counts. Spans take **1–2 min** to appear — refresh if empty.
+
+> 📸 **Screenshot slot:** a run's span timeline in **Tracing**, and the **Agent Monitoring** dashboard.
+>
+> <img src="../../images/challenge-03/steps/02-portal-tracing.svg" alt="Screenshot slot: Foundry Tracing" width="75%">
+> <img src="../../images/challenge-03/steps/03-agent-monitoring.svg" alt="Screenshot slot: Agent Monitoring" width="75%">
 
 ### Task 3 · Run the evaluation
 [`src/evaluators.py`](../../src/evaluators.py) builds a *target* that runs the agent per row, then scores with the Foundry evaluators over `evaluation_dataset.jsonl`:
@@ -69,6 +78,10 @@ python src/evaluators.py
   fluency                                  4.8
   mean latency (s)                         3.2
 ```
+
+> 📸 **Screenshot slot:** the evaluation scorecard in the terminal.
+>
+> <img src="../../images/challenge-03/steps/04-scorecard.svg" alt="Screenshot slot: evaluation scorecard" width="75%">
 
 ### Task 4 · Run the bake-off
 `--bakeoff` runs the **same** target on the GPT deployment and prints Claude vs GPT side by side:
@@ -104,6 +117,10 @@ Quality gate: groundedness=4.6 threshold=5.0
 
 ### Task 6 · (Portal) Continuous evaluation
 Enable **continuous/online evaluation** on the agent in the portal so production traffic is scored automatically. Portal-only preview today — the `--gate` flag is the code-first equivalent for CI.
+
+> 📸 **Screenshot slot:** the gate failing on a too-strict threshold.
+>
+> <img src="../../images/challenge-03/steps/05-gate-fail.svg" alt="Screenshot slot: quality gate fails" width="75%">
 
 ## Key files
 
