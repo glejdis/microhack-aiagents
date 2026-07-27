@@ -94,7 +94,7 @@ echo "  ✓ Azure AI Search created"
 
 # ---- 5. Corpus source: SharePoint (bring-your-own) -----------------------
 # The contract PDFs live in a SharePoint document library (Microsoft 365, not an
-# Azure resource — nothing to create here). labautomation/seed_corpus.py creates the
+# Azure resource — nothing to create here). src/scripts/seed_corpus.py creates the
 # Azure AI Search SharePoint Online data source + indexer that crawls it into the
 # clm-corpus index. Fill the SHAREPOINT_* values in .env first (see challenge-0 README).
 echo "  · Corpus source is SharePoint (BYO) — set SHAREPOINT_* in .env, then run seed_corpus.py"
@@ -194,4 +194,4 @@ ENV
 
 echo ""
 echo "✅ Deployment complete. Wrote .env with the project endpoint + connection strings."
-echo "   Next: python labautomation/seed_corpus.py && python labautomation/smoke_test.py"
+echo "   Next: python src/scripts/seed_corpus.py && python src/scripts/smoke_test.py"

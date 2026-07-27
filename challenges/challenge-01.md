@@ -98,7 +98,7 @@ ID RBAC (Azure AI Developer, Cognitive Services User, Search data roles) — all
 <details>
 <summary><strong>📚 CLM corpus</strong> (the data you seed)</summary>
 
-`python labautomation/seed_corpus.py` creates an Azure AI Search **SharePoint Online indexer** that crawls the
+`python src/scripts/seed_corpus.py` creates an Azure AI Search **SharePoint Online indexer** that crawls the
 [`data/`](../src/data/) corpus (hosted in your SharePoint library) into Azure AI Search so Foundry IQ can
 ground answers with citations. The contract corpus is delivered as **PDF** (the indexer extracts the
 text at crawl time); regenerate the PDFs with `python src/scripts/make_corpus_pdfs.py` (needs
@@ -278,7 +278,7 @@ azd up
 
 Then it provisions for **5–10 minutes**. `azd up` deploys the Bicep in [`infra/`](../labautomation/infra/), assigns the
 RBAC roles the later challenges need, creates the `clm-search` Foundry IQ connection, and runs the
-`postprovision` hook (`labautomation/write_env.py`) to write your `.env`.
+`postprovision` hook (`src/scripts/write_env.py`) to write your `.env`.
 
 > 📸 **Screenshot slot — what you'll see:** the green **SUCCESS** summary with the deployed resources and outputs.
 >
@@ -375,7 +375,7 @@ Unlike `azd up`, this path does **not** auto-write `.env`. Populate it from the 
 outputs (use the same `--name` you deployed with):
 
 ```bash
-python labautomation/write_env.py --deployment clm-microhack
+python src/scripts/write_env.py --deployment clm-microhack
 ```
 
 </details>
@@ -441,7 +441,7 @@ Build the `clm-corpus` search index. There are **two paths** — pick the one th
 > consent** for the app registration, skip all of 6.1–6.4. Just leave the `SHAREPOINT_*` values **blank**
 > in `.env` and run:
 > ```bash
-> python labautomation/seed_corpus.py
+> python src/scripts/seed_corpus.py
 > ```
 > It detects the missing SharePoint config and falls back to **extracting the local
 > `src/data/**/*.pdf` corpus** and pushing it straight into the `clm-corpus` index — the same
@@ -482,9 +482,9 @@ Requires the Azure CLI signed in (`az login`) **and** rights to grant admin cons
 Privileged Role Admin / Application Administrator — usually your coach/tenant admin):
 
 ```bash
-bash labautomation/setup_sharepoint_app.sh          # Codespaces / Linux / macOS
+bash src/scripts/setup_sharepoint_app.sh          # Codespaces / Linux / macOS
 # — or on Windows PowerShell —
-pwsh labautomation/setup_sharepoint_app.ps1
+pwsh src/scripts/setup_sharepoint_app.ps1
 ```
 
 It creates the app, adds **both** permissions, **grants admin consent**, mints a **client secret**, and
@@ -553,8 +553,8 @@ Push all 14 corpus PDFs from `src/data/` into the library — the script recreat
 layout for you:
 
 ```bash
-python labautomation/upload_corpus_to_sharepoint.py --dry-run   # preview (no changes)
-python labautomation/upload_corpus_to_sharepoint.py             # upload for real
+python src/scripts/upload_corpus_to_sharepoint.py --dry-run   # preview (no changes)
+python src/scripts/upload_corpus_to_sharepoint.py             # upload for real
 ```
 
 ✅ **You should see** each file upload, then a summary:
@@ -573,9 +573,9 @@ Done. Uploaded 14 PDF(s) to 'Documents'.
 #### 6.5 · Build the index from the populated library
 
 ```bash
-python labautomation/seed_corpus.py
+python src/scripts/seed_corpus.py
 # optional — only if you deployed Azure SQL:
-python labautomation/seed_sql.py
+python src/scripts/seed_sql.py
 ```
 
 ✅ **You should see** the indexer get created and start crawling (wording may vary):
@@ -610,7 +610,7 @@ the index is populated immediately.)*
 The final check — prove the project is reachable and that **both** a GPT and the Claude deployment run:
 
 ```bash
-python labautomation/smoke_test.py
+python src/scripts/smoke_test.py
 ```
 
 > 📸 **Screenshot slot — what you'll see:** the terminal ending in **`Smoke test: ✅ PASS`**.
@@ -637,7 +637,7 @@ chat-client limitation, and Challenge 2 documents a fallback.
 ## ✔️ Success criteria
 
 - `.env` is populated (project endpoint + connection strings).
-- `python labautomation/smoke_test.py` prints **✅ PASS** — a tiny agent runs on `gpt-5.4` **and** on
+- `python src/scripts/smoke_test.py` prints **✅ PASS** — a tiny agent runs on `gpt-5.4` **and** on
   `claude-sonnet-4-5` (or on `gpt-5.4` alone if you skipped Claude with `DEPLOY_CLAUDE_MODEL=false`).
 - In the Foundry portal you can see the project, the model deployments (3, or 2 without Claude), and the
   `clm-corpus` index with documents.
@@ -673,7 +673,7 @@ Smoke test: ✅ PASS
 | `ServiceModelDeprecating` for `gpt-4o-mini` (or another model) | You're on a **stale template** pinning a deprecating model. The repo now uses `gpt-5-mini` `2025-08-07` for the renewal agent — sync your fork + `git pull`. If you deliberately changed a version, pick a current one from `az cognitiveservices model list --location <region> --output table` (avoid ones with a near/past `deprecation.inference` date). |
 | Claude: **zero quota** in every region, or `InvalidModelProviderData` (marketplace `industry`/`organizationName`/`countryCode`) | Anthropic deployment via ARM needs Claude quota **and** the marketplace offer accepted (normally a Foundry-portal click-through, which also needs quota). If you can't get either, **skip Claude**: `azd env set DEPLOY_CLAUDE_MODEL false` (or `DEPLOY_CLAUDE=false` for the deploy scripts) and redeploy — the drafting & clause-risk agents fall back to the `gpt-5.4` orchestrator and the smoke test still passes. |
 | `Project can only be created under AIServices Kind account with allowProjectManagement set to true` | Fixed in the template (`account.properties.allowProjectManagement: true`). If you hit it, you're on a stale fork — sync + `git pull` and redeploy. |
-| SharePoint: *"Tenant does not have a SPO license"*, or you can't grant the app's Graph **admin consent** (only Global Reader) | Skip SharePoint entirely — use the **local-PDF fallback**: leave the `SHAREPOINT_*` values blank in `.env` and run `python labautomation/seed_corpus.py`. It extracts `src/data/**/*.pdf` and populates `clm-corpus` directly (needs the Search Index Data Contributor role, granted by `azd up`). See [Task 6, Path 2](#task-6--seed-the-corpus). |
+| SharePoint: *"Tenant does not have a SPO license"*, or you can't grant the app's Graph **admin consent** (only Global Reader) | Skip SharePoint entirely — use the **local-PDF fallback**: leave the `SHAREPOINT_*` values blank in `.env` and run `python src/scripts/seed_corpus.py`. It extracts `src/data/**/*.pdf` and populates `clm-corpus` directly (needs the Search Index Data Contributor role, granted by `azd up`). See [Task 6, Path 2](#task-6--seed-the-corpus). |
 | `account project create` unavailable | The CLI project command is preview. Create the project in the **Foundry portal**, then set `AZURE_AI_PROJECT_ENDPOINT` in `.env` manually (Overview → Endpoint). |
 | Claude ping fails in smoke test | Claude may not be served via the **Foundry chat client** in your region yet. You can still proceed — Challenge 2 documents an Anthropic-SDK fallback, or skip Claude with `DEPLOY_CLAUDE_MODEL=false` (drafting/clause-risk then run on `gpt-5.4`). |
 | `az login` in Codespaces | Use `az login --use-device-code`. |
@@ -685,7 +685,7 @@ Smoke test: ✅ PASS
 
 ```bash
 # seed_corpus.py is idempotent — safe to re-run
-python labautomation/seed_corpus.py
+python src/scripts/seed_corpus.py
 
 # confirm the index has documents
 az search service show --name <clmsearch****> --resource-group rg-clm-microhack --query name

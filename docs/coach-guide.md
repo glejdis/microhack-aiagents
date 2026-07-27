@@ -64,25 +64,25 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 ### Challenge 1 · Setup & Foundry Foundations *(30 min · setup)*
 
 - **Point:** stand up the whole Foundry environment + seed the corpus with **zero local install**.
-- **Done when:** `python labautomation/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
+- **Done when:** `python src/scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
   `gpt-5.4` **and** `claude-sonnet-4-5`) and the `clm-corpus` index shows documents in the portal.
 - **Coach prep (before the event):** the corpus lives in a **bring-your-own SharePoint library** —
   `azd`/`deploy.sh` do **not** create it. (1) Stand up a SharePoint site + document library. (2) Create
-  the Entra app registration with **`labautomation/setup_sharepoint_app.sh`** (or `.ps1`) — it adds the Graph
+  the Entra app registration with **`src/scripts/setup_sharepoint_app.sh`** (or `.ps1`) — it adds the Graph
   permissions (`Sites.ReadWrite.All` + `Files.Read.All`), grants admin consent, and prints the
   `SHAREPOINT_*` values. (3) Populate the library once with
-  **`python labautomation/upload_corpus_to_sharepoint.py`** (uploads the 14 corpus PDFs). Hand teams the five
+  **`python src/scripts/upload_corpus_to_sharepoint.py`** (uploads the 14 corpus PDFs). Hand teams the five
   `SHAREPOINT_*` values so their `seed_corpus.py` indexer can crawl it. One shared library for everyone
   is fine. Admin-consent needs Global Admin / Privileged Role Admin / Application Administrator.
 - **No SharePoint license / no admin-consent rights? (sandbox tenants):** skip all of the above. Teams
-  leave the `SHAREPOINT_*` values blank and run `python labautomation/seed_corpus.py`, which falls back to
+  leave the `SHAREPOINT_*` values blank and run `python src/scripts/seed_corpus.py`, which falls back to
   extracting the local `src/data/**/*.pdf` corpus straight into the `clm-corpus` index (needs the
   Search Index Data Contributor role, granted by `azd up`). Same grounding outcome, no SharePoint — a
   reliable default if you're unsure your tenant has an SPO license.
 - **Provisioning paths** — all produce the same resources and `.env`: **`azd up`** (Bicep in
   `labautomation/infra/`), **`labautomation/deploy.sh`** (`.ps1` on Windows), or the one-click **Deploy to
   Azure** button / `az deployment sub create` on `infra/azuredeploy.json` (then
-  `python labautomation/write_env.py --deployment <name>` for `.env`). Let teams pick one; don't mix.
+  `python src/scripts/write_env.py --deployment <name>` for `.env`). Let teams pick one; don't mix.
   - *Optional add-ons* (all paths, off by default): Azure SQL for the renewal tool
     (`DEPLOY_SQL`/`--with-sql`/`-WithSql`) and **Grounding with Bing Search** for the Clause & Risk
     agent's optional web lookup (`DEPLOY_BING`/`--with-bing`/`-WithBing`). Bing data leaves the Azure
@@ -213,7 +213,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 | Situation | Fix |
 |-----------|-----|
 | **`.env` looks wrong / half-populated** | Re-run the provision path (`azd up` re-runs the `write_env.py` hook), or hand-set the missing keys from the portal (project endpoint under **Overview → Endpoint**). |
-| **Corpus / index empty** | Re-run `python labautomation/seed_corpus.py` (idempotent — recreates the SharePoint indexer and re-crawls the library). Check the indexer run status + that the SharePoint library is populated. |
+| **Corpus / index empty** | Re-run `python src/scripts/seed_corpus.py` (idempotent — recreates the SharePoint indexer and re-crawls the library). Check the indexer run status + that the SharePoint library is populated. |
 | **Legacy agents in the project** | The Microsoft Agent Framework builds agents in-process against the Foundry chat client — it registers **no** persistent server-side agents, so there's nothing to clean up. Delete any stragglers from earlier Agent-Service runs in **portal → Agents** if you like. |
 | **Auth / 403 right after provisioning** | RBAC propagation lag — wait 2–3 min and retry before debugging anything else. |
 | **Everything is wedged, start clean** | `azd down` (or delete the resource group), then `azd up` again. Budget ~15 min. |

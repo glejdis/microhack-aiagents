@@ -68,7 +68,7 @@ class Settings:
 
     # SharePoint — corpus source of truth (BYO document library). An Azure AI
     # Search SharePoint Online indexer crawls this library into the clm-corpus
-    # index (built in Challenge 1 by labautomation/seed_corpus.py). The app-registration
+    # index (built in Challenge 1 by src/scripts/seed_corpus.py). The app-registration
     # values authorize that indexer (Graph app-only auth).
     sharepoint_site_url: str | None = field(default_factory=lambda: _get("SHAREPOINT_SITE_URL"))
     sharepoint_doc_library: str = field(default_factory=lambda: _get("SHAREPOINT_DOC_LIBRARY", "Documents"))

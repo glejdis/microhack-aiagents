@@ -19,11 +19,11 @@ hooks:
   postprovision:
     windows:
       shell: pwsh
-      run: python labautomation/write_env.py
+      run: python src/scripts/write_env.py
       continueOnError: false
       interactive: false
     posix:
       shell: sh
-      run: python3 labautomation/write_env.py
+      run: python3 src/scripts/write_env.py
       continueOnError: false
       interactive: false

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Challenge 1 (coach/setup) — upload the CLM corpus PDFs into SharePoint.
 
-`labautomation/seed_corpus.py` wires a SharePoint document library into Azure AI
+`src/scripts/seed_corpus.py` wires a SharePoint document library into Azure AI
 Search, but it does **not** put any files there — SharePoint is the corpus
 "source of truth" that you populate first. This script automates that one-time
 population: it uploads every PDF under `src/data/` into your SharePoint
@@ -13,8 +13,8 @@ uploaded.
 
 Run it once, before participants reach Challenge 1 / Task 6:
 
-    python labautomation/upload_corpus_to_sharepoint.py            # upload
-    python labautomation/upload_corpus_to_sharepoint.py --dry-run  # list, no calls
+    python src/scripts/upload_corpus_to_sharepoint.py            # upload
+    python src/scripts/upload_corpus_to_sharepoint.py --dry-run  # list, no calls
 
 Auth / permissions
 ------------------
@@ -36,8 +36,8 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-# Make `clm_common` importable when run from the repo root.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+# Make `clm_common` importable regardless of the working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from clm_common.config import DATA_DIR, settings  # noqa: E402
 
@@ -223,7 +223,7 @@ def main() -> None:
 
     print(
         f"\nDone. Uploaded {uploaded} PDF(s) to '{drive.get('name', args.library)}'.\n"
-        f"Next: run 'python labautomation/seed_corpus.py' to index the library into clm-corpus."
+        f"Next: run 'python src/scripts/seed_corpus.py' to index the library into clm-corpus."
     )
 
 

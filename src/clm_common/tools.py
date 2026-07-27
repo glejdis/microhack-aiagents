@@ -50,7 +50,7 @@ def _materialize_dates(rec: dict[str, Any]) -> dict[str, Any]:
 def load_contracts() -> list[dict[str, Any]]:
     """All seed contracts with effective/renewal dates materialized for *today*.
 
-    Shared by the function tools and by ``labautomation/seed_sql.py`` so the JSON
+    Shared by the function tools and by ``src/scripts/seed_sql.py`` so the JSON
     fallback and the Azure SQL table are seeded from one evergreen source.
     """
     return [_materialize_dates(c) for c in _seed_raw()]

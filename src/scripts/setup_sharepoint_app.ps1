@@ -5,7 +5,7 @@
 # client secret. Prints the SHAREPOINT_* values to paste into your repo-root .env.
 #
 # Grants (application / app-only, admin-consented):
-#   - Sites.ReadWrite.All  -> lets labautomation/upload_corpus_to_sharepoint.py upload
+#   - Sites.ReadWrite.All  -> lets src/scripts/upload_corpus_to_sharepoint.py upload
 #                             the PDFs (and covers the indexer's site read).
 #   - Files.Read.All       -> lets the AI Search SharePoint indexer read content.
 #
@@ -15,7 +15,7 @@
 #     Privileged Role Admin / Application Administrator). Without consent rights
 #     the script still creates everything and prints the command an admin runs.
 #
-# Usage:  pwsh labautomation/setup_sharepoint_app.ps1 [-DisplayName "Display Name"]
+# Usage:  pwsh src/scripts/setup_sharepoint_app.ps1 [-DisplayName "Display Name"]
 # ==========================================================================
 param([string]$DisplayName = "CLM Microhack Corpus")
 
@@ -79,4 +79,4 @@ Write-Host "   SHAREPOINT_SITE_URL=https://<tenant>.sharepoint.com/sites/<YourSi
 Write-Host "   SHAREPOINT_DOC_LIBRARY=Documents"
 Write-Host "======================================================================"
 Write-Host " NOTE: the client secret above is shown ONCE - copy it now."
-Write-Host " Next: python labautomation/upload_corpus_to_sharepoint.py  (then seed_corpus.py)"
+Write-Host " Next: python src/scripts/upload_corpus_to_sharepoint.py  (then seed_corpus.py)"
