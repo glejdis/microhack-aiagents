@@ -14,12 +14,27 @@ team's environment by invoking **`deploy-lab.ps1`** with a fixed parameter contr
 
 | File | Role |
 |------|------|
-| [`deploy-lab.ps1`](deploy-lab.ps1) | **Platform entry point.** Deploys [`infra/resources.bicep`](infra/) into the platform-provided resource group and returns the Foundry / Search endpoints to the user dashboard. Do **not** rename or change its parameter block — the platform silently skips scripts that don't match. |
+| [`deploy-lab.ps1`](deploy-lab.ps1) | **Platform entry point.** Deploys [`infra/resources.bicep`](infra/) into the platform-provided resource group and returns the Foundry / Search endpoints (and model names) to the user dashboard. Do **not** rename or change its parameter block — the platform silently skips scripts that don't match. |
 | [`lab-defaults.json`](lab-defaults.json) | Platform config (`$schema`-validated): deployment type, region priority, per-user daily cost estimate. |
 
 `deploy-lab.ps1` is the **platform** path; `deploy.sh` / `deploy.ps1` below remain the
 **local / Codespaces** path (they autofill `.env` via `az` after `az login`). Both provision the
 same resources from `infra/`.
+
+**What `deploy-lab.ps1` does beyond a single deployment:**
+
+- **Region fallback** — retries the deployment across `PreferredLocation` (then
+  `swedencentral → westeurope → norwayeast`) until a region succeeds.
+- **Multi-user RBAC** — grants the data-plane roles (Azure AI Developer, Cognitive
+  Services User, Search Index Data Contributor, Search Service Contributor) to **every**
+  id in `AllowedEntraUserIds`, so team labs work for all members (idempotent).
+- **Bicep or ARM** — deploys `infra/resources.bicep` by default; pass **`-UseArm`** to
+  deploy the equivalent `infra/azuredeploy.json` instead. That template is
+  subscription-scoped (creates its own resource group), so `-UseArm` applies to
+  `subscription` mode / manual runs; in `resourcegroup` modes it falls back to Bicep to
+  respect the pre-created RG.
+- **Console output** — emits `[INFO]/[OK]/[WARN]` progress and a summary block, plus a
+  `HackboxCredential` record per endpoint / model name for the attendee dashboard.
 
 ## What gets provisioned
 
