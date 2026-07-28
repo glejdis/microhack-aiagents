@@ -101,7 +101,7 @@ def text(x, y, s, *, fs=10, color=INK, weight="normal", ha="left", va="center"):
             ha=ha, va=va, zorder=6)
 
 
-def resource(x, y, w, h, mono, mono_color, title, sub, *, mono_fs=9):
+def resource(x, y, w, h, mono, mono_color, title, sub, *, mono_fs=9, title_fs=11):
     """A resource card: icon chip on the left + title/subtitle."""
     panel(x, y, w, h, fill=CARD_FILL, edge="#D9E2EC", lw=1.2, radius=1.1, z=3)
     ax.add_patch(
@@ -116,12 +116,12 @@ def resource(x, y, w, h, mono, mono_color, title, sub, *, mono_fs=9):
     multiline = "\n" in sub
     if multiline:
         ty = y + h - 3.0
-        ax.text(tx, ty, title, fontsize=11, color=INK, fontweight="bold",
+        ax.text(tx, ty, title, fontsize=title_fs, color=INK, fontweight="bold",
                 ha="left", va="center", zorder=6)
         ax.text(tx, ty - 2.7, sub, fontsize=8.3, color=MUTED,
                 ha="left", va="top", zorder=6, linespacing=1.3)
     else:
-        ax.text(tx, y + h * 0.63, title, fontsize=11, color=INK,
+        ax.text(tx, y + h * 0.63, title, fontsize=title_fs, color=INK,
                 fontweight="bold", ha="left", va="center", zorder=6)
         ax.text(tx, y + h * 0.28, sub, fontsize=8.3, color=MUTED,
                 ha="left", va="center", zorder=6)
@@ -177,13 +177,15 @@ text(21, 84.9, "project: clm-project   ·   one identity, billing, tracing & gov
 
 text(10, 81.4, "Model fleet — LLM deployments", fs=9.5, weight="bold", color=INK)
 
-# three model cards
-resource(11, 66.2, 44, 13.6, "GPT", GPT, "gpt-5.4",
-         "OpenAI · GlobalStandard 30\nOrchestrator agent", mono_fs=9)
-resource(58, 66.2, 44, 13.6, "CLD", CLAUDE, "claude-opus-4-8",
-         "Anthropic · GlobalStandard 20\nIntake & Drafting · Clause & Risk", mono_fs=9)
-resource(105, 66.2, 44, 13.6, "GPT", GPT, "gpt-5-mini",
-         "OpenAI · GlobalStandard 30\nObligation & Renewal agent", mono_fs=9)
+# four model cards
+resource(10, 66.2, 33.5, 13.6, "GPT", GPT, "gpt-5.4",
+         "OpenAI · GlobalStd 30\nOrchestrator", mono_fs=8, title_fs=9.5)
+resource(46, 66.2, 33.5, 13.6, "CLD", CLAUDE, "claude-opus-4-8",
+         "Anthropic · GlobalStd 20\nIntake & Drafting", mono_fs=8, title_fs=9.5)
+resource(82, 66.2, 33.5, 13.6, "SOL", GPT, "gpt-5.6-sol",
+         "OpenAI · GlobalStd 20\nClause & Risk", mono_fs=8, title_fs=9.5)
+resource(118, 66.2, 33.5, 13.6, "GPT", GPT, "gpt-5-mini",
+         "OpenAI · GlobalStd 30\nObligation & Renewal", mono_fs=8, title_fs=9.5)
 
 # capability tags
 tags = ["Microsoft Agent Framework", "Foundry IQ (agentic retrieval)",
