@@ -47,8 +47,8 @@ class Settings:
 
     # Model deployments (multi-model fleet)
     model_orchestrator: str = field(default_factory=lambda: _get("MODEL_ORCHESTRATOR", "gpt-5.4"))
-    model_drafting: str = field(default_factory=lambda: _get("MODEL_DRAFTING", "claude-sonnet-4-5"))
-    model_clause_risk: str = field(default_factory=lambda: _get("MODEL_CLAUSE_RISK", "claude-sonnet-4-5"))
+    model_drafting: str = field(default_factory=lambda: _get("MODEL_DRAFTING", "claude-opus-4-8"))
+    model_clause_risk: str = field(default_factory=lambda: _get("MODEL_CLAUSE_RISK", "claude-opus-4-8"))
     model_renewal: str = field(default_factory=lambda: _get("MODEL_RENEWAL", "gpt-5-mini"))
 
     # Grounding

@@ -4,7 +4,7 @@
 
 Your first agent: the **Intake & Drafting agent** — grounded on the Contoso corpus,
 citing its sources, using function tools, and guard-railed to refuse legal advice.
-It runs on **Anthropic Claude Sonnet 4.5**, but the grounding code is identical to
+It runs on **Anthropic Claude Opus 4.8**, but the grounding code is identical to
 what you'd run on GPT — Foundry is a model-agnostic control plane.
 
 ## Expected end state
@@ -55,7 +55,7 @@ The whole agent is ~15 lines — grounding tool **plus** a function tool, with t
 def create_agent(model=None, *, connection_id=None):
     knowledge = build_knowledge_tool(connection_id=connection_id)   # grounding over clm-corpus
     return Agent(
-        client=build_chat_client(model or settings.model_drafting),  # ← "claude-sonnet-4-5"; swap for a GPT id, nothing else changes
+        client=build_chat_client(model or settings.model_drafting),  # ← "claude-opus-4-8"; swap for a GPT id, nothing else changes
         name=AGENT_NAME,
         instructions=INSTRUCTIONS,                                   # persona + citations + refusal policy
         tools=[knowledge, function_tool(get_contract_status)],       # unstructured grounding + structured lookup
@@ -76,7 +76,7 @@ python src/agents/intake_drafting_agent.py
 ```
 The four built-in prompts cover **draft · cited Q&A · function-tool lookup · refusal**:
 ```text
-✓ Built intake-drafting-agent on model 'claude-sonnet-4-5'
+✓ Built intake-drafting-agent on model 'claude-opus-4-8'
 
 USER: Draft a mutual NDA between Contoso Global and Northwind Traders...
 AGENT: MUTUAL NON-DISCLOSURE AGREEMENT ... [approved template, no invented terms]
@@ -115,7 +115,7 @@ Attach **Prompt Shields / PII** to the agent in the portal — a second, model-i
 
 | Path | Role |
 |------|------|
-| [`src/agents/intake_drafting_agent.py`](../../src/agents/intake_drafting_agent.py) | The grounded, tool-using, guard-railed drafting agent (Claude Sonnet 4.5) |
+| [`src/agents/intake_drafting_agent.py`](../../src/agents/intake_drafting_agent.py) | The grounded, tool-using, guard-railed drafting agent (Claude Opus 4.8) |
 | [`src/kb_setup.py`](../../src/kb_setup.py) | Builds the Foundry IQ knowledge source + web-grounding tool over `clm-corpus` |
 | [`src/sample_prompts.md`](../../src/sample_prompts.md) | Prompts to exercise drafting, grounded Q&A, and the guardrails |
 | [`src/clm_common/`](../../src/clm_common/) | Shared config + Foundry client helpers reused by every agent |

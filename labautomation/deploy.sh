@@ -7,7 +7,7 @@
 #           rights to deploy GPT and Anthropic Claude models.
 #
 # NOTE: Model + region availability changes over time. Confirm your target
-#       region offers gpt-5.4, gpt-5-mini AND Claude Sonnet 4.5 in the
+#       region offers gpt-5.4, gpt-5-mini AND Claude Opus 4.8 in the
 #       Foundry model catalog before running. See the challenge-0 README.
 # ==========================================================================
 set -euo pipefail
@@ -32,7 +32,7 @@ done
 # Model deployments (name=catalog-model:version:format)
 GPT_ORCH="gpt-5.4"
 GPT_MINI="gpt-5-mini"
-CLAUDE="claude-sonnet-4-5"
+CLAUDE="claude-opus-4-8"
 
 # Claude can be skipped when the subscription has no Anthropic quota or the
 # marketplace offer is unavailable: run with DEPLOY_CLAUDE=false. The two
@@ -95,9 +95,9 @@ deploy_claude () {
   local sub_id url state i
   sub_id=$(az account show --query id -o tsv)
   url="https://management.azure.com/subscriptions/${sub_id}/resourceGroups/${RG}/providers/Microsoft.CognitiveServices/accounts/${FOUNDRY}/deployments/${CLAUDE}?api-version=2025-04-01-preview"
-  echo "  → deploying $CLAUDE (Anthropic claude-sonnet-4-5 v20250929) with modelProviderData"
+  echo "  → deploying $CLAUDE (Anthropic claude-opus-4-8 v2) with modelProviderData"
   if ! az rest --method put --url "$url" \
-      --body "{\"sku\":{\"name\":\"GlobalStandard\",\"capacity\":20},\"properties\":{\"model\":{\"format\":\"Anthropic\",\"name\":\"claude-sonnet-4-5\",\"version\":\"20250929\"},\"modelProviderData\":{\"organizationName\":\"${CLAUDE_ORGANIZATION_NAME}\",\"countryCode\":\"${CLAUDE_COUNTRY_CODE}\",\"industry\":\"${CLAUDE_INDUSTRY}\"}}}" -o none; then
+      --body "{\"sku\":{\"name\":\"GlobalStandard\",\"capacity\":20},\"properties\":{\"model\":{\"format\":\"Anthropic\",\"name\":\"claude-opus-4-8\",\"version\":\"2\"},\"modelProviderData\":{\"organizationName\":\"${CLAUDE_ORGANIZATION_NAME}\",\"countryCode\":\"${CLAUDE_COUNTRY_CODE}\",\"industry\":\"${CLAUDE_INDUSTRY}\"}}}" -o none; then
     echo "    ! Claude deployment request failed — check Anthropic eligibility in $LOCATION, or set DEPLOY_CLAUDE=false to skip."
     return
   fi

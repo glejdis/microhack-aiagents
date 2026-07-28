@@ -1,4 +1,4 @@
-"""Challenge 2 — Intake & Drafting agent (Anthropic Claude Sonnet 4.5).
+"""Challenge 2 — Intake & Drafting agent (Anthropic Claude Opus 4.8).
 
 Builds a grounded, cited, tool-enabled, guard-railed agent with the **Microsoft
 Agent Framework** that:
@@ -7,7 +7,7 @@ Agent Framework** that:
   • calls the `get_contract_status` function tool for structured lookups,
   • REFUSES to give legal advice (guardrail).
 
-The agent runs on the **Claude Sonnet 4.5** deployment (MODEL_DRAFTING). Note how
+The agent runs on the **Claude Opus 4.8** deployment (MODEL_DRAFTING). Note how
 the Agent Framework code is identical to a GPT agent — only the `model` on the
 Foundry chat client changes.
 
@@ -78,7 +78,7 @@ def create_agent(model: str | None = None, *, connection_id: str | None = None):
     knowledge = build_knowledge_tool(connection_id=connection_id)
 
     return Agent(
-        client=build_chat_client(model or settings.model_drafting),  # claude-sonnet-4-5
+        client=build_chat_client(model or settings.model_drafting),  # claude-opus-4-8
         name=AGENT_NAME,
         instructions=INSTRUCTIONS,
         tools=[knowledge, function_tool(get_contract_status)],

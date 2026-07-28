@@ -31,7 +31,7 @@ def create_agent(model=None, *, connection_id=None):
     if web_search is not None:
         tools.append(web_search)
     return Agent(
-        client=build_chat_client(model or settings.model_clause_risk),  # claude-sonnet-4-5
+        client=build_chat_client(model or settings.model_clause_risk),  # claude-opus-4-8
         name=AGENT_NAME, instructions=INSTRUCTIONS, tools=tools,
     )
 ```
@@ -40,7 +40,7 @@ python src/agents/clause_risk_agent.py     # analyzes BOTH sample drafts (delibe
 ```
 ✅ **You should see** (format varies — the analysis is the point):
 ```text
-✓ Built clause-risk-agent on model 'claude-sonnet-4-5'
+✓ Built clause-risk-agent on model 'claude-opus-4-8'
 DRAFT: acme_msa_draft.pdf
   • Limitation of liability — UNCAPPED vs standard 12-month cap [CL-04]  → ❌ deviation
   • Auto-renewal — 60-day vs standard 30-day notice [CL-07]             → ⚠️ deviation
@@ -138,7 +138,7 @@ python src/orchestrator_mcp.py      # you don't start the server yourself
 
 | Path | Role |
 |------|------|
-| [`src/agents/clause_risk_agent.py`](../../src/agents/clause_risk_agent.py) | Clause & Risk specialist (Claude Sonnet 4.5) |
+| [`src/agents/clause_risk_agent.py`](../../src/agents/clause_risk_agent.py) | Clause & Risk specialist (Claude Opus 4.8) |
 | [`src/orchestrator.py`](../../src/orchestrator.py) | Orchestrator with specialists as tools |
 | [`src/mcp_server/server.py`](../../src/mcp_server/server.py) | MCP server exposing the CLM workflow over stdio |
 | [`src/.vscode/mcp.json`](../../src/.vscode/mcp.json) | VS Code MCP client config (`clm-mcp`) |

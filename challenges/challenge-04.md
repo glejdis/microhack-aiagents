@@ -126,7 +126,7 @@ the standard clause library.
 
 ✅ **You should see** (wording/format will vary — the analysis is the point):
 ```text
-✓ Built clause-risk-agent on model 'claude-sonnet-4-5'
+✓ Built clause-risk-agent on model 'claude-opus-4-8'
 
 ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 DRAFT: acme_msa_draft.pdf

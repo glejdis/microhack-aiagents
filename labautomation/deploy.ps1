@@ -15,7 +15,7 @@ $Project     = $env:PROJECT     ?? "clm-project"
 $Search      = $env:SEARCH      ?? "clmsearch$Suffix"
 $AppInsights = "clm-appinsights"
 
-$GptOrch = "gpt-5.4"; $GptMini = "gpt-5-mini"; $Claude = "claude-sonnet-4-5"
+$GptOrch = "gpt-5.4"; $GptMini = "gpt-5-mini"; $Claude = "claude-opus-4-8"
 
 # Claude can be skipped (no Anthropic quota / marketplace offer): set
 # $env:DEPLOY_CLAUDE = "false". The Claude-backed agents then use the orchestrator.
@@ -57,13 +57,13 @@ function Deploy-Claude {
   $bodyObj = @{
     sku = @{ name = "GlobalStandard"; capacity = 20 }
     properties = @{
-      model = @{ format = "Anthropic"; name = "claude-sonnet-4-5"; version = "20250929" }
+      model = @{ format = "Anthropic"; name = "claude-opus-4-8"; version = "2" }
       modelProviderData = @{ organizationName = $ClaudeOrg; countryCode = $ClaudeCountry; industry = $ClaudeIndustry }
     }
   }
   $tmp = New-TemporaryFile
   ($bodyObj | ConvertTo-Json -Depth 5) | Set-Content -Path $tmp -Encoding utf8
-  Write-Host "  → deploying $Claude (Anthropic claude-sonnet-4-5 v20250929) with modelProviderData"
+  Write-Host "  → deploying $Claude (Anthropic claude-opus-4-8 v2) with modelProviderData"
   az rest --method put --url $url --body "@$tmp" -o none 2>$null
   Remove-Item $tmp -Force -ErrorAction SilentlyContinue
   if ($LASTEXITCODE -ne 0) {

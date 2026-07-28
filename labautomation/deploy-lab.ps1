@@ -22,6 +22,11 @@
   Robustness:
     - Region fallback: the deployment is retried across $PreferredLocation (then
       swedencentral -> westeurope -> norwayeast) until one region succeeds.
+    - Claude quota preflight: before each region attempt, Anthropic GlobalStandard
+      quota for claude-opus-4-8 is probed; deployClaudeModel is set to 'false' when the
+      region lacks the model or quota, so a Claude-less subscription still gets GPT +
+      full infra instead of failing the entire deploy. Override with env
+      DEPLOY_CLAUDE_MODEL=true|false.
     - Multi-user RBAC: every id in $AllowedEntraUserIds is granted the data-plane
       roles (not just the first), so team labs work for all members. Idempotent.
     - Grounding RBAC: the Foundry account AND project managed identities are granted
@@ -87,9 +92,83 @@ function Get-MhhIdentityPrincipalId {
     }
 }
 
+function Get-MhhClaudeDeployFlag {
+    <#
+      Claude (Anthropic) quota preflight. Returns the STRING 'true'/'false' for the
+      template's deployClaudeModel param, decided per-region.
+
+      Why: claude-opus-4-8 is only offered in a subset of regions (e.g. swedencentral,
+      NOT francecentral/norwayeast) and many lab subscriptions have ZERO Anthropic
+      quota. Hardcoding deployClaudeModel=true made the ENTIRE deployment fail (quota
+      preflight / "model not found") even though GPT + all other infra would have
+      succeeded — and the region-fallback loop then failed everywhere. The Bicep/ARM
+      templates already fall the two Claude-backed agents (drafting, clause & risk)
+      back to the GPT orchestrator when Claude is skipped, so gating on real quota here
+      makes the deploy "just work" for every attendee: they get GPT + full infra, and
+      Claude only when their subscription can actually host it.
+
+      Signal: Cognitive Services usages expose a per-model quota family named
+      'AIServices.GlobalStandard.claude-opus-4-8'. limit=0 (or < the requested
+      capacity) means the deployment would fail -> skip Claude.
+
+      Override: set env DEPLOY_CLAUDE_MODEL=true|false to force the decision and skip
+      the probe (mirrors deploy.sh / deploy.ps1). Any probe/API failure fails SAFE to
+      'false' so a transient error never sinks the whole deployment.
+    #>
+    param([string]$Region, [string]$SubscriptionId, [int]$RequiredCapacity = 20)
+
+    $modelName   = 'claude-opus-4-8'
+    $quotaFamily = "AIServices.GlobalStandard.$modelName"
+
+    $override = $env:DEPLOY_CLAUDE_MODEL
+    if (-not [string]::IsNullOrWhiteSpace($override)) {
+        $o = $override.Trim().ToLower()
+        if ($o -in @('true', 'false')) {
+            Write-Host "[INFO]  Claude preflight: DEPLOY_CLAUDE_MODEL override='$o' (skipping quota probe)."
+            return $o
+        }
+        Write-Host "[WARN]  Claude preflight: ignoring unrecognised DEPLOY_CLAUDE_MODEL='$override' (expected true/false)."
+    }
+
+    try {
+        $uri  = "/subscriptions/$SubscriptionId/providers/Microsoft.CognitiveServices/locations/$Region/usages?api-version=2024-10-01"
+        $resp = Invoke-AzRestMethod -Path $uri -Method GET -ErrorAction Stop
+        if ($resp.StatusCode -ne 200) { throw "usages query returned HTTP $($resp.StatusCode)" }
+        $usages = ($resp.Content | ConvertFrom-Json).value
+
+        $entry = $usages | Where-Object { $_.name.value -eq $quotaFamily } | Select-Object -First 1
+        if (-not $entry) {
+            $entry = $usages |
+                Where-Object { $_.name.value -match [regex]::Escape($modelName) } |
+                Sort-Object { [double]$_.limit } -Descending |
+                Select-Object -First 1
+        }
+
+        if (-not $entry) {
+            Write-Host "[WARN]  Claude preflight: no Anthropic quota entry for '$modelName' in '$Region' -> deploying GPT-only (deployClaudeModel=false)."
+            return 'false'
+        }
+
+        $limit     = [double]$entry.limit
+        $used      = [double]$entry.currentValue
+        $available = $limit - $used
+        if ($limit -le 0 -or $available -lt $RequiredCapacity) {
+            Write-Host "[WARN]  Claude preflight: insufficient Anthropic quota in '$Region' (limit=$limit, used=$used, need=$RequiredCapacity) -> deploying GPT-only (deployClaudeModel=false)."
+            return 'false'
+        }
+
+        Write-Host "[OK]    Claude preflight: '$modelName' deployable in '$Region' (quota limit=$limit, used=$used, free=$available)."
+        return 'true'
+    }
+    catch {
+        Write-Host "[WARN]  Claude preflight: quota probe failed for '$Region' ($($_.Exception.Message)) -> deploying GPT-only (deployClaudeModel=false) to stay resilient."
+        return 'false'
+    }
+}
+
 # --- Region fallback list ---------------------------------------------------
 # Honour the platform's ordered preference; fall back across regions that offer the
-# gpt-5.4 / gpt-5-mini deployments and the Anthropic Claude Sonnet 4.5 marketplace offer.
+# gpt-5.4 / gpt-5-mini deployments and the Anthropic Claude Opus 4.8 marketplace offer.
 $candidateRegions = if ($PreferredLocation.Count -gt 0) { $PreferredLocation } else { @('swedencentral', 'westeurope', 'norwayeast') }
 
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -117,6 +196,7 @@ if ($armRequested) {
     Write-Host "[INFO]  Engine: ARM (infra/azuredeploy.json), subscription-scoped."
     foreach ($region in $candidateRegions) {
         Write-Host "[INFO]  Deploying ARM template in '$region'..."
+        $wantClaude = Get-MhhClaudeDeployFlag -Region $region -SubscriptionId $SubscriptionId
         try {
             $d = New-AzSubscriptionDeployment `
                 -Location $region `
@@ -125,7 +205,7 @@ if ($armRequested) {
                 -location $region `
                 -principalId $primaryPrincipalId `
                 -principalType 'User' `
-                -deployClaudeModel 'true' `
+                -deployClaudeModel $wantClaude `
                 -deploySql 'false' `
                 -deployBing 'false' `
                 -ErrorAction Stop
@@ -162,6 +242,7 @@ else {
 
     foreach ($region in $candidateRegions) {
         Write-Host "[INFO]  Deploying Bicep -> RG '$effectiveResourceGroup' in '$region' (token '$resourceToken')..."
+        $wantClaude = Get-MhhClaudeDeployFlag -Region $region -SubscriptionId $SubscriptionId
         try {
             $d = New-AzResourceGroupDeployment `
                 -ResourceGroupName $effectiveResourceGroup `
@@ -170,7 +251,7 @@ else {
                 -resourceToken $resourceToken `
                 -principalId $primaryPrincipalId `
                 -principalType 'User' `
-                -deployClaudeModel 'true' `
+                -deployClaudeModel $wantClaude `
                 -deploySql 'false' `
                 -deployBing 'false' `
                 -tags $tags `
@@ -263,6 +344,12 @@ Write-Host "  Azure AI Search endpoint: $searchEndpoint (index '$searchIndex')"
 Write-Host "  Models                  : orchestrator=$modelOrch, drafting=$modelDraft, renewal=$modelRenewal"
 Write-Host "  Next                    : paste these into the repo-root .env (see Challenge 1)."
 Write-Host "========================================================================"
+
+# Surface the Claude preflight outcome from the template's authoritative output:
+# MODEL_DRAFTING is claude-opus-4-8 when Claude deployed, else the GPT orchestrator.
+if ($modelDraft -and $modelDraft -notmatch 'claude') {
+    Write-Host "[WARN]  Claude was not deployed in '$effectiveLocation' (no Anthropic quota / model not offered). The Drafting and Clause & Risk agents run on '$modelDraft' instead. Grant Anthropic quota (or set DEPLOY_CLAUDE_MODEL=true) and redeploy to enable the Claude bake-off in Challenge 3."
+}
 
 @{ HackboxCredential = @{ name = 'ResourceGroup'; value = $effectiveResourceGroup; note = 'Resource group holding your CLM microhack resources' } }
 

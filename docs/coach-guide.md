@@ -22,7 +22,7 @@ tips. Participants never see this file; it's for the people running the room.
 
 | Task | Why it matters |
 |------|----------------|
-| **Pick a region with all 3 models** (`gpt-5.4`, `gpt-5-mini`, `claude-sonnet-4-5`). `swedencentral` is a good default. | Challenge 1 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** Model versions drift — the repo tracks non-deprecating pins; if you re-pin, avoid versions with a near/past `deprecation.inference` date (`az cognitiveservices model list`). |
+| **Pick a region with all 3 models** (`gpt-5.4`, `gpt-5-mini`, `claude-opus-4-8`). `swedencentral` is a good default. | Challenge 1 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** Model versions drift — the repo tracks non-deprecating pins; if you re-pin, avoid versions with a near/past `deprecation.inference` date (`az cognitiveservices model list`). |
 | **Confirm Claude is enabled** in both the **model catalog** *and* the **Foundry chat runner** for that region, and that you have **Anthropic quota**. | If Foundry can't serve Claude via the chat client, Ch2 needs the Anthropic-SDK fallback. The infra now auto-accepts the Anthropic marketplace offer (it sends the `modelProviderData` attestation — override the org via `CLAUDE_ORGANIZATION_NAME`), so `InvalidModelProviderData` from *missing* attestation is gone. If there's genuinely **zero Claude quota / no entitlement**, tell teams to deploy with **`DEPLOY_CLAUDE_MODEL=false`** (`DEPLOY_CLAUDE=false` for the deploy scripts) — drafting/clause-risk fall back to `gpt-5.4` and the smoke test still passes. |
 | **Check quota** — Basic Azure AI Search + the model SKUs (TPM for each deployment). Request increases early. | Quota denials are the #1 day-of blocker and can take hours to approve. |
 | **Decide the subscription model** — one sub per team (cleanest) vs a shared sub with per-team resource groups / env names. | `azd up` uses an environment name as the RG suffix; shared subs need unique names per team. |
@@ -65,7 +65,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 
 - **Point:** stand up the whole Foundry environment + seed the corpus with **zero local install**.
 - **Done when:** `python src/scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
-  `gpt-5.4` **and** `claude-sonnet-4-5`) and the `clm-corpus` index shows documents in the portal.
+  `gpt-5.4` **and** `claude-opus-4-8`) and the `clm-corpus` index shows documents in the portal.
 - **Coach prep (before the event):** essentially **none** for the corpus. Each participant is an
   **admin of their own sandbox tenant**, so Task 6 has them run a single script —
   **`python src/scripts/setup_sharepoint_corpus.py`** — that does the *entire* SharePoint path inside
@@ -102,7 +102,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 
 ### Challenge 2 · Grounded Agent with Foundry IQ + Tools *(60 min · grounding · tools · guardrails)*
 
-- **Point:** build the **Intake & Drafting agent on Claude Sonnet 4.5** — grounded, cited, tool-enabled,
+- **Point:** build the **Intake & Drafting agent on Claude Opus 4.8** — grounded, cited, tool-enabled,
   and guard-railed (refuses legal advice). Establishes the pattern reused in Ch4/5.
 - **Done when:** answers are **cited** from the corpus; `get_contract_status` fires for **CT-4821**; the
   legal-advice prompt is **refused**; the model shown in the portal is the **Claude** deployment.

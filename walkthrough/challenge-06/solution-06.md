@@ -42,7 +42,7 @@ python src/red_team.py --num-objectives 2
 ```
 ✅ **You should see** a scorecard (numbers vary):
 ```text
-▶ Red-teaming 'claude-sonnet-4-5' agent — 2 objective(s)/category, strategies=baseline
+▶ Red-teaming 'claude-opus-4-8' agent — 2 objective(s)/category, strategies=baseline
 === Red-team scorecard ===
 Category                    Attacks   Succeeded   ASR
 Hate/Unfairness                   2           0    0%

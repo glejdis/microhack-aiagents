@@ -6,7 +6,7 @@ Welcome to your first agent! In Challenge 1 you provisioned Microsoft Foundry an
 **Contoso Global** contract corpus. Now you'll turn that corpus into a working assistant: the
 **Intake & Drafting agent** — a grounded, cited, tool-enabled, guard-railed agent that drafts
 contracts from approved templates and answers policy questions **with sources**. It runs on
-**Anthropic Claude Sonnet 4.5**, and the twist you'll internalize here is that grounding it on Claude
+**Anthropic Claude Opus 4.8**, and the twist you'll internalize here is that grounding it on Claude
 takes the *exact same code* as grounding it on GPT — because Foundry is a **model-agnostic control
 plane**.
 
@@ -16,7 +16,7 @@ If something isn't working as expected, please let your coach know.
 
 > **📋 Prerequisites:**
 > - **Challenge 1 complete** — `.env` populated, corpus seeded into Azure AI Search, smoke test green.
-> - A model deployment for **`claude-sonnet-4-5`** (created in Challenge 1) reachable from your project.
+> - A model deployment for **`claude-opus-4-8`** (created in Challenge 1) reachable from your project.
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
 > implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
@@ -26,7 +26,7 @@ If something isn't working as expected, please let your coach know.
 
 ## 🎯 Objective
 
-Build the **Intake & Drafting agent** on **Anthropic Claude Sonnet 4.5** and make it:
+Build the **Intake & Drafting agent** on **Anthropic Claude Opus 4.8** and make it:
 
 - **Grounded** — every substantive answer is drawn from the CLM corpus via **Foundry IQ**, not the
   model's parametric memory.
@@ -65,7 +65,7 @@ flowchart TB
   subgraph IQ["Foundry IQ — knowledge grounding"]
     D["AzureAISearchTool<br/>agentic retrieval: plan → search → rerank → cite<br/>kb_setup.py"]
   end
-  D --> E["Intake &amp; Drafting agent<br/>Claude Sonnet 4.5"]
+  D --> E["Intake &amp; Drafting agent<br/>Claude Opus 4.8"]
   F["get_contract_status<br/>function tool"] --> E
   E --> G["Cited draft / answer<br/>+ tool results"]
   style D fill:#FCEBDD,stroke:#E8590C,stroke-width:2px,color:#1A1A1A
@@ -94,7 +94,7 @@ An agent grounds and acts through **tools**. This agent has both flavors:
 ### Why Claude here — and why the API doesn't change
 
 Drafting rewards strong instruction-following and long-context legal reasoning, so the Intake &
-Drafting agent runs on **Claude Sonnet 4.5** (`MODEL_DRAFTING`). The whole point of Foundry as a
+Drafting agent runs on **Claude Opus 4.8** (`MODEL_DRAFTING`). The whole point of Foundry as a
 control plane is that you get there by pointing `model` at the Claude deployment — **the
 agent/tool/grounding API is identical across providers**. The same `Agent(client=..., tools=[...]) →
 run` shape hosts a GPT agent (you'll see that in Challenge 4's orchestrator) with no other changes.
@@ -140,7 +140,7 @@ each is**, the **specifics wired into this repo**, and **why it's in the archite
 your `.env` reaches it through `AZURE_AI_PROJECT_ENDPOINT`
 (`https://<account>.services.ai.azure.com/api/projects/clm-project`).
 
-- **All three models deploy onto that one account** — `gpt-5.4`, `gpt-5-mini`, `claude-sonnet-4-5` — so a
+- **All three models deploy onto that one account** — `gpt-5.4`, `gpt-5-mini`, `claude-opus-4-8` — so a
   single `get_project_client()` ([`src/clm_common/foundry.py`](../src/clm_common/foundry.py)) reaches each.
 - The **Microsoft Agent Framework** (`Agent(client=FoundryChatClient(...))`) runs the agent loop **in your
   process** — planning, tool-calls and retrieval — calling Foundry for model inference.
@@ -188,9 +188,9 @@ system of record; the corpus is authored/managed there, not copied into Azure.
 **Why here:** it holds the templates, clause library, policy and executed-contract PDFs that Search indexes —
 and keeps them where the business already curates them. → [Index SharePoint content](https://learn.microsoft.com/azure/search/search-howto-index-sharepoint-online)
 
-### Model — Anthropic Claude Sonnet 4.5
+### Model — Anthropic Claude Opus 4.8
 
-**What it is:** this agent's LLM — deployment **`claude-sonnet-4-5`** (`format: Anthropic`, **version `20250929`** =
+**What it is:** this agent's LLM — deployment **`claude-opus-4-8`** (`format: Anthropic`, **version `2`** =
 Azure-hosted, SKU `GlobalStandard`, capacity 20), read from `settings.model_drafting` (`MODEL_DRAFTING`).
 
 - Strong **instruction-following** + **long-context** reasoning — ideal for careful legal drafting.
@@ -243,7 +243,7 @@ Expected output (ids will differ):
 
 Open [`agents/intake_drafting_agent.py`](../src/agents/intake_drafting_agent.py) and trace how it's wired:
 
-- `model=settings.model_drafting` → **Claude Sonnet 4.5** (the only line that would change for GPT).
+- `model=settings.model_drafting` → **Claude Opus 4.8** (the only line that would change for GPT).
 - The persona + **refusal** instructions in `INSTRUCTIONS`.
 - Grounding via `build_knowledge_tool(...)` **plus** the `get_contract_status` **function tool**,
   passed together in the Agent's `tools=[...]`.
@@ -261,7 +261,7 @@ from clm_common.tools import get_contract_status
 knowledge = build_knowledge_tool(connection_id=connection_id)   # Azure AI Search grounding over clm-corpus
 
 agent = Agent(
-    client=build_chat_client(settings.model_drafting),          # ← "claude-sonnet-4-5"; swap for a GPT id, nothing else changes
+    client=build_chat_client(settings.model_drafting),          # ← "claude-opus-4-8"; swap for a GPT id, nothing else changes
     name="intake-drafting-agent",
     instructions=INSTRUCTIONS,                                  # persona + citations + refusal policy
     tools=[
@@ -291,7 +291,7 @@ Q&A, a **`CT-4821` status** lookup (function tool), and a **legal-advice** promp
 ✅ **You should see** (the model's wording varies — the **structure** is what matters):
 
 ```text
-✓ Built intake-drafting-agent on model 'claude-sonnet-4-5'
+✓ Built intake-drafting-agent on model 'claude-opus-4-8'
 
 ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 USER: Draft a mutual NDA between Contoso Global and Northwind Traders...
@@ -354,7 +354,7 @@ safety adds a second, model-independent layer (previewed here, built in **Challe
 
 ### ⚙️ Claude fallback (if Foundry can't serve Claude via the chat client in your region)
 
-The **preferred** path is `model="claude-sonnet-4-5"` on `build_chat_client(...)`, exactly like GPT. If that
+The **preferred** path is `model="claude-opus-4-8"` on `build_chat_client(...)`, exactly like GPT. If that
 run fails because Foundry doesn't yet serve Anthropic models through the chat client in your region, call
 Claude **directly** through Foundry with the Anthropic SDK and keep grounding/tools in your own code:
 
@@ -422,7 +422,7 @@ with the same API you'll use for GPT.
 - **Mixed knowledge + function tools** — combined unstructured retrieval with a deterministic
   `get_contract_status` lookup in the Agent's `tools=[...]`, auto-invoked mid-run.
 - **Enforced guardrails** — the agent refuses legal advice and flags policy deviations for a human.
-- **Proved model-agnosticism** — ran the whole thing on Claude Sonnet 4.5 by changing a single
+- **Proved model-agnosticism** — ran the whole thing on Claude Opus 4.8 by changing a single
   `model` argument.
 
 This agent becomes a building block later: the **orchestrator** (Challenge 4) will delegate drafting

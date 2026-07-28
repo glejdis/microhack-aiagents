@@ -25,6 +25,11 @@ same resources from `infra/`.
 
 - **Region fallback** — retries the deployment across `PreferredLocation` (then
   `swedencentral → westeurope → norwayeast`) until a region succeeds.
+- **Claude quota preflight** — before each region attempt it probes Anthropic
+  `GlobalStandard` quota for `claude-opus-4-8` and sets `deployClaudeModel=false`
+  automatically when the region has no model/quota, so a Claude-less subscription still
+  gets GPT + full infra instead of failing the whole deploy (the two Claude agents fall
+  back to the `gpt-5.4` orchestrator). Force the decision with `DEPLOY_CLAUDE_MODEL=true|false`.
 - **Multi-user RBAC** — grants the data-plane roles (Azure AI Developer, Cognitive
   Services User, Search Index Data Contributor, Search Service Contributor) to **every**
   id in `AllowedEntraUserIds`, so team labs work for all members (idempotent).
@@ -87,7 +92,7 @@ for `deploy.sh` / `$env:NAME` for `deploy.ps1`):
 
 | Env var | Default | Purpose |
 |---------|---------|---------|
-| `DEPLOY_CLAUDE_MODEL` (`DEPLOY_CLAUDE` for the scripts) | `true` | Set `false` to skip the Anthropic Claude deployment when the subscription isn't entitled — drafting/clause-risk agents then fall back to the `gpt-5.4` orchestrator. |
+| `DEPLOY_CLAUDE_MODEL` (`DEPLOY_CLAUDE` for the scripts) | `true` (auto on the platform) | Set `false` to skip the Anthropic Claude deployment when the subscription isn't entitled — drafting/clause-risk agents then fall back to the `gpt-5.4` orchestrator. On the platform path (`deploy-lab.ps1`) this is **auto-detected per region** from Anthropic quota; set it explicitly only to force the decision. |
 | `CLAUDE_ORGANIZATION_NAME` | `Contoso` | Legal-entity name for the **required** Anthropic Marketplace attestation (`modelProviderData`). The template sends this so `azd up` auto-accepts the offer — no portal click-through, no `InvalidModelProviderData`. Override to describe your org. |
 | `CLAUDE_COUNTRY_CODE` | `US` | Two-letter country code for the attestation. |
 | `CLAUDE_INDUSTRY` | `technology` | Industry for the attestation (lowercase: `technology`, `finance`, `healthcare`, `education`, `retail`, …). |

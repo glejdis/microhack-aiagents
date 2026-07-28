@@ -3,8 +3,8 @@
 Runs the Foundry `azure-ai-evaluation` evaluators over
 src/data/evaluation/evaluation_dataset.jsonl, using a *target* callable that
 generates the agent's response for each row. Then it does the headline
-**cross-model bake-off**: run the Intake & Drafting agent on **Claude Sonnet
-4.5** vs a **GPT** deployment against the SAME scorecard, and compare quality vs
+**cross-model bake-off**: run the Intake & Drafting agent on **Claude Opus
+4.8** vs a **GPT** deployment against the SAME scorecard, and compare quality vs
 cost/latency. Finally, a **quality gate** fails the build if groundedness drops
 below a threshold.
 

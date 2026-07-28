@@ -66,7 +66,7 @@ var bingConnectionName = 'clm-bing'
 // deployment (named `gpt-5.4`) runs the `gpt-5.4` catalog model directly.
 var gptOrchestrator = 'gpt-5.4'
 var gptMini = 'gpt-5-mini'
-var claude = 'claude-sonnet-4-5'
+var claude = 'claude-opus-4-8'
 // Orchestrator catalog model + version — confirm the exact model/version offered
 // in your region's Foundry model catalog and update here if needed
 // (`az cognitiveservices model list --location <region>`).
@@ -202,9 +202,10 @@ resource deployMini 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01
   dependsOn: [ deployOrchestrator ]
 }
 
-// Claude: model-format Anthropic. Version is the date-stamped Azure Foundry
-// catalog version (e.g. 20250929 for claude-sonnet-4-5 in swedencentral) — not
-// Anthropic's own "1"/"2" scheme. Verify with `az cognitiveservices model list`.
+// Claude: model-format Anthropic. claude-opus-4-8 uses Anthropic's simple
+// integer version scheme in the Azure Foundry catalog — version '2' is the
+// current GA (confirm with `az cognitiveservices model list --location <region>`;
+// claude-opus-4-8 is offered in swedencentral, not francecentral/norwayeast).
 // The modelProviderData block is mandatory for Anthropic deployments (see the
 // claude* params above); without it Azure fails preflight with
 // InvalidModelProviderData. Gated on deployClaudeModel: set
@@ -215,7 +216,7 @@ resource deployClaude 'Microsoft.CognitiveServices/accounts/deployments@2025-04-
   name: claude
   sku: { name: 'GlobalStandard', capacity: 20 }
   properties: {
-    model: { format: 'Anthropic', name: 'claude-sonnet-4-5', version: '20250929' }
+    model: { format: 'Anthropic', name: 'claude-opus-4-8', version: '2' }
     // modelProviderData is required by the RP for Anthropic deployments but is
     // not yet in the bundled Bicep type schema (BCP037) — it is still emitted to
     // the compiled ARM and honoured at deploy time.

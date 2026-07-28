@@ -33,7 +33,7 @@ that blocks a bad build.
 - **Evaluation** uses `azure-ai-evaluation`. Evaluators (groundedness, relevance, coherence,
   fluency) are **LLM-judged** by an Azure OpenAI deployment. A *target* callable generates the
   agent's response for each dataset row so evaluation is end-to-end.
-- **Bake-off**: run the same agent + same scorecard on **Claude Sonnet 4.5** vs **GPT** and compare
+- **Bake-off**: run the same agent + same scorecard on **Claude Opus 4.8** vs **GPT** and compare
   quality against latency — the concrete payoff of a model-agnostic platform.
 
 ## 🧰 Services & models in this challenge
@@ -145,7 +145,7 @@ You'll get a scorecard for the Claude-backed agent.
 
 ✅ **You should see** (scores 1–5; your numbers will differ):
 ```text
-=== Intake & Drafting (claude-sonnet-4-5) ===
+=== Intake & Drafting (claude-opus-4-8) ===
   groundedness                             4.6
   relevance                                4.4
   coherence                                4.7

@@ -55,8 +55,8 @@ The `.env` is written for you by the postprovision hook → [`src/scripts/write_
 # src/scripts/write_env.py — constants used when a deployment output is missing
 DEFAULTS = {
     "MODEL_ORCHESTRATOR": "gpt-5.4",
-    "MODEL_DRAFTING": "claude-sonnet-4-5",
-    "MODEL_CLAUSE_RISK": "claude-sonnet-4-5",
+    "MODEL_DRAFTING": "claude-opus-4-8",
+    "MODEL_CLAUSE_RISK": "claude-opus-4-8",
     "MODEL_RENEWAL": "gpt-5-mini",
     "AZURE_SEARCH_INDEX": "clm-corpus",
     "AZURE_SEARCH_CONNECTION_NAME": "clm-search",
@@ -120,7 +120,7 @@ python src/scripts/smoke_test.py
 ```text
 1) Checking environment…            ✓ (all vars present)
 2) Pinging gpt deployment 'gpt-5.4'… ✓ gpt replied: OK
-2) Pinging claude deployment 'claude-sonnet-4-5'… ✓ claude replied: OK
+2) Pinging claude deployment 'claude-opus-4-8'… ✓ claude replied: OK
 
 Smoke test: ✅ PASS
 ```
@@ -144,6 +144,6 @@ Smoke test: ✅ PASS
 
 | Symptom | Cause / fix |
 |---------|-------------|
-| A model isn't offered in your region | Pick a region with `gpt-5.4`, `gpt-5-mini`, **and** `claude-sonnet-4-5`; verify in the Foundry model catalog. |
+| A model isn't offered in your region | Pick a region with `gpt-5.4`, `gpt-5-mini`, **and** `claude-opus-4-8`; verify in the Foundry model catalog. |
 | `smoke_test.py` fails on Claude | The runner may not host Claude in your region — deploy with `DEPLOY_CLAUDE_MODEL=false` to fall back to `gpt-5.4`. |
 | Corpus / index empty | Re-run `python src/scripts/seed_corpus.py` (idempotent). |

@@ -1,4 +1,4 @@
-"""Challenge 4 — Clause Extraction & Risk agent (Anthropic Claude Sonnet 4.5).
+"""Challenge 4 — Clause Extraction & Risk agent (Anthropic Claude Opus 4.8).
 
 Ingests a counterparty draft, extracts key clauses, compares them to Contoso
 Global's enterprise standard (the clause library in the corpus), flags deviations
@@ -83,7 +83,7 @@ def create_agent(model: str | None = None, *, connection_id: str | None = None):
         tools.append(web_search)
 
     return Agent(
-        client=build_chat_client(model or settings.model_clause_risk),  # claude-sonnet-4-5
+        client=build_chat_client(model or settings.model_clause_risk),  # claude-opus-4-8
         name=AGENT_NAME,
         instructions=INSTRUCTIONS,
         tools=tools,

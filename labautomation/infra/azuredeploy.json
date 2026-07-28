@@ -21,7 +21,7 @@
       "type": "string",
       "minLength": 1,
       "metadata": {
-        "description": "Azure region for all resources. Must offer gpt-5.4 and gpt-5-mini (and Claude Sonnet 4.5 unless DEPLOY_CLAUDE_MODEL=false)."
+        "description": "Azure region for all resources. Must offer gpt-5.4 and gpt-5-mini (and Claude Opus 4.8 unless DEPLOY_CLAUDE_MODEL=false)."
       }
     },
     "principalId": {
@@ -265,7 +265,7 @@
             "bingConnectionName": "clm-bing",
             "gptOrchestrator": "gpt-5.4",
             "gptMini": "gpt-5-mini",
-            "claude": "claude-sonnet-4-5",
+            "claude": "claude-opus-4-8",
             "gptOrchestratorModel": "gpt-5.4",
             "gptOrchestratorVersion": "2026-03-05",
             "gptMiniModel": "gpt-5-mini",
@@ -421,8 +421,8 @@
               "properties": {
                 "model": {
                   "format": "Anthropic",
-                  "name": "claude-sonnet-4-5",
-                  "version": "20250929"
+                  "name": "claude-opus-4-8",
+                  "version": "2"
                 },
                 "modelProviderData": {
                   "organizationName": "[parameters('claudeOrganizationName')]",

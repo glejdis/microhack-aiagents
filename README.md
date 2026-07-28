@@ -81,8 +81,8 @@ diagram](images/diagrams/user-journey.png) alongside this table.
 
 | # | What the manager does | What happens under the hood | Foundry capability | Built in |
 |---|-----------------------|-----------------------------|--------------------|----------|
-| **1 · Request a draft** | *"Draft a mutual NDA with Acme, 2-yr term."* | **Intake & Drafting** agent (Claude Sonnet 4.5) drafts from an **approved template** | Grounded agent + tools | [C2](challenges/challenge-02.md) |
-| **2 · Check their draft** | Uploads Acme's counter-draft MSA | **Clause & Risk** agent (Claude Sonnet 4.5) scores every clause against the **Standard Clause Library** and flags deviations | Specialist agent + orchestration | [C4](challenges/challenge-04.md) |
+| **1 · Request a draft** | *"Draft a mutual NDA with Acme, 2-yr term."* | **Intake & Drafting** agent (Claude Opus 4.8) drafts from an **approved template** | Grounded agent + tools | [C2](challenges/challenge-02.md) |
+| **2 · Check their draft** | Uploads Acme's counter-draft MSA | **Clause & Risk** agent (Claude Opus 4.8) scores every clause against the **Standard Clause Library** and flags deviations | Specialist agent + orchestration | [C4](challenges/challenge-04.md) |
 | **3 · Ask, with citations** | *"What's our standard indemnity cap?"* | **Foundry IQ** answers over the Contoso corpus — **with sources** | Agentic retrieval (Foundry IQ) | [C2](challenges/challenge-02.md) |
 | **4 · Review & sign off** | Reads flags + citations, edits, **approves** | **Human-in-the-loop** — nothing is finalized without sign-off | HITL + guardrails | [C2](challenges/challenge-02.md) · [C4](challenges/challenge-04.md) |
 | **5 · Track obligations** | Reviews upcoming renewals | **Obligation & Renewal** agent (GPT-5-mini) **reads** contract status & upcoming renewals via function tools — **Azure SQL** (seed-data fallback) | Function tool / MCP server | [C4](challenges/challenge-04.md) · [C5](challenges/challenge-05.md) |
@@ -123,7 +123,7 @@ call, hands off the right context, and composes the final answer. GPT-5.4 is cho
 deterministic routing and tool/hand-off calls rather than long-form generation.
 
 ❹ **Specialist agents — each matched to its task *and* its model.** The Orchestrator delegates to three
-grounded specialists: **Intake & Drafting** and **Clause & Risk** run on **Claude Sonnet 4.5** (purple)
+grounded specialists: **Intake & Drafting** and **Clause & Risk** run on **Claude Opus 4.8** (purple)
 for high-fidelity drafting and 200K-context clause comparison; **Obligation & Renewal** runs on the
 cheaper **GPT-5-mini** (blue) for high-frequency date and obligation extraction.
 
@@ -172,7 +172,7 @@ flowchart TB
         end
         subgraph Farm["LLM farm · model deployments"]
             gpt53["GPT-5.4<br/>OpenAI · GlobalStandard"]
-            claude["Claude Sonnet 4.5<br/>Anthropic"]
+            claude["Claude Opus 4.8<br/>Anthropic"]
             gpt4omini["GPT-5-mini<br/>OpenAI · GlobalStandard"]
         end
         orch -->|runs on| gpt53
@@ -226,8 +226,8 @@ specialists run on Claude while orchestration runs on GPT, all inside **one** Fo
 | Agent | Model | Why this model |
 |-------|-------|----------------|
 | **Orchestrator** | GPT-5.4 | Fast, deterministic routing + tool/hand-off calls |
-| **Intake & Drafting** | **Claude Sonnet 4.5** | High-fidelity, template-grounded drafting |
-| **Clause & Risk** | **Claude Sonnet 4.5** | 200K-context clause comparison + nuanced risk rationale |
+| **Intake & Drafting** | **Claude Opus 4.8** | High-fidelity, template-grounded drafting |
+| **Clause & Risk** | **Claude Opus 4.8** | 200K-context clause comparison + nuanced risk rationale |
 | **Obligation & Renewal** | GPT-5-mini | Cheap, high-frequency structured extraction + alerts |
 
 ---

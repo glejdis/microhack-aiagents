@@ -79,7 +79,7 @@ python src/evaluators.py
 > further when a run stalls: `python src/evaluators.py --workers 1`.
 ✅ **You should see** (scores 1–5; your numbers differ):
 ```text
-=== Intake & Drafting (claude-sonnet-4-5) ===
+=== Intake & Drafting (claude-opus-4-8) ===
   groundedness                             4.6
   relevance                                4.4
   coherence                                4.7
