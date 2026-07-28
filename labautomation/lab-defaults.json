@@ -3,6 +3,6 @@
   "groups": ["M365-E5-Users"],
   "deploymentType": "resourcegroup",
   "labsPerSubscription": 8,
-  "preferredLocation": "swedencentral, westeurope, norwayeast",
+  "preferredLocation": "swedencentral, francecentral, norwayeast",
   "estimatedDailyCostsUsd": 5.0
 }
