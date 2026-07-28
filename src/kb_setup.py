@@ -23,6 +23,30 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))  # src (clm_common)
 from clm_common.config import settings  # noqa: E402
 
 
+def _normalize_foundry_tool(tool):
+    """Return a Foundry tool as a plain, JSON-serializable dict.
+
+    The Foundry tool factories (``get_azure_ai_search_tool`` /
+    ``get_bing_grounding_tool``) return ``azure.ai.projects.models`` objects
+    (``AzureAISearchTool`` wrapping an ``AzureAISearchToolResource``,
+    ``BingGroundingTool``, …). Those are dict-*like* SDK models but NOT ``dict``
+    subclasses, so when the Microsoft Agent Framework serializes the request
+    payload ``json.dumps`` raises e.g. ``Object of type AzureAISearchToolResource
+    is not JSON serializable``.
+
+    Calling ``.as_dict()`` yields a nested plain-``dict`` that keeps the ``type``
+    discriminator and serializes cleanly, which is what the Agent expects. Objects
+    without ``.as_dict()`` (already a dict, or a future tool type) are returned
+    unchanged so this stays a safe pass-through.
+    """
+    if tool is None:
+        return None
+    as_dict = getattr(tool, "as_dict", None)
+    if callable(as_dict):
+        return as_dict()
+    return tool
+
+
 def get_search_connection_id(project) -> str:
     """Return the connection id of the project's default Azure AI Search resource."""
     from azure.ai.projects.models import ConnectionType
@@ -52,11 +76,13 @@ def build_knowledge_tool(*, connection_id: str | None = None, project=None):
             with get_project_client() as own_project:
                 connection_id = get_search_connection_id(own_project)
 
-    return FoundryChatClient.get_azure_ai_search_tool(
-        index_connection_id=connection_id,
-        index_name=settings.search_index,
-        query_type="semantic",
-        top_k=5,
+    return _normalize_foundry_tool(
+        FoundryChatClient.get_azure_ai_search_tool(
+            index_connection_id=connection_id,
+            index_name=settings.search_index,
+            query_type="semantic",
+            top_k=5,
+        )
     )
 
 
@@ -106,9 +132,11 @@ def build_web_search_tool(*, connection_id: str | None = None, project=None):
     # Grounding with Bing Search (preview) — works on non-OpenAI Foundry models
     # (the Claude specialists) and exposes finer Bing params than the GA
     # get_web_search_tool (which is Azure-OpenAI-only).
-    return FoundryChatClient.get_bing_grounding_tool(
-        connection_id=connection_id,
-        count=5,
+    return _normalize_foundry_tool(
+        FoundryChatClient.get_bing_grounding_tool(
+            connection_id=connection_id,
+            count=5,
+        )
     )
 
 

@@ -335,12 +335,49 @@ resource raUserSearchServiceContributor 'Microsoft.Authorization/roleAssignments
 }
 
 // -- Foundry account managed identity (grounding / Foundry IQ retrieval) ---
+// Agentic retrieval needs BOTH a data-plane read role (query the index) and a
+// control-plane role (read the index/semantic-config definition), on BOTH the
+// account AND the project managed identities — depending on region/preview the
+// tool call runs under either identity, and granting only the account MI Data
+// Reader surfaces as `400 tool_user_error … Access denied, check managed identity
+// access to search service`.
 resource raAccountSearchReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(search.id, account.id, roleSearchIndexDataReader)
   scope: search
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataReader)
     principalId: account.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource raAccountSearchServiceContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(search.id, account.id, roleSearchServiceContributor)
+  scope: search
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchServiceContributor)
+    principalId: account.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// -- Foundry project managed identity (Agent Framework retrieval tool calls) --
+resource raProjectSearchReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(search.id, project.id, roleSearchIndexDataReader)
+  scope: search
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataReader)
+    principalId: project.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource raProjectSearchServiceContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(search.id, project.id, roleSearchServiceContributor)
+  scope: search
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchServiceContributor)
+    principalId: project.identity.principalId
     principalType: 'ServicePrincipal'
   }
 }

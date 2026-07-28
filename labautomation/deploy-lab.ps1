@@ -24,6 +24,9 @@
       swedencentral -> westeurope -> norwayeast) until one region succeeds.
     - Multi-user RBAC: every id in $AllowedEntraUserIds is granted the data-plane
       roles (not just the first), so team labs work for all members. Idempotent.
+    - Grounding RBAC: the Foundry account AND project managed identities are granted
+      Search Index Data Reader + Search Service Contributor so Foundry IQ agentic
+      retrieval works (both identities, idempotent — also remediates older labs).
     - Console output: [INFO]/[OK]/[WARN] progress plus @{ HackboxCredential = ... }
       records that surface every endpoint / model name to the team dashboard.
 
@@ -68,6 +71,19 @@ function Grant-MhhRole {
     }
     catch {
         Write-Host "[WARN]  Could not grant '$RoleName' to ${ObjectId}: $_"
+    }
+}
+
+function Get-MhhIdentityPrincipalId {
+    param([string]$ResourceId)
+    if ([string]::IsNullOrWhiteSpace($ResourceId)) { return '' }
+    try {
+        $res = Get-AzResource -ResourceId $ResourceId -ExpandProperties -ErrorAction Stop
+        return "$($res.Identity.PrincipalId)"
+    }
+    catch {
+        Write-Host "[WARN]  Could not resolve managed identity for ${ResourceId}: $_"
+        return ''
     }
 }
 
@@ -196,6 +212,36 @@ if ($AllowedEntraUserIds.Count -gt 0 -and $effectiveResourceGroup) {
         }
         if ($search) {
             foreach ($roleName in $searchRoles.Keys) { Grant-MhhRole -ObjectId $userId -RoleId $searchRoles[$roleName] -RoleName $roleName -Scope $search.ResourceId }
+        }
+    }
+}
+
+# --- Grounding managed-identity RBAC (Foundry IQ agentic retrieval) ----------
+# Foundry agentic retrieval runs under the Foundry account AND/OR project managed
+# identity and needs BOTH Search Index Data Reader (query the index) and Search
+# Service Contributor (read the index / semantic-config definition). The template
+# grants these at deploy time; re-granting here is idempotent and — critically —
+# remediates labs provisioned before this fix WITHOUT a full redeploy. A missing
+# grant surfaces at runtime as:
+#   400 tool_user_error ... Access denied, check managed identity access to search service
+if ($effectiveResourceGroup) {
+    $account = Get-AzResource -ResourceGroupName $effectiveResourceGroup -ResourceType 'Microsoft.CognitiveServices/accounts' -ErrorAction SilentlyContinue | Select-Object -First 1
+    $project = Get-AzResource -ResourceGroupName $effectiveResourceGroup -ResourceType 'Microsoft.CognitiveServices/accounts/projects' -ErrorAction SilentlyContinue | Select-Object -First 1
+    $search  = Get-AzResource -ResourceGroupName $effectiveResourceGroup -ResourceType 'Microsoft.Search/searchServices' -ErrorAction SilentlyContinue | Select-Object -First 1
+
+    if ($search) {
+        $searchMiRoles = [ordered]@{
+            'Search Index Data Reader'   = '1407120a-92aa-4202-b7e9-c0e197c71c8f'
+            'Search Service Contributor' = '7ca78c08-252a-4471-8644-bb5ff32d4ba0'
+        }
+        $groundingPrincipals = @()
+        if ($account) { $groundingPrincipals += Get-MhhIdentityPrincipalId $account.ResourceId }
+        if ($project) { $groundingPrincipals += Get-MhhIdentityPrincipalId $project.ResourceId }
+
+        foreach ($mi in ($groundingPrincipals | Where-Object { $_ })) {
+            foreach ($roleName in $searchMiRoles.Keys) {
+                Grant-MhhRole -ObjectId $mi -RoleId $searchMiRoles[$roleName] -RoleName $roleName -Scope $search.ResourceId
+            }
         }
     }
 }

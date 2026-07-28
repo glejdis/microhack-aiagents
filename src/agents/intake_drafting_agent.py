@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))          # src (clm
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agents"))  # sibling agent modules
 
 from clm_common.config import settings  # noqa: E402
-from clm_common.foundry import build_chat_client, function_tool, run_agent  # noqa: E402
+from clm_common.foundry import build_chat_client, function_tool, run_agent_with_retry  # noqa: E402
 from clm_common.tools import get_contract_status  # noqa: E402
 
 AGENT_NAME = "intake-drafting-agent"
@@ -105,8 +105,13 @@ async def main() -> None:
     for prompt in DEMO_PROMPTS:
         print("―" * 80)
         print("USER:", prompt)
-        answer = await run_agent(agent, prompt, session=session)
-        print("AGENT:", answer, "\n")
+        # Retry rate-limit (429) throttling with backoff, and isolate each prompt so
+        # one failure doesn't abort the whole demo — the run continues with the next.
+        try:
+            answer = await run_agent_with_retry(agent, prompt, session=session)
+            print("AGENT:", answer, "\n")
+        except Exception as exc:  # noqa: BLE001 — keep the demo going past a failed prompt
+            print(f"AGENT: ⚠️  Skipped after error: {exc}\n")
 
 
 if __name__ == "__main__":

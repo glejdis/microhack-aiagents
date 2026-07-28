@@ -156,7 +156,8 @@ connection and builds `AzureAISearchTool(index_name="clm-corpus", query_type=SEM
 it as a tool and the agent runs **plan → search → rerank → cite** during a run.
 
 - Rides the project → Search connection **`clm-search`** (`category: CognitiveSearch`, **AAD** auth, shared).
-- The Foundry account's **managed identity** holds **Search Index Data Reader**, so retrieval needs no keys.
+- The Foundry **account _and_ project** managed identities each hold **Search Index Data Reader** (query) +
+  **Search Service Contributor** (read the index / semantic-config), so retrieval needs no keys.
 - Returns the **top 5** semantically-reranked passages **with citations** — not one raw similarity hit.
 
 **Why here:** it's what makes answers come from **Contoso's corpus, with sources**, not model memory.
@@ -403,6 +404,9 @@ You're done when:
 | No citations returned | Confirm `src/scripts/seed_corpus.py` populated the index and the semantic config exists; try raising `top_k` in `build_knowledge_tool`. |
 | Function tool never called | Keep the docstring + type hints (the schema comes from them); ensure it's wrapped with `function_tool(...)` and passed in the Agent's `tools=[...]`, and the prompt actually asks for a specific contract. |
 | `get_contract_status` says "not found" | Use a known id (`CT-4821`, `CT-3390`, `CT-5102`, `CT-2765`, `CT-6033`) — the error message lists them. |
+| `TypeError: Object of type AzureAISearchToolResource is not JSON serializable` | The Foundry tool factory returns an SDK model, not a plain dict. `build_knowledge_tool` / `build_web_search_tool` now normalize it via `.as_dict()` before attaching — pull the latest `src/kb_setup.py`. |
+| `400 tool_user_error … Access denied, check managed identity access to search service` | The Foundry **account _and_ project** managed identities each need **Search Index Data Reader** + **Search Service Contributor** on the Search service. The infra grants both now — re-run `labautomation/deploy-lab.ps1` (idempotent) or add the roles in the portal (Search service → Access control). |
+| `429 rate_limit_exceeded` on `gpt-5.4` mid-demo | Deployment throughput throttling. The demo now retries with exponential backoff and isolates each prompt (`run_agent_with_retry`), so it rides through and continues. If it persists, raise the deployment capacity or space out prompts. |
 | Run fails on Claude | Foundry may not serve Anthropic models via the chat client in your region yet — use the **Claude fallback** above. |
 | `Missing required environment variable 'AZURE_AI_PROJECT_ENDPOINT'` | Re-run Challenge 1's deploy (which writes `.env`) or copy `.env.example` → `.env` and fill it in. |
 
