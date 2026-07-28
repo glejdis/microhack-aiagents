@@ -272,7 +272,7 @@
             "gptMiniModel": "gpt-5-mini",
             "gptMiniVersion": "2025-08-07",
             "gpt56solModel": "gpt-5.6-sol",
-            "gpt56solVersion": "2026-03-05",
+            "gpt56solVersion": "2026-07-09",
             "roleAiDeveloper": "64702f94-c441-49e6-a78b-ef80e0188fee",
             "roleCognitiveServicesUser": "a97b65f3-24c7-4388-baec-2e87135dc908",
             "roleSearchIndexDataContributor": "8ebe5a00-799e-43f5-93ac-243d3dce84a7",

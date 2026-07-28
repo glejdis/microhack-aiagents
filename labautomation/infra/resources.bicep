@@ -76,7 +76,7 @@ var gptOrchestratorVersion = '2026-03-05'
 // Clause & Risk catalog model + version. Runs the gpt-5.6-sol flagship for
 // structured legal reasoning; verify the exact version in your region's catalog.
 var gpt56solModel = 'gpt-5.6-sol'
-var gpt56solVersion = '2026-03-05'
+var gpt56solVersion = '2026-07-09'
 // Renewal / lightweight agent catalog model. gpt-4o-mini is deprecating in
 // swedencentral (fires ServiceModelDeprecating on new deployments), so the
 // renewal deployment runs gpt-5-mini instead — same GlobalStandard SKU, a later

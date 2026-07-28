@@ -140,7 +140,7 @@ each is**, the **specifics wired into this repo**, and **why it's in the archite
 your `.env` reaches it through `AZURE_AI_PROJECT_ENDPOINT`
 (`https://<account>.services.ai.azure.com/api/projects/clm-project`).
 
-- **All three models deploy onto that one account** — `gpt-5.4`, `gpt-5-mini`, `claude-opus-4-8` — so a
+- **All four models deploy onto that one account** — `gpt-5.4`, `gpt-5.6-sol`, `gpt-5-mini`, `claude-opus-4-8` — so a
   single `get_project_client()` ([`src/clm_common/foundry.py`](../src/clm_common/foundry.py)) reaches each.
 - The **Microsoft Agent Framework** (`Agent(client=FoundryChatClient(...))`) runs the agent loop **in your
   process** — planning, tool-calls and retrieval — calling Foundry for model inference.

@@ -3,8 +3,8 @@
 Verifies the environment is wired up before you start building agents:
   1. `.env` is loaded and required variables are present.
   2. The Foundry project is reachable and the Microsoft Agent Framework can build
-     and run a tiny agent on a GPT deployment AND on the Claude deployment
-     (proving the multi-model fleet).
+     and run a tiny agent on the GPT deployments (orchestrator + Clause & Risk)
+     AND on the Claude deployment (proving the multi-model fleet).
 
 Run:  python src/scripts/smoke_test.py
 """
@@ -64,6 +64,13 @@ def main() -> int:
 
     gpt_ok = ping_model(settings.model_orchestrator, "gpt")
 
+    # Clause & Risk runs on its own GPT deployment (gpt-5.6-sol) — always present,
+    # independent of the Claude gate. Skip only if it equals a model already pinged.
+    if settings.model_clause_risk and settings.model_clause_risk != settings.model_orchestrator:
+        clause_ok = ping_model(settings.model_clause_risk, "clause-risk")
+    else:
+        clause_ok = gpt_ok
+
     # When Claude was skipped at deploy time (DEPLOY_CLAUDE_MODEL=false), the
     # drafting deployment falls back to the orchestrator model, so
     # MODEL_DRAFTING == MODEL_ORCHESTRATOR. Don't ping (or require) Claude then.
@@ -78,8 +85,9 @@ def main() -> int:
     else:
         claude_ok = ping_model(settings.model_drafting, "claude")
 
-    print("\nSmoke test:", "✅ PASS" if (gpt_ok and claude_ok) else "⚠️  PARTIAL (see notes above)")
-    return 0 if (gpt_ok and claude_ok) else 2
+    all_ok = gpt_ok and clause_ok and claude_ok
+    print("\nSmoke test:", "✅ PASS" if all_ok else "⚠️  PARTIAL (see notes above)")
+    return 0 if all_ok else 2
 
 
 if __name__ == "__main__":

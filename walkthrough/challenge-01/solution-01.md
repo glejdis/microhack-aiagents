@@ -22,7 +22,7 @@ contract corpus the later challenges ground on.
   [`src/scripts/seed_corpus.py`](../../src/scripts/seed_corpus.py) over the local PDFs in
   [`src/data/`](../../src/data/).
 - **Done when** [`src/scripts/smoke_test.py`](../../src/scripts/smoke_test.py)
-  prints `✅ PASS` — a tiny agent runs on **both** the GPT and Claude deployments.
+  prints `✅ PASS` — a tiny agent runs on the GPT and Claude deployments.
 
 ## 🛠️ Task-by-task walkthrough
 
@@ -73,7 +73,7 @@ get = lambda k: env.get(k) or DEFAULTS.get(k, "")
 > <img src="../../images/challenge-01/steps/06-azd-up-success.svg" alt="Screenshot slot: azd up success" width="80%">
 
 ### Task 5 · Verify your resources
-In the Foundry portal confirm the project, the **3 model deployments** (2 without Claude), and the `clm-corpus` Search index. From the CLI:
+In the Foundry portal confirm the project, the **4 model deployments** (3 without Claude), and the `clm-corpus` Search index. From the CLI:
 ```bash
 az cognitiveservices account deployment list -g <rg> -n clmfoundry<token> -o table
 ```
@@ -120,6 +120,7 @@ python src/scripts/smoke_test.py
 ```text
 1) Checking environment…            ✓ (all vars present)
 2) Pinging gpt deployment 'gpt-5.4'… ✓ gpt replied: OK
+2) Pinging clause-risk deployment 'gpt-5.6-sol'… ✓ clause-risk replied: OK
 2) Pinging claude deployment 'claude-opus-4-8'… ✓ claude replied: OK
 
 Smoke test: ✅ PASS

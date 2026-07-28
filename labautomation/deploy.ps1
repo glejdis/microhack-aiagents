@@ -50,7 +50,7 @@ function Deploy-Model($name, $model, $version, $format, $cap) {
 Deploy-Model $GptOrch  "gpt-5.4"          "2026-03-05" "OpenAI"    30
 Deploy-Model $GptMini  "gpt-5-mini"       "2025-08-07" "OpenAI"    30
 # Clause & Risk runs on gpt-5.6-sol — its own deployment, independent of Claude.
-Deploy-Model $Gpt56Sol "gpt-5.6-sol"      "2026-03-05" "OpenAI"    30
+Deploy-Model $Gpt56Sol "gpt-5.6-sol"      "2026-07-09" "OpenAI"    30
 # Claude: Anthropic deployments REQUIRE a modelProviderData block the CLI can't
 # send, so deploy via the ARM REST API (auto-accepts the marketplace offer).
 function Deploy-Claude {

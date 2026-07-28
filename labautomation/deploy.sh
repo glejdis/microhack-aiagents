@@ -89,7 +89,7 @@ deploy_model "$GPT_ORCH" "gpt-5.4"          "2026-03-05" "OpenAI"    30
 # deploy gpt-5-mini instead (same GlobalStandard SKU, later deprecation date).
 deploy_model "$GPT_MINI" "gpt-5-mini"       "2025-08-07" "OpenAI"    30
 # Clause & Risk runs on gpt-5.6-sol — its own deployment, independent of Claude.
-deploy_model "$GPT56SOL" "gpt-5.6-sol"      "2026-03-05" "OpenAI"    30
+deploy_model "$GPT56SOL" "gpt-5.6-sol"      "2026-07-09" "OpenAI"    30
 # Claude: Anthropic deployments REQUIRE a modelProviderData block that the
 # `az cognitiveservices account deployment create` CLI can't send, so deploy it
 # via the ARM REST API instead (auto-accepts the marketplace offer, avoiding

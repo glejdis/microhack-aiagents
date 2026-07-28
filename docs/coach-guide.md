@@ -34,7 +34,7 @@ tips. Participants never see this file; it's for the people running the room.
 ### Pre-flight checklist (per team, morning of)
 
 - [ ] Team has an **Azure subscription** with Owner/Contributor + rights to create role assignments.
-- [ ] Region confirmed to offer all three models.
+- [ ] Region confirmed to offer all four models.
 - [ ] They can **fork** the repo and **open a Codespace** (or have the devcontainer locally).
 - [ ] `Microsoft.BotService` provider registered (needed in Ch5): `az provider register --namespace Microsoft.BotService`.
 
@@ -64,8 +64,8 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 ### Challenge 1 · Setup & Foundry Foundations *(30 min · setup)*
 
 - **Point:** stand up the whole Foundry environment + seed the corpus with **zero local install**.
-- **Done when:** `python src/scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
-  `gpt-5.4` **and** `claude-opus-4-8`) and the `clm-corpus` index shows documents in the portal.
+- **Done when:** `python src/scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on
+  `gpt-5.4`, `gpt-5.6-sol` **and** `claude-opus-4-8`) and the `clm-corpus` index shows documents in the portal.
 - **Coach prep (before the event):** essentially **none** for the corpus. Each participant is an
   **admin of their own sandbox tenant**, so Task 6 has them run a single script —
   **`python src/scripts/setup_sharepoint_corpus.py`** — that does the *entire* SharePoint path inside
@@ -98,7 +98,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
   - *RBAC not propagated* → role assignments can take a few minutes; a retry usually fixes "auth" errors
     right after `azd up`.
 - **Coach hint if stuck on region:** "Open the Foundry model catalog filtered to *your* subscription and
-  pick a region that lists all three — don't trust a blog's default."
+  pick a region that lists all four — don't trust a blog's default."
 
 ### Challenge 2 · Grounded Agent with Foundry IQ + Tools *(60 min · grounding · tools · guardrails)*
 
