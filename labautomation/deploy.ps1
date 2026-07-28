@@ -22,6 +22,13 @@ $GptOrch = "gpt-5.4"; $GptMini = "gpt-5-mini"; $Claude = "claude-sonnet-4-5"
 $DeployClaude = ($env:DEPLOY_CLAUDE ?? "true").ToLower() -eq "true"
 $DraftingModel = if ($DeployClaude) { $Claude } else { $GptOrch }
 
+# Anthropic Marketplace attestation — REQUIRED by the Cognitive Services RP for
+# every Claude deployment. Override via $env:CLAUDE_ORGANIZATION_NAME / _COUNTRY_CODE /
+# _INDUSTRY. Omitting these is what triggers InvalidModelProviderData.
+$ClaudeOrg      = $env:CLAUDE_ORGANIZATION_NAME ?? "Contoso"
+$ClaudeCountry  = $env:CLAUDE_COUNTRY_CODE       ?? "US"
+$ClaudeIndustry = $env:CLAUDE_INDUSTRY           ?? "technology"
+
 Write-Host "▶ Resource group: $Rg ($Location); Foundry $Foundry / project $Project"
 
 az group create -n $Rg -l $Location -o none
@@ -42,8 +49,37 @@ function Deploy-Model($name, $model, $version, $format, $cap) {
 }
 Deploy-Model $GptOrch "gpt-5.4"          "2026-03-05" "OpenAI"    30
 Deploy-Model $GptMini "gpt-5-mini"       "2025-08-07" "OpenAI"    30
+# Claude: Anthropic deployments REQUIRE a modelProviderData block the CLI can't
+# send, so deploy via the ARM REST API (auto-accepts the marketplace offer).
+function Deploy-Claude {
+  $subId = az account show --query id -o tsv
+  $url = "https://management.azure.com/subscriptions/$subId/resourceGroups/$Rg/providers/Microsoft.CognitiveServices/accounts/$Foundry/deployments/$Claude`?api-version=2025-04-01-preview"
+  $bodyObj = @{
+    sku = @{ name = "GlobalStandard"; capacity = 20 }
+    properties = @{
+      model = @{ format = "Anthropic"; name = "claude-sonnet-4-5"; version = "20250929" }
+      modelProviderData = @{ organizationName = $ClaudeOrg; countryCode = $ClaudeCountry; industry = $ClaudeIndustry }
+    }
+  }
+  $tmp = New-TemporaryFile
+  ($bodyObj | ConvertTo-Json -Depth 5) | Set-Content -Path $tmp -Encoding utf8
+  Write-Host "  → deploying $Claude (Anthropic claude-sonnet-4-5 v20250929) with modelProviderData"
+  az rest --method put --url $url --body "@$tmp" -o none 2>$null
+  Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "    ! Claude deployment request failed — check Anthropic eligibility in $Location, or set `$env:DEPLOY_CLAUDE='false' to skip."
+    return
+  }
+  foreach ($i in 1..30) {
+    $state = az rest --method get --url $url --query "properties.provisioningState" -o tsv 2>$null
+    if ($state -eq "Succeeded") { Write-Host "    ✓ Claude deployment succeeded"; return }
+    if ($state -eq "Failed" -or $state -eq "Canceled") { Write-Host "    ! Claude deployment $state — set `$env:DEPLOY_CLAUDE='false' to skip."; return }
+    Start-Sleep -Seconds 10
+  }
+  Write-Host "    · Claude still provisioning — check the Foundry portal before the smoke test."
+}
 if ($DeployClaude) {
-  Deploy-Model $Claude "claude-sonnet-4-5" "20250929"  "Anthropic" 20
+  Deploy-Claude
 } else {
   Write-Host "  · Skipping Claude (DEPLOY_CLAUDE=false) — drafting/clause-risk use $GptOrch"
 }

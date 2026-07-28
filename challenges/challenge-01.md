@@ -312,9 +312,18 @@ azd up
 ```
 
 > [!TIP]
-> **No Anthropic/Claude quota?** Claude deployments can fail on **zero subscription quota** or a missing
-> marketplace offer (`InvalidModelProviderData`) even when every step is correct. Skip Claude and keep
-> going — the drafting & clause-risk agents fall back to the `gpt-5.4` orchestrator:
+> **Claude now deploys automatically.** Anthropic deployments require a marketplace *attestation*
+> (`organizationName` / `countryCode` / `industry`) — the infra sends it for you, so `azd up` accepts the
+> Claude offer without any portal click-through. Defaults are `Contoso` / `US` / `technology`; override
+> them to describe your org before you provision:
+> ```bash
+> azd env set CLAUDE_ORGANIZATION_NAME "Contoso Ltd"   # your legal entity name
+> azd env set CLAUDE_COUNTRY_CODE "SE"                  # two-letter code
+> azd env set CLAUDE_INDUSTRY "technology"              # lowercase
+> ```
+> **Still no Anthropic/Claude entitlement?** If your subscription genuinely lacks Claude quota or the
+> Anthropic offer, the deployment can still fail (`InvalidModelProviderData` / quota errors). Skip Claude
+> and keep going — the drafting & clause-risk agents fall back to the `gpt-5.4` orchestrator:
 > ```bash
 > azd env set DEPLOY_CLAUDE_MODEL false
 > azd up
@@ -433,39 +442,53 @@ APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=...
 
 ### Task 6 · Seed the corpus (~7 min)
 
-Build the `clm-corpus` search index. There are **two paths** — pick the one that fits your tenant:
+Build the `clm-corpus` search index that grounds every later challenge (2–6). **Almost everyone
+should use Path A** — it needs no SharePoint, no app registration, and no admin rights. Path B is an
+optional, admin-only alternative that produces the **identical** index.
 
-> [!TIP]
-> **Path 2 — no SharePoint (fastest, works in any sandbox tenant).** If your tenant has **no SharePoint
-> Online license** (Graph returns *"Tenant does not have a SPO license"*) or you **can't grant admin
-> consent** for the app registration, skip all of 6.1–6.4. Just leave the `SHAREPOINT_*` values **blank**
-> in `.env` and run:
+> [!IMPORTANT]
+> **Path A — local-PDF corpus (default · recommended · works in any tenant).** Leave the five
+> `SHAREPOINT_*` values **blank** in `.env` and run:
 > ```bash
 > python src/scripts/seed_corpus.py
 > ```
-> It detects the missing SharePoint config and falls back to **extracting the local
-> `src/data/**/*.pdf` corpus** and pushing it straight into the `clm-corpus` index — the same
-> Foundry IQ grounding, no SharePoint required. You should see `✓ uploaded 14/14 local PDF(s) into
-> 'clm-corpus'`. **Then jump to [Task 7](#task-7--smoke-test).**
+> It extracts the local `src/data/**/*.pdf` corpus and pushes it straight into the `clm-corpus`
+> index — the **same Foundry IQ grounding** the agents use, no SharePoint required. You should see
+> `✓ uploaded 14/14 local PDF(s) into 'clm-corpus'`. Confirm a **non-zero document count** (that
+> line, or the index in the portal), then **jump to [Task 7](#task-7--smoke-test).**
 >
 > *(This needs the **Search Index Data Contributor** role, which `azd up` already granted you.)*
+>
+> **Skipping SharePoint has zero impact on Challenges 2–6** — the agents only ever read the
+> `clm-corpus` index, never SharePoint directly. Path A and Path B produce the same index.
 
-**Path 1 — SharePoint (the production-shaped path).** The corpus lives in a **SharePoint document
-library** (bring-your-own — it's Microsoft 365, **not** created by `azd`). This is a **one-time setup**:
-create the library, authorize an app, upload the PDFs, then index. Work through **6.1 → 6.5 in order**.
+<details>
+<summary><strong>Path B — SharePoint indexer (optional · advanced · requires a tenant admin)</strong></summary>
+
+The production-shaped path: the corpus lives in a **SharePoint document library** (bring-your-own —
+it's Microsoft 365, **not** created by `azd`) and an Azure AI Search **SharePoint Online indexer**
+crawls it into `clm-corpus`. One-time setup: create the library, authorize an app, upload the PDFs,
+then index. Work through **B.1 → B.5 in order**.
+
+> [!WARNING]
+> **This path requires a tenant admin.** At **B.2** you must click **"Grant admin consent for
+> &lt;tenant&gt;"**. **If that button is greyed out, you are _not_ a tenant admin — stop here and use
+> Path A above.** That is expected in most lab/sandbox tenants (and also if Graph returns *"Tenant does
+> not have a SPO license"*), and it is **not** a failure: Path A produces the identical `clm-corpus`
+> index.
 
 > [!NOTE]
-> Steps 6.1–6.2 are typically done **once by your coach/organizer**, who then hands you the five
-> `SHAREPOINT_*` values. If that's your case, skip to **6.3** and just paste them into `.env`.
+> Steps B.1–B.2 are typically done **once by your coach/organizer**, who then hands you the five
+> `SHAREPOINT_*` values. If that's your case, skip to **B.3** and just paste them into `.env`.
 
-#### 6.1 · Create the SharePoint site + document library
+#### B.1 · Create the SharePoint site + document library
 
 1. Go to **[SharePoint](https://www.office.com/launch/sharepoint)** → **+ Create site** → **Team site**.
 2. Name it e.g. **`CLMCorpus`** and finish — it comes with a default **Documents** library.
 3. Copy the site URL from your browser bar, e.g. `https://<tenant>.sharepoint.com/sites/CLMCorpus`
    (this becomes `SHAREPOINT_SITE_URL`; the library name `Documents` becomes `SHAREPOINT_DOC_LIBRARY`).
 
-#### 6.2 · Authorize an app (Microsoft Entra app registration)
+#### B.2 · Authorize an app (Microsoft Entra app registration)
 
 The upload script and the AI Search indexer sign in as an **app** (not as you), so they need an Entra
 app registration with two Microsoft Graph **application** permissions:
@@ -520,8 +543,9 @@ SHAREPOINT_APP_SECRET=Xy7Q~....(shown once)
    > <img src="../images/challenge-01/steps/12-api-permissions.svg" alt="Screenshot slot: Graph API permissions" width="80%">
 
 3. Click **Grant admin consent for &lt;tenant&gt;** and confirm — both rows must turn to green
-   **"Granted for &lt;tenant&gt;"**. *(This button is greyed out unless you're a tenant admin — if so,
-   ask your coach to click it.)*
+   **"Granted for &lt;tenant&gt;"**. **If this button is greyed out you are _not_ a tenant admin: stop
+   and switch to Path A (the local-PDF fallback) — you don't need SharePoint to finish the hack.**
+   Otherwise, ask your coach / tenant admin to click it.
 
    > 📸 **Screenshot slot:** green "Granted for &lt;tenant&gt;" checkmarks on both permissions.
    >
@@ -535,9 +559,9 @@ SHAREPOINT_APP_SECRET=Xy7Q~....(shown once)
    > <img src="../images/challenge-01/steps/14-client-secret.svg" alt="Screenshot slot: client secret" width="80%">
 </details>
 
-#### 6.3 · Put the values in `.env`
+#### B.3 · Put the values in `.env`
 
-Open the repo-root **`.env`** and fill in what you gathered in 6.1 + 6.2:
+Open the repo-root **`.env`** and fill in what you gathered in B.1 + B.2:
 
 ```bash
 SHAREPOINT_SITE_URL=https://<tenant>.sharepoint.com/sites/CLMCorpus
@@ -547,7 +571,7 @@ SHAREPOINT_APP_ID=<application (client) id>
 SHAREPOINT_APP_SECRET=<client secret value>
 ```
 
-#### 6.4 · Upload the corpus PDFs
+#### B.4 · Upload the corpus PDFs
 
 Push all 14 corpus PDFs from `src/data/` into the library — the script recreates the folder
 layout for you:
@@ -568,9 +592,9 @@ Done. Uploaded 14 PDF(s) to 'Documents'.
 > Prefer to upload by hand? Skip the script and drag the **6 folders** from `src/data/` into the
 > library — but leave out `evaluation/` and `contracts_seed.json` (those are read locally, not indexed).
 > A `403 Forbidden` from the script means the app is missing `Sites.ReadWrite.All` **admin consent** —
-> revisit 6.2.
+> revisit B.2.
 
-#### 6.5 · Build the index from the populated library
+#### B.5 · Build the index from the populated library
 
 ```bash
 python src/scripts/seed_corpus.py
@@ -591,16 +615,20 @@ Done. Give the indexer 1–2 minutes, then check the document count in the porta
 set — using the LOCAL-PDF fallback` followed by `✓ uploaded 14/14 local PDF(s) into 'clm-corpus'`, and
 the index is populated immediately.)*
 
-> 📸 **Screenshot slot — what you'll see:** the `clm-corpus` index with a non-zero document count.
+</details>
+
+> 📸 **Screenshot slot — what you'll see:** the `clm-corpus` index with a non-zero document count
+> (verify this before Challenge 2 — a **0** count means the index wasn't seeded; re-run
+> `python src/scripts/seed_corpus.py`).
 >
 > <img src="../images/challenge-01/steps/09-search-index.svg" alt="Screenshot slot: clm-corpus index" width="80%">
 
 > [!NOTE]
 > The entire corpus is **PDF** — Contoso-authored templates, the clause library and policies, the 5
 > executed contracts in `data/contracts/` (one per row seeded into Azure SQL) and the inbound
-> counterparty drafts. `seed_corpus.py` creates an Azure AI Search **SharePoint Online data source +
-> indexer**; the indexer extracts each document's text so it lands in the `clm-corpus` index for
-> Foundry IQ. To rebuild the PDFs from source, see
+> counterparty drafts. `seed_corpus.py` lands each document's text in the `clm-corpus` index for
+> Foundry IQ — via the SharePoint indexer (Path B) or by extracting the local PDFs directly (Path A).
+> To rebuild the PDFs from source, see
 > [`data/README.md`](../src/data/README.md#regenerating-the-pdfs).
 
 ---
@@ -671,9 +699,10 @@ Smoke test: ✅ PASS
 |---------|-----|
 | `DeploymentModelNotSupported` / `deployment failed` for a model | **First: are you on a stale fork?** Run the [preflight grep](#task-4--deploy-the-resources) — it must show `gpt-5.4`+`2026-03-05`, `gpt-5-mini`+`2025-08-07`, and `claude-sonnet-4-5`+`20250929`. If you see `gpt-5.3-chat`, `2026-03-03`, `2025-11-01`, or `gpt-4o-mini`, [sync your fork](#task-1--fork-the-repository) and `git pull`, then redeploy. **Otherwise** the model **name or version** isn't offered in your region: list what *is* available with `az cognitiveservices model list --location <region> --output table`, then update the model/version in [`infra/resources.bicep`](../labautomation/infra/resources.bicep) (and `labautomation/deploy.sh`). This repo is pre-pinned for `swedencentral`; if you changed regions, switch back or re-pin. |
 | `ServiceModelDeprecating` for `gpt-4o-mini` (or another model) | You're on a **stale template** pinning a deprecating model. The repo now uses `gpt-5-mini` `2025-08-07` for the renewal agent — sync your fork + `git pull`. If you deliberately changed a version, pick a current one from `az cognitiveservices model list --location <region> --output table` (avoid ones with a near/past `deprecation.inference` date). |
-| Claude: **zero quota** in every region, or `InvalidModelProviderData` (marketplace `industry`/`organizationName`/`countryCode`) | Anthropic deployment via ARM needs Claude quota **and** the marketplace offer accepted (normally a Foundry-portal click-through, which also needs quota). If you can't get either, **skip Claude**: `azd env set DEPLOY_CLAUDE_MODEL false` (or `DEPLOY_CLAUDE=false` for the deploy scripts) and redeploy — the drafting & clause-risk agents fall back to the `gpt-5.4` orchestrator and the smoke test still passes. |
+| Claude: `InvalidModelProviderData` (marketplace `industry`/`organizationName`/`countryCode`) | **This should no longer occur** — the template now sends the `modelProviderData` attestation on every Claude deployment (defaults `Contoso`/`US`/`technology`, override with `azd env set CLAUDE_ORGANIZATION_NAME …`). If it still fails, your subscription likely isn't **entitled** to the Anthropic offer at all — **skip Claude**: `azd env set DEPLOY_CLAUDE_MODEL false` and redeploy. |
+| Claude: **zero quota** in every region | Anthropic deployment needs Claude **quota** in the region. If you can't get it, **skip Claude**: `azd env set DEPLOY_CLAUDE_MODEL false` (or `DEPLOY_CLAUDE=false` for the deploy scripts) and redeploy — the drafting & clause-risk agents fall back to the `gpt-5.4` orchestrator and the smoke test still passes. |
 | `Project can only be created under AIServices Kind account with allowProjectManagement set to true` | Fixed in the template (`account.properties.allowProjectManagement: true`). If you hit it, you're on a stale fork — sync + `git pull` and redeploy. |
-| SharePoint: *"Tenant does not have a SPO license"*, or you can't grant the app's Graph **admin consent** (only Global Reader) | Skip SharePoint entirely — use the **local-PDF fallback**: leave the `SHAREPOINT_*` values blank in `.env` and run `python src/scripts/seed_corpus.py`. It extracts `src/data/**/*.pdf` and populates `clm-corpus` directly (needs the Search Index Data Contributor role, granted by `azd up`). See [Task 6, Path 2](#task-6--seed-the-corpus). |
+| SharePoint: *"Tenant does not have a SPO license"*, or you can't grant the app's Graph **admin consent** (only Global Reader / **"Grant admin consent" greyed out**) | Expected in most lab tenants — **not** a failure. Use **Path A (local-PDF fallback)**: leave the `SHAREPOINT_*` values blank in `.env` and run `python src/scripts/seed_corpus.py`. It extracts `src/data/**/*.pdf` and populates `clm-corpus` directly (needs the Search Index Data Contributor role, granted by `azd up`) — the **same index** the SharePoint path builds, so Challenges 2–6 are unaffected. See [Task 6, Path A](#task-6--seed-the-corpus). |
 | `account project create` unavailable | The CLI project command is preview. Create the project in the **Foundry portal**, then set `AZURE_AI_PROJECT_ENDPOINT` in `.env` manually (Overview → Endpoint). |
 | Claude ping fails in smoke test | Claude may not be served via the **Foundry chat client** in your region yet. You can still proceed — Challenge 2 documents an Anthropic-SDK fallback, or skip Claude with `DEPLOY_CLAUDE_MODEL=false` (drafting/clause-risk then run on `gpt-5.4`). |
 | `az login` in Codespaces | Use `az login --use-device-code`. |

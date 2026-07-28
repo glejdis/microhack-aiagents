@@ -76,3 +76,17 @@ python src/scripts/smoke_test.py   # expect ✅ PASS before starting Challenge 2
 > one-click button) — don't mix them. The first two autofill your `.env`. See the
 > **[Coach & Facilitator Guide](../docs/coach-guide.md)** for the full run-of-show and
 > a reset/recovery playbook.
+
+## Optional toggles & overrides
+
+Set these before provisioning (`azd env set NAME value` for `azd up`, or export the env var
+for `deploy.sh` / `$env:NAME` for `deploy.ps1`):
+
+| Env var | Default | Purpose |
+|---------|---------|---------|
+| `DEPLOY_CLAUDE_MODEL` (`DEPLOY_CLAUDE` for the scripts) | `true` | Set `false` to skip the Anthropic Claude deployment when the subscription isn't entitled — drafting/clause-risk agents then fall back to the `gpt-5.4` orchestrator. |
+| `CLAUDE_ORGANIZATION_NAME` | `Contoso` | Legal-entity name for the **required** Anthropic Marketplace attestation (`modelProviderData`). The template sends this so `azd up` auto-accepts the offer — no portal click-through, no `InvalidModelProviderData`. Override to describe your org. |
+| `CLAUDE_COUNTRY_CODE` | `US` | Two-letter country code for the attestation. |
+| `CLAUDE_INDUSTRY` | `technology` | Industry for the attestation (lowercase: `technology`, `finance`, `healthcare`, `education`, `retail`, …). |
+| `DEPLOY_SQL` | `false` | Provision the optional Azure SQL contract-status store (needs `SQL_ADMIN_PASSWORD`). |
+| `DEPLOY_BING` | `false` | Provision the optional Grounding with Bing Search resource + connection. |

@@ -45,8 +45,8 @@ Pick **one** path — all three provision the same Foundry project, models, Sear
 azd up                             # Bicep in labautomation/infra/ (recommended)
 # — or the scripted path —
 ./labautomation/deploy.sh          # bash;  deploy.ps1 on Windows
-# — no Claude quota? skip it (drafting/clause-risk fall back to gpt-5.4) —
-DEPLOY_CLAUDE_MODEL=false ./labautomation/deploy.sh
+# — no Claude entitlement? skip it (drafting/clause-risk fall back to gpt-5.4) —
+DEPLOY_CLAUDE=false ./labautomation/deploy.sh   # azd equivalent: azd env set DEPLOY_CLAUDE_MODEL false
 ```
 The `.env` is written for you by the postprovision hook → [`src/scripts/write_env.py`](../../src/scripts/write_env.py), which reads the deployment outputs (`azd env get-values`, or `--deployment` for the ARM path) and writes every env var the agents use — filling constants from a `DEFAULTS` map when an output is absent:
 ```python

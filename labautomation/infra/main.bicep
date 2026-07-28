@@ -24,6 +24,15 @@ param principalType string = 'User'
 @description('Deploy the Anthropic Claude model ("true"/"false"). Set DEPLOY_CLAUDE_MODEL=false to skip it when your subscription has no Claude quota / marketplace offer; the Claude-backed agents then use the GPT orchestrator.')
 param deployClaudeModel string = 'true'
 
+@description('Legal-entity name for the Anthropic Marketplace attestation (modelProviderData.organizationName). Azure requires it for Claude deployments — override via CLAUDE_ORGANIZATION_NAME.')
+param claudeOrganizationName string = 'Contoso'
+
+@description('Two-letter country code for the Anthropic Marketplace attestation — override via CLAUDE_COUNTRY_CODE.')
+param claudeCountryCode string = 'US'
+
+@description('Industry (lowercase) for the Anthropic Marketplace attestation — override via CLAUDE_INDUSTRY.')
+param claudeIndustry string = 'technology'
+
 @description('Provision the optional Azure SQL backing store for the contract-status tool ("true"/"false").')
 param deploySql string = 'false'
 
@@ -55,6 +64,9 @@ module resources 'resources.bicep' = {
     principalId: principalId
     principalType: principalType
     deployClaudeModel: deployClaudeModel
+    claudeOrganizationName: claudeOrganizationName
+    claudeCountryCode: claudeCountryCode
+    claudeIndustry: claudeIndustry
     deploySql: deploySql
     sqlAdminPassword: sqlAdminPassword
     deployBing: deployBing

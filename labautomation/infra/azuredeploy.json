@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "4576577048265477267"
+      "templateHash": "14481080582103578393"
     }
   },
   "parameters": {
@@ -47,6 +47,27 @@
       "defaultValue": "true",
       "metadata": {
         "description": "Deploy the Anthropic Claude model (\"true\"/\"false\"). Set DEPLOY_CLAUDE_MODEL=false to skip it when your subscription has no Claude quota / marketplace offer; the Claude-backed agents then use the GPT orchestrator."
+      }
+    },
+    "claudeOrganizationName": {
+      "type": "string",
+      "defaultValue": "Contoso",
+      "metadata": {
+        "description": "Legal-entity name for the Anthropic Marketplace attestation (modelProviderData.organizationName). Azure requires it for Claude deployments — override via CLAUDE_ORGANIZATION_NAME."
+      }
+    },
+    "claudeCountryCode": {
+      "type": "string",
+      "defaultValue": "US",
+      "metadata": {
+        "description": "Two-letter country code for the Anthropic Marketplace attestation — override via CLAUDE_COUNTRY_CODE."
+      }
+    },
+    "claudeIndustry": {
+      "type": "string",
+      "defaultValue": "technology",
+      "metadata": {
+        "description": "Industry (lowercase) for the Anthropic Marketplace attestation — override via CLAUDE_INDUSTRY."
       }
     },
     "deploySql": {
@@ -112,6 +133,15 @@
           "deployClaudeModel": {
             "value": "[parameters('deployClaudeModel')]"
           },
+          "claudeOrganizationName": {
+            "value": "[parameters('claudeOrganizationName')]"
+          },
+          "claudeCountryCode": {
+            "value": "[parameters('claudeCountryCode')]"
+          },
+          "claudeIndustry": {
+            "value": "[parameters('claudeIndustry')]"
+          },
           "deploySql": {
             "value": "[parameters('deploySql')]"
           },
@@ -132,7 +162,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "12477425049633698294"
+              "templateHash": "9482686922093654776"
             }
           },
           "parameters": {
@@ -171,6 +201,27 @@
               "defaultValue": "true",
               "metadata": {
                 "description": "Deploy the Anthropic Claude model (\"true\"/\"false\"). Set to \"false\" (azd env set DEPLOY_CLAUDE_MODEL false) if your subscription has no Claude quota or the Anthropic marketplace offer is unavailable — the two Claude-backed agents then fall back to the GPT orchestrator model."
+              }
+            },
+            "claudeOrganizationName": {
+              "type": "string",
+              "defaultValue": "Contoso",
+              "metadata": {
+                "description": "Legal-entity name for the Anthropic Marketplace attestation (modelProviderData.organizationName). Required by Azure for Claude deployments."
+              }
+            },
+            "claudeCountryCode": {
+              "type": "string",
+              "defaultValue": "US",
+              "metadata": {
+                "description": "Two-letter country code for the Anthropic Marketplace attestation (modelProviderData.countryCode)."
+              }
+            },
+            "claudeIndustry": {
+              "type": "string",
+              "defaultValue": "technology",
+              "metadata": {
+                "description": "Industry for the Anthropic Marketplace attestation (modelProviderData.industry) — lowercase, e.g. technology, finance, healthcare, education, retail."
               }
             },
             "deploySql": {
@@ -372,6 +423,11 @@
                   "format": "Anthropic",
                   "name": "claude-sonnet-4-5",
                   "version": "20250929"
+                },
+                "modelProviderData": {
+                  "organizationName": "[parameters('claudeOrganizationName')]",
+                  "countryCode": "[parameters('claudeCountryCode')]",
+                  "industry": "[parameters('claudeIndustry')]"
                 }
               },
               "dependsOn": [

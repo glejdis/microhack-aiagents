@@ -19,6 +19,22 @@ param principalType string = 'User'
 @description('Deploy the Anthropic Claude model ("true"/"false"). Set to "false" (azd env set DEPLOY_CLAUDE_MODEL false) if your subscription has no Claude quota or the Anthropic marketplace offer is unavailable — the two Claude-backed agents then fall back to the GPT orchestrator model.')
 param deployClaudeModel string = 'true'
 
+// ---- Anthropic Marketplace attestation (modelProviderData) ---------------
+// Azure's Cognitive Services RP REQUIRES this block on every Anthropic/Claude
+// deployment — it uses these values to auto-accept the Azure Marketplace offer
+// on your behalf (no manual portal click-through). Omitting it fails preflight
+// with `InvalidModelProviderData`. Override for your org via
+// `azd env set CLAUDE_ORGANIZATION_NAME "<legal entity>"` (likewise
+// CLAUDE_COUNTRY_CODE / CLAUDE_INDUSTRY).
+@description('Legal-entity name for the Anthropic Marketplace attestation (modelProviderData.organizationName). Required by Azure for Claude deployments.')
+param claudeOrganizationName string = 'Contoso'
+
+@description('Two-letter country code for the Anthropic Marketplace attestation (modelProviderData.countryCode).')
+param claudeCountryCode string = 'US'
+
+@description('Industry for the Anthropic Marketplace attestation (modelProviderData.industry) — lowercase, e.g. technology, finance, healthcare, education, retail.')
+param claudeIndustry string = 'technology'
+
 @description('Provision the optional Azure SQL backing store for the contract-status tool ("true"/"false").')
 param deploySql string = 'false'
 
@@ -189,15 +205,26 @@ resource deployMini 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01
 // Claude: model-format Anthropic. Version is the date-stamped Azure Foundry
 // catalog version (e.g. 20250929 for claude-sonnet-4-5 in swedencentral) — not
 // Anthropic's own "1"/"2" scheme. Verify with `az cognitiveservices model list`.
-// Gated on deployClaudeModel: Anthropic deployments can fail on zero
-// subscription quota or missing marketplace offer data (InvalidModelProviderData)
-// even when every step is correct — set DEPLOY_CLAUDE_MODEL=false to skip.
+// The modelProviderData block is mandatory for Anthropic deployments (see the
+// claude* params above); without it Azure fails preflight with
+// InvalidModelProviderData. Gated on deployClaudeModel: set
+// DEPLOY_CLAUDE_MODEL=false to skip Claude when the subscription is genuinely
+// ineligible (no Anthropic quota / offer entitlement).
 resource deployClaude 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01-preview' = if (wantClaude) {
   parent: account
   name: claude
   sku: { name: 'GlobalStandard', capacity: 20 }
   properties: {
     model: { format: 'Anthropic', name: 'claude-sonnet-4-5', version: '20250929' }
+    // modelProviderData is required by the RP for Anthropic deployments but is
+    // not yet in the bundled Bicep type schema (BCP037) — it is still emitted to
+    // the compiled ARM and honoured at deploy time.
+    #disable-next-line BCP037
+    modelProviderData: {
+      organizationName: claudeOrganizationName
+      countryCode: claudeCountryCode
+      industry: claudeIndustry
+    }
   }
   dependsOn: [ deployMini ]
 }

@@ -44,6 +44,14 @@ else
   DRAFTING_MODEL="$GPT_ORCH"
 fi
 
+# Anthropic Marketplace attestation — REQUIRED by the Cognitive Services RP for
+# every Claude deployment (it auto-accepts the marketplace offer on your behalf).
+# Override to describe your organisation: CLAUDE_ORGANIZATION_NAME / _COUNTRY_CODE /
+# _INDUSTRY. Omitting these is what triggers InvalidModelProviderData.
+CLAUDE_ORGANIZATION_NAME="${CLAUDE_ORGANIZATION_NAME:-Contoso}"
+CLAUDE_COUNTRY_CODE="${CLAUDE_COUNTRY_CODE:-US}"
+CLAUDE_INDUSTRY="${CLAUDE_INDUSTRY:-technology}"
+
 echo "▶ Resource group:  $RG ($LOCATION)"
 echo "▶ Foundry account: $FOUNDRY / project $PROJECT"
 
@@ -79,9 +87,32 @@ deploy_model "$GPT_ORCH" "gpt-5.4"          "2026-03-05" "OpenAI"    30
 # Renewal / lightweight agent: gpt-4o-mini is deprecating in swedencentral, so
 # deploy gpt-5-mini instead (same GlobalStandard SKU, later deprecation date).
 deploy_model "$GPT_MINI" "gpt-5-mini"       "2025-08-07" "OpenAI"    30
-# Claude: model-format Anthropic; version is the date-stamped Azure catalog version.
+# Claude: Anthropic deployments REQUIRE a modelProviderData block that the
+# `az cognitiveservices account deployment create` CLI can't send, so deploy it
+# via the ARM REST API instead (auto-accepts the marketplace offer, avoiding
+# InvalidModelProviderData). Version is the date-stamped Azure catalog version.
+deploy_claude () {
+  local sub_id url state i
+  sub_id=$(az account show --query id -o tsv)
+  url="https://management.azure.com/subscriptions/${sub_id}/resourceGroups/${RG}/providers/Microsoft.CognitiveServices/accounts/${FOUNDRY}/deployments/${CLAUDE}?api-version=2025-04-01-preview"
+  echo "  → deploying $CLAUDE (Anthropic claude-sonnet-4-5 v20250929) with modelProviderData"
+  if ! az rest --method put --url "$url" \
+      --body "{\"sku\":{\"name\":\"GlobalStandard\",\"capacity\":20},\"properties\":{\"model\":{\"format\":\"Anthropic\",\"name\":\"claude-sonnet-4-5\",\"version\":\"20250929\"},\"modelProviderData\":{\"organizationName\":\"${CLAUDE_ORGANIZATION_NAME}\",\"countryCode\":\"${CLAUDE_COUNTRY_CODE}\",\"industry\":\"${CLAUDE_INDUSTRY}\"}}}" -o none; then
+    echo "    ! Claude deployment request failed — check Anthropic eligibility in $LOCATION, or set DEPLOY_CLAUDE=false to skip."
+    return
+  fi
+  for i in $(seq 1 30); do
+    state=$(az rest --method get --url "$url" --query "properties.provisioningState" -o tsv 2>/dev/null || echo "")
+    case "$state" in
+      Succeeded)       echo "    ✓ Claude deployment succeeded"; return ;;
+      Failed|Canceled) echo "    ! Claude deployment $state — set DEPLOY_CLAUDE=false to skip."; return ;;
+    esac
+    sleep 10
+  done
+  echo "    · Claude still provisioning — check the Foundry portal before the smoke test."
+}
 if [[ "$DRAFTING_MODEL" == "$CLAUDE" ]]; then
-  deploy_model "$CLAUDE" "claude-sonnet-4-5" "20250929"  "Anthropic" 20
+  deploy_claude
 else
   echo "  · Skipping Claude (DEPLOY_CLAUDE=false) — MODEL_DRAFTING/MODEL_CLAUSE_RISK use $GPT_ORCH"
 fi
