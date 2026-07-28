@@ -97,95 +97,107 @@ agent's answer for each of the **16 rows** in `src/data/evaluation/evaluation_da
 
 ## ✅ Tasks
 
-1. **Enable tracing** (~5 min) and confirm the exporter wires up:
-   ```bash
-   python src/tracing_setup.py
-   ```
-   > `AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true` must be set **before** the agents SDK is
-   > imported — `tracing_setup` does this on import, so import it first in any entry point.
+### Task 1 · Enable tracing (~5 min)
 
-   ✅ **You should see:**
-   ```text
-   ✓ Tracing enabled → Application Insights (content recording ON).
-   Run an agent now; open Foundry portal → Tracing to see spans.
-   ```
+Confirm the exporter wires up:
+```bash
+python src/tracing_setup.py
+```
+> `AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true` must be set **before** the agents SDK is
+> imported — `tracing_setup` does this on import, so import it first in any entry point.
 
-   > 📸 **Screenshot slot:** the "Tracing enabled" confirmation.
-   >
-   > <img src="../images/challenge-03/steps/01-tracing-on.svg" alt="Screenshot slot: tracing enabled" width="75%">
+✅ **You should see:**
+```text
+✓ Tracing enabled → Application Insights (content recording ON).
+Run an agent now; open Foundry portal → Tracing to see spans.
+```
 
-2. **Generate traffic** (~15 min), then open **Foundry portal → Tracing**. Run a few prompts (e.g. re-run the
-   Ch1 demo) and inspect the **prompt / retrieval / tool** spans and the token counts.
+> 📸 **Screenshot slot:** the "Tracing enabled" confirmation.
+>
+> <img src="../images/challenge-03/steps/01-tracing-on.svg" alt="Screenshot slot: tracing enabled" width="75%">
 
-   > 📸 **Screenshot slot — what you'll see:** a run's span timeline in **Tracing**, and the **Agent Monitoring** dashboard.
-   >
-   > <img src="../images/challenge-03/steps/02-portal-tracing.svg" alt="Screenshot slot: Foundry Tracing" width="75%">
-   > <img src="../images/challenge-03/steps/03-agent-monitoring.svg" alt="Screenshot slot: Agent Monitoring" width="75%">
+### Task 2 · Generate traffic (~15 min)
 
-   > [!NOTE]
-   > Spans take **1–2 minutes** to appear after a run — refresh if the timeline is empty at first.
+Open **Foundry portal → Tracing**. Run a few prompts (e.g. re-run the
+Ch1 demo) and inspect the **prompt / retrieval / tool** spans and the token counts.
 
-3. **Run the evaluation** (~10 min) over the 16-row dataset (`src/data/evaluation/evaluation_dataset.jsonl`):
-   ```bash
-   python src/evaluators.py
-   ```
-   You'll get a scorecard for the Claude-backed agent.
+> 📸 **Screenshot slot — what you'll see:** a run's span timeline in **Tracing**, and the **Agent Monitoring** dashboard.
+>
+> <img src="../images/challenge-03/steps/02-portal-tracing.svg" alt="Screenshot slot: Foundry Tracing" width="75%">
+> <img src="../images/challenge-03/steps/03-agent-monitoring.svg" alt="Screenshot slot: Agent Monitoring" width="75%">
 
-   > 💡 The four LLM judges run concurrently. If you hit `429` rate-limits on a
-   > shared judge deployment, lower the batch concurrency (defaults to `2`):
-   > ```bash
-   > python src/evaluators.py --workers 1
-   > ```
+> [!NOTE]
+> Spans take **1–2 minutes** to appear after a run — refresh if the timeline is empty at first.
 
-   ✅ **You should see** (scores 1–5; your numbers will differ):
-   ```text
-   === Intake & Drafting (claude-sonnet-4-5) ===
-     groundedness                             4.6
-     relevance                                4.4
-     coherence                                4.7
-     fluency                                  4.8
-     mean latency (s)                         3.2
-   ```
+### Task 3 · Run the evaluation (~10 min)
 
-   > 📸 **Screenshot slot:** the evaluation scorecard in the terminal.
-   >
-   > <img src="../images/challenge-03/steps/04-scorecard.svg" alt="Screenshot slot: evaluation scorecard" width="75%">
+Run it over the 16-row dataset (`src/data/evaluation/evaluation_dataset.jsonl`):
+```bash
+python src/evaluators.py
+```
+You'll get a scorecard for the Claude-backed agent.
 
-4. **Run the bake-off** (~10 min) — Claude vs GPT on the same scorecard:
-   ```bash
-   python src/evaluators.py --bakeoff
-   ```
-   Compare groundedness/relevance vs mean latency. Which model wins for *this* task?
+> 💡 The four LLM judges run concurrently. If you hit `429` rate-limits on a
+> shared judge deployment, lower the batch concurrency (defaults to `2`):
+> ```bash
+> python src/evaluators.py --workers 1
+> ```
 
-   ✅ **You should see** a side-by-side block:
-   ```text
-   --- Bake-off (Claude vs GPT) ---
-     groundedness                             claude=4.6   gpt=4.5
-     relevance                                claude=4.4   gpt=4.3
-     mean latency (s)                         claude=3.2   gpt=1.9
-   ```
+✅ **You should see** (scores 1–5; your numbers will differ):
+```text
+=== Intake & Drafting (claude-sonnet-4-5) ===
+  groundedness                             4.6
+  relevance                                4.4
+  coherence                                4.7
+  fluency                                  4.8
+  mean latency (s)                         3.2
+```
 
-5. **Add a quality gate** (~10 min) — this is what a CI job would run:
-   ```bash
-   python src/evaluators.py --gate 4.0   # exit code 3 if groundedness < 4.0
-   ```
+> 📸 **Screenshot slot:** the evaluation scorecard in the terminal.
+>
+> <img src="../images/challenge-03/steps/04-scorecard.svg" alt="Screenshot slot: evaluation scorecard" width="75%">
 
-   ✅ **You should see** `✅ GATE PASSED.` — then prove it can **fail** by raising the bar past your score:
-   ```bash
-   python src/evaluators.py --gate 5.0
-   ```
-   ```text
-   Quality gate: groundedness=4.6 threshold=5.0
-   ❌ GATE FAILED — groundedness below threshold. Blocking release.
-   ```
+### Task 4 · Run the bake-off (~10 min)
 
-   > 📸 **Screenshot slot:** the gate failing on a too-strict threshold.
-   >
-   > <img src="../images/challenge-03/steps/05-gate-fail.svg" alt="Screenshot slot: quality gate fails" width="75%">
+Claude vs GPT on the same scorecard:
+```bash
+python src/evaluators.py --bakeoff
+```
+Compare groundedness/relevance vs mean latency. Which model wins for *this* task?
 
-6. **(Portal) Continuous evaluation.** (~10 min) In the portal, enable **continuous/online evaluation** on the
-   agent so production traffic is scored automatically. (This is portal-only preview — no stable
-   Python API yet; the `--gate` flag is the code-first equivalent for CI.)
+✅ **You should see** a side-by-side block:
+```text
+--- Bake-off (Claude vs GPT) ---
+  groundedness                             claude=4.6   gpt=4.5
+  relevance                                claude=4.4   gpt=4.3
+  mean latency (s)                         claude=3.2   gpt=1.9
+```
+
+### Task 5 · Add a quality gate (~10 min)
+
+This is what a CI job would run:
+```bash
+python src/evaluators.py --gate 4.0   # exit code 3 if groundedness < 4.0
+```
+
+✅ **You should see** `✅ GATE PASSED.` — then prove it can **fail** by raising the bar past your score:
+```bash
+python src/evaluators.py --gate 5.0
+```
+```text
+Quality gate: groundedness=4.6 threshold=5.0
+❌ GATE FAILED — groundedness below threshold. Blocking release.
+```
+
+> 📸 **Screenshot slot:** the gate failing on a too-strict threshold.
+>
+> <img src="../images/challenge-03/steps/05-gate-fail.svg" alt="Screenshot slot: quality gate fails" width="75%">
+
+### Task 6 · (Portal) Continuous evaluation (~10 min)
+
+In the portal, enable **continuous/online evaluation** on the
+agent so production traffic is scored automatically. (This is portal-only preview — no stable
+Python API yet; the `--gate` flag is the code-first equivalent for CI.)
 
 ## ✔️ Success criteria
 

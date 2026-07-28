@@ -216,7 +216,7 @@ the knowledge tool grounds *unstructured* answers, this grounds *structured* one
 
 ## ✅ Tasks
 
-### 1 · Verify the knowledge connection (~10 min)
+### Task 1 · Verify the knowledge connection (~10 min)
 
 Confirm the default Azure AI Search connection resolves and the index is present:
 
@@ -239,7 +239,7 @@ Expected output (ids will differ):
 > [!TIP]
 > If the connection doesn't resolve, it's almost always a Challenge 1 gap — see **Troubleshooting**.
 
-### 2 · Read the agent definition (~15 min)
+### Task 2 · Read the agent definition (~15 min)
 
 Open [`agents/intake_drafting_agent.py`](../src/agents/intake_drafting_agent.py) and trace how it's wired:
 
@@ -276,7 +276,7 @@ optionally calls `get_contract_status`, and drafts — then returns the assistan
 `run_agent` / `run_prompt` helpers live in [`src/clm_common/foundry.py`](../src/clm_common/foundry.py).
 </details>
 
-### 3 · Run the agent end-to-end (~10 min)
+### Task 3 · Run the agent end-to-end (~10 min)
 
 This builds the agent and runs four demo prompts in one shared session:
 
@@ -318,7 +318,7 @@ AGENT: I can't provide legal advice. Please consult qualified counsel... [refusa
 > The agent is built in-process each run via the Microsoft Agent Framework — there's no server-side
 > agent id to manage or clean up. Later challenges simply call `create_agent(...)` again.
 
-### 4 · Exercise every capability (~15 min)
+### Task 4 · Exercise every capability (~15 min)
 
 Work through [`sample_prompts.md`](../src/sample_prompts.md) — via the demo script, the portal **Playground**,
 or your own thread. Each section maps to one capability, and the file's *"What good looks like"* table
@@ -346,7 +346,7 @@ day-offsets so "upcoming renewals" demos never go stale), so your dates will dif
  "_note": "(source: contracts_seed.json)"}
 ```
 
-### 5 · (Optional) Add content safety (~10 min)
+### Task 5 · (Optional) Add content safety (~10 min)
 
 In the portal, attach **Prompt Shields / PII** guardrails to the agent, or discuss where they'd sit.
 The refusal instructions already enforce the no-legal-advice policy at the prompt layer — content

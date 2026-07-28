@@ -79,66 +79,86 @@ the user rather than wait to be asked. → [Send proactive notifications](https:
 
 ## ✅ Tasks
 
-### Part A — Publish (~30 min)
-1. In the **Foundry portal**, open the **`clm-orchestrator`** agent (you kept it in Ch3).
-2. **Details → Channels → "Teams and Microsoft 365 Copilot" → Publish.** This provisions an **Azure
-   Bot Service**. (First time: `az provider register --namespace Microsoft.BotService`.)
+**Two phases:** Tasks 1–4 **publish** the orchestrator to Teams & M365 Copilot (~30 min); Tasks 5–7
+add **proactive alerts** (~30 min).
 
-   > 📸 **Screenshot slot — what you'll see:** the **Channels** page with "Teams and Microsoft 365 Copilot" → **Publish**.
-   >
-   > <img src="../images/challenge-05/steps/01-channels-publish.svg" alt="Screenshot slot: publish to Teams" width="80%">
-3. Fill the metadata (name, description, publisher). Choose **direct publish** or **download the
-   manifest** and sideload it (`manifest/` has a template).
-4. **Test live**: open the agent in Teams and in M365 Copilot; ask it to draft an NDA and to review
-   the Acme draft. Confirm grounded, cited answers come back through the orchestrator.
+### Task 1 · Open the orchestrator agent
 
-   > 📸 **Screenshot slot — what you'll see:** the orchestrator answering **live in a Teams chat** with cited output.
-   >
-   > <img src="../images/challenge-05/steps/02-teams-live.svg" alt="Screenshot slot: agent live in Teams" width="80%">
+In the **Foundry portal**, open the **`clm-orchestrator`** agent (you kept it in Ch3).
 
-   ✅ **You'll know Part A worked when:** you can chat with the agent inside Teams and it returns the
-   same grounded, cited answers you saw in the terminal in Challenges 2 & 4.
+### Task 2 · Publish to Teams & M365 Copilot
 
-### Part B — Proactive alerts (~30 min)
-5. **Build the Obligation & Renewal agent** and see the alert-ready summary (works with no bot):
-   ```bash
-   python src/agents/obligation_renewal_agent.py --days 60
-   # preview the exact alert text without sending:
-   python src/proactive_alerts.py --from-renewals --days 30 --dry-run
-   ```
+**Details → Channels → "Teams and Microsoft 365 Copilot" → Publish.** This provisions an **Azure
+Bot Service**. (First time: `az provider register --namespace Microsoft.BotService`.)
 
-   ✅ **You should see** a renewal summary, then the previewed alert text (no message sent).
-   Renewal dates are computed **relative to today**, so the exact day counts will differ:
-   ```text
-   ✓ Obligation & Renewal agent on 'gpt-5-mini' — window 60d
+> 📸 **Screenshot slot — what you'll see:** the **Channels** page with "Teams and Microsoft 365 Copilot" → **Publish**.
+>
+> <img src="../images/challenge-05/steps/01-channels-publish.svg" alt="Screenshot slot: publish to Teams" width="80%">
 
-   Upcoming renewals (next 60 days):
-     🔴 CT-6033 (Soylent Co · MSA) — renews in ~25 days, auto-renew ON, 90-day notice → HIGH, send notice now
-     🔴 CT-4821 (Acme Corp · MSA) — renews in ~55 days, auto-renew ON, 90-day notice → HIGH, notify owner
+### Task 3 · Fill the metadata & sideload
 
-   --- alert (dry run) ---
-   🔴 CT-6033 auto-renews soon (90-day notice) — HIGH risk. Send notice before the window closes; recommend legal review.
-   ```
-6. **Capture a conversation reference.** In your bot's message handler, on any inbound activity save
-   `TurnContext.get_conversation_reference(activity)` and persist `service_url` + `conversation.id`.
-   Put them in `.env` as `TEAMS_SERVICE_URL` and `TEAMS_CONVERSATION_ID` (and set `MICROSOFT_APP_ID`
-   / `MICROSOFT_APP_PASSWORD` / `MICROSOFT_APP_TENANT_ID`).
-7. **Fire a proactive alert** into that Teams conversation:
-   ```bash
-   python src/proactive_alerts.py --text "🔴 Contract CT-4821 renewal approaching — high-risk indemnity clause flagged. Recommend legal review."
-   # or generate it from the renewal agent and send:
-   python src/proactive_alerts.py --from-renewals --days 30
-   ```
+Fill the metadata (name, description, publisher). Choose **direct publish** or **download the
+manifest** and sideload it (`manifest/` has a template).
 
-   ✅ **You should see** a send confirmation in the terminal:
-   ```text
-   ✓ Proactive alert sent to Teams.
-   ```
+### Task 4 · Test the agent live
 
-   > 📸 **Screenshot slot — what you'll see:** the **alert message appearing in the Teams channel/chat** without anyone prompting.
-   >
-   > <img src="../images/challenge-05/steps/03-proactive-alert.svg" alt="Screenshot slot: proactive alert in Teams" width="80%">
-   > <img src="../images/challenge-05/steps/04-renewal-summary.svg" alt="Screenshot slot: renewal summary" width="80%">
+Open the agent in Teams and in M365 Copilot; ask it to draft an NDA and to review
+the Acme draft. Confirm grounded, cited answers come back through the orchestrator.
+
+> 📸 **Screenshot slot — what you'll see:** the orchestrator answering **live in a Teams chat** with cited output.
+>
+> <img src="../images/challenge-05/steps/02-teams-live.svg" alt="Screenshot slot: agent live in Teams" width="80%">
+
+✅ **You'll know publishing worked when:** you can chat with the agent inside Teams and it returns the
+same grounded, cited answers you saw in the terminal in Challenges 2 & 4.
+
+### Task 5 · Build the Obligation & Renewal agent
+
+See the alert-ready summary (works with no bot):
+```bash
+python src/agents/obligation_renewal_agent.py --days 60
+# preview the exact alert text without sending:
+python src/proactive_alerts.py --from-renewals --days 30 --dry-run
+```
+
+✅ **You should see** a renewal summary, then the previewed alert text (no message sent).
+Renewal dates are computed **relative to today**, so the exact day counts will differ:
+```text
+✓ Obligation & Renewal agent on 'gpt-5-mini' — window 60d
+
+Upcoming renewals (next 60 days):
+  🔴 CT-6033 (Soylent Co · MSA) — renews in ~25 days, auto-renew ON, 90-day notice → HIGH, send notice now
+  🔴 CT-4821 (Acme Corp · MSA) — renews in ~55 days, auto-renew ON, 90-day notice → HIGH, notify owner
+
+--- alert (dry run) ---
+🔴 CT-6033 auto-renews soon (90-day notice) — HIGH risk. Send notice before the window closes; recommend legal review.
+```
+
+### Task 6 · Capture a conversation reference
+
+In your bot's message handler, on any inbound activity save
+`TurnContext.get_conversation_reference(activity)` and persist `service_url` + `conversation.id`.
+Put them in `.env` as `TEAMS_SERVICE_URL` and `TEAMS_CONVERSATION_ID` (and set `MICROSOFT_APP_ID`
+/ `MICROSOFT_APP_PASSWORD` / `MICROSOFT_APP_TENANT_ID`).
+
+### Task 7 · Fire a proactive alert
+
+Send it into that Teams conversation:
+```bash
+python src/proactive_alerts.py --text "🔴 Contract CT-4821 renewal approaching — high-risk indemnity clause flagged. Recommend legal review."
+# or generate it from the renewal agent and send:
+python src/proactive_alerts.py --from-renewals --days 30
+```
+
+✅ **You should see** a send confirmation in the terminal:
+```text
+✓ Proactive alert sent to Teams.
+```
+
+> 📸 **Screenshot slot — what you'll see:** the **alert message appearing in the Teams channel/chat** without anyone prompting.
+>
+> <img src="../images/challenge-05/steps/03-proactive-alert.svg" alt="Screenshot slot: proactive alert in Teams" width="80%">
+> <img src="../images/challenge-05/steps/04-renewal-summary.svg" alt="Screenshot slot: renewal summary" width="80%">
 
 ## ✔️ Success criteria
 

@@ -109,87 +109,97 @@ memory. → [Azure SQL Database](https://learn.microsoft.com/en-us/azure/azure-s
 
 ## ✅ Tasks
 
-1. **Build the Clause & Risk agent** (~15 min) and analyze the (deliberately red-flag) sample drafts. By
-   default it analyzes **both** inbound drafts (`acme_msa_draft.pdf` and `globex_nda_redline.pdf`),
-   reusing one agent:
-   ```bash
-   python src/agents/clause_risk_agent.py
-   # analyze a single draft instead:
-   python src/agents/clause_risk_agent.py --draft src/data/counterparty_drafts/globex_nda_redline.pdf
-   ```
-   Expect: per draft, a clause table, flagged deviations (e.g. uncapped liability, 60-day
-   auto-renew) with the negotiation-playbook fallback for items to negotiate, **High** risk with
-   top-3 issues and the required approver per the delegation-of-authority matrix, all cited against
-   the standard clause library.
+### Task 1 · Build the Clause & Risk agent (~15 min)
 
-   ✅ **You should see** (wording/format will vary — the analysis is the point):
-   ```text
-   ✓ Built clause-risk-agent on model 'claude-sonnet-4-5'
+Analyze the (deliberately red-flag) sample drafts. By
+default it analyzes **both** inbound drafts (`acme_msa_draft.pdf` and `globex_nda_redline.pdf`),
+reusing one agent:
+```bash
+python src/agents/clause_risk_agent.py
+# analyze a single draft instead:
+python src/agents/clause_risk_agent.py --draft src/data/counterparty_drafts/globex_nda_redline.pdf
+```
+Expect: per draft, a clause table, flagged deviations (e.g. uncapped liability, 60-day
+auto-renew) with the negotiation-playbook fallback for items to negotiate, **High** risk with
+top-3 issues and the required approver per the delegation-of-authority matrix, all cited against
+the standard clause library.
 
-   ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-   DRAFT: acme_msa_draft.pdf
-   Clause review:
-     • Limitation of liability — UNCAPPED vs standard 12-month cap [CL-04]  → ❌ deviation
-     • Auto-renewal — 60-day vs standard 30-day notice [CL-07]             → ⚠️ deviation
-   Risk: HIGH · Top issues: uncapped liability, long auto-renew, one-sided indemnity
-   Required approver: VP Legal (delegation-of-authority matrix)
-   ```
+✅ **You should see** (wording/format will vary — the analysis is the point):
+```text
+✓ Built clause-risk-agent on model 'claude-sonnet-4-5'
 
-   > 📸 **Screenshot slot:** the clause table + High-risk verdict with citations.
-   >
-   > <img src="../images/challenge-04/steps/01-clause-risk.svg" alt="Screenshot slot: Clause & Risk output" width="80%">
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+DRAFT: acme_msa_draft.pdf
+Clause review:
+  • Limitation of liability — UNCAPPED vs standard 12-month cap [CL-04]  → ❌ deviation
+  • Auto-renewal — 60-day vs standard 30-day notice [CL-07]             → ⚠️ deviation
+Risk: HIGH · Top issues: uncapped liability, long auto-renew, one-sided indemnity
+Required approver: VP Legal (delegation-of-authority matrix)
+```
 
-2. **Build the Orchestrator** (~15 min) with both specialists connected, and run a multi-step thread
-   (draft → analyze → status):
-   ```bash
-   python src/orchestrator.py
-   ```
-   Note which specialist the orchestrator says it used for each turn.
+> 📸 **Screenshot slot:** the clause table + High-risk verdict with citations.
+>
+> <img src="../images/challenge-04/steps/01-clause-risk.svg" alt="Screenshot slot: Clause & Risk output" width="80%">
 
-   ✅ **You should see** the orchestrator delegate each turn to the right specialist:
-   ```text
-   ✓ Orchestrator on 'gpt-5.4' with 2 Claude specialists as tools
+### Task 2 · Build the Orchestrator (~15 min)
 
-   ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-   USER: Draft an NDA for Northwind, review the Acme MSA draft, and give me CT-4821's status.
-   ORCHESTRATOR: [→ intake_drafting] Draft ready... [→ clause_risk] Acme draft is HIGH risk...
-                 [→ get_contract_status] CT-4821 is Active, renews 2026-09-01.
-   ```
+With both specialists connected, run a multi-step thread
+(draft → analyze → status):
+```bash
+python src/orchestrator.py
+```
+Note which specialist the orchestrator says it used for each turn.
 
-   > 📸 **Screenshot slot:** the orchestrator thread routing across specialists.
-   >
-   > <img src="../images/challenge-04/steps/02-orchestrator.svg" alt="Screenshot slot: orchestrator thread" width="80%">
+✅ **You should see** the orchestrator delegate each turn to the right specialist:
+```text
+✓ Orchestrator on 'gpt-5.4' with 2 Claude specialists as tools
 
-3. **Run the MCP server** (~10 min) and inspect its tools:
-   ```bash
-   python src/mcp_server/server.py       # serves over stdio (Ctrl-C to stop)
-   ```
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+USER: Draft an NDA for Northwind, review the Acme MSA draft, and give me CT-4821's status.
+ORCHESTRATOR: [→ intake_drafting] Draft ready... [→ clause_risk] Acme draft is HIGH risk...
+              [→ get_contract_status] CT-4821 is Active, renews 2026-09-01.
+```
 
-   > [!NOTE]
-   > A stdio MCP server **looks like it hangs with no output — that's correct.** It's waiting for a
-   > client (VS Code, next step) to connect over stdin/stdout. Leave it running, or stop it with
-   > `Ctrl-C` since VS Code will start its own copy from `mcp.json`.
+> 📸 **Screenshot slot:** the orchestrator thread routing across specialists.
+>
+> <img src="../images/challenge-04/steps/02-orchestrator.svg" alt="Screenshot slot: orchestrator thread" width="80%">
 
-4. **Consume it from VS Code.** (~15 min) Open this repo in VS Code, ensure `src/.vscode/mcp.json`
-   is picked up (Command Palette → *MCP: List Servers* → start **clm-mcp**), then in Copilot Chat
-   (Agent mode) call `#draft_contract` / `#analyze_contract` / `#get_contract_status`. This proves
-   the workflow is reusable outside your script.
+### Task 3 · Run the MCP server (~10 min)
 
-   > 📸 **Screenshot slot — what you'll see:** **MCP: List Servers** with `clm-mcp`, then Copilot Chat calling `#analyze_contract`.
-   >
-   > <img src="../images/challenge-04/steps/03-mcp-list.svg" alt="Screenshot slot: VS Code MCP list" width="80%">
-   > <img src="../images/challenge-04/steps/04-copilot-tool.svg" alt="Screenshot slot: Copilot tool call" width="80%">
+Inspect its tools:
+```bash
+python src/mcp_server/server.py       # serves over stdio (Ctrl-C to stop)
+```
 
-   ✅ **You'll know it worked when:** `clm-mcp` shows **Running** in *MCP: List Servers*, and
-   `#analyze_contract` returns the **same** risk assessment you saw in Task 1.
+> [!NOTE]
+> A stdio MCP server **looks like it hangs with no output — that's correct.** It's waiting for a
+> client (VS Code, next step) to connect over stdin/stdout. Leave it running, or stop it with
+> `Ctrl-C` since VS Code will start its own copy from `mcp.json`.
 
-5. *(Go Further)* **Consume it from an agent.** (~5 min) Run the Orchestrator as an **MCP client** — same
-   GPT-5.4 front door as step 2, but the tools now come from the `clm-mcp` server over the protocol
-   instead of in-process `as_tool()`:
-   ```bash
-   python src/orchestrator_mcp.py     # launches the stdio server and calls it as a client
-   ```
-   You don't start the server yourself — `MCPStdioTool` spawns `mcp_server/server.py` for you.
+### Task 4 · Consume it from VS Code (~15 min)
+
+Open this repo in VS Code, ensure `src/.vscode/mcp.json`
+is picked up (Command Palette → *MCP: List Servers* → start **clm-mcp**), then in Copilot Chat
+(Agent mode) call `#draft_contract` / `#analyze_contract` / `#get_contract_status`. This proves
+the workflow is reusable outside your script.
+
+> 📸 **Screenshot slot — what you'll see:** **MCP: List Servers** with `clm-mcp`, then Copilot Chat calling `#analyze_contract`.
+>
+> <img src="../images/challenge-04/steps/03-mcp-list.svg" alt="Screenshot slot: VS Code MCP list" width="80%">
+> <img src="../images/challenge-04/steps/04-copilot-tool.svg" alt="Screenshot slot: Copilot tool call" width="80%">
+
+✅ **You'll know it worked when:** `clm-mcp` shows **Running** in *MCP: List Servers*, and
+`#analyze_contract` returns the **same** risk assessment you saw in Task 1.
+
+### Task 5 · (Go Further) Consume it from an agent (~5 min)
+
+Run the Orchestrator as an **MCP client** — same
+GPT-5.4 front door as Task 2, but the tools now come from the `clm-mcp` server over the protocol
+instead of in-process `as_tool()`:
+```bash
+python src/orchestrator_mcp.py     # launches the stdio server and calls it as a client
+```
+You don't start the server yourself — `MCPStdioTool` spawns `mcp_server/server.py` for you.
 
 ## ✔️ Success criteria
 

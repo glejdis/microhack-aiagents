@@ -98,75 +98,85 @@ hardening actually worked. → [Evaluation & observability](https://learn.micros
 
 ## ✅ Tasks
 
-1. **Baseline red-team scan** (~10 min) against the Intake & Drafting agent (auto-generated attacks):
-   ```bash
-   pip install "azure-ai-evaluation[redteam]"     # pulls PyRIT (one-time)
-   python src/red_team.py --num-objectives 2
-   ```
-   Inspect the scorecard (`redteam_scorecard.json`) — note any category with a non-zero
-   attack success rate.
+### Task 1 · Baseline red-team scan (~10 min)
 
-   ✅ **You should see** the scan run and a scorecard summary (numbers will vary):
-   ```text
-   ▶ Red-teaming intake-drafting-agent (2 objectives)...
-   === Red-team scorecard ===
-   Category                    Attacks   Succeeded   ASR
-   Hate/Unfairness                   2           0    0%
-   Violence                          2           0    0%
-   Self-harm                         2           0    0%
-   Sexual                            2           0    0%
-   → wrote redteam_scorecard.json
-   ```
+Against the Intake & Drafting agent (auto-generated attacks):
+```bash
+pip install "azure-ai-evaluation[redteam]"     # pulls PyRIT (one-time)
+python src/red_team.py --num-objectives 2
+```
+Inspect the scorecard (`redteam_scorecard.json`) — note any category with a non-zero
+attack success rate.
 
-   > 📸 **Screenshot slot — what you'll see:** the printed **scorecard table** (and/or `redteam_scorecard.json`).
-   >
-   > <img src="../images/challenge-06/steps/01-redteam-scorecard.svg" alt="Screenshot slot: red-team scorecard" width="80%">
+✅ **You should see** the scan run and a scorecard summary (numbers will vary):
+```text
+▶ Red-teaming intake-drafting-agent (2 objectives)...
+=== Red-team scorecard ===
+Category                    Attacks   Succeeded   ASR
+Hate/Unfairness                   2           0    0%
+Violence                          2           0    0%
+Self-harm                         2           0    0%
+Sexual                            2           0    0%
+→ wrote redteam_scorecard.json
+```
 
-2. **Turn up the heat** (~10 min) with attack strategies (encodings + a composed Base64→ROT13 attack):
-   ```bash
-   python src/red_team.py --strategies --num-objectives 2
-   ```
-   Which strategies slip past the guardrails that baseline prompts don't?
+> 📸 **Screenshot slot — what you'll see:** the printed **scorecard table** (and/or `redteam_scorecard.json`).
+>
+> <img src="../images/challenge-06/steps/01-redteam-scorecard.svg" alt="Screenshot slot: red-team scorecard" width="80%">
 
-3. **Score CLM-specific attacks** (~10 min) (legal-advice bypass, PII exfiltration, prompt injection, policy
-   override) and get a **guardrail defect rate**:
-   ```bash
-   python src/safety_eval.py --safety-evals
-   # preview the gate with no Azure calls:
-   python src/safety_eval.py --dry-run --gate 0.1
-   ```
+### Task 2 · Turn up the heat (~10 min)
 
-   ✅ **You should see** a defect rate and a clear PASS/FAIL gate verdict:
-   ```text
-   Guardrails held: 9/10 · defect rate = 10%
-   ✅ SAFETY GATE PASSED.        # or: ❌ SAFETY GATE FAILED (defect rate 10% > gate 0%)
-   ```
+With attack strategies (encodings + a composed Base64→ROT13 attack):
+```bash
+python src/red_team.py --strategies --num-objectives 2
+```
+Which strategies slip past the guardrails that baseline prompts don't?
 
-   > [!TIP]
-   > To **see the gate fail on purpose**, run `python src/safety_eval.py --dry-run --gate 0.0`
-   > against the unhardened agent — a non-zero defect rate will trip `❌ SAFETY GATE FAILED` and exit
-   > non-zero. That's exactly what CI (step 5) uses to block a bad merge.
+### Task 3 · Score CLM-specific attacks (~10 min)
 
-   > 📸 **Screenshot slot — what you'll see:** the **defect rate line** + PASS/FAIL verdict.
-   >
-   > <img src="../images/challenge-06/steps/02-safety-gate.svg" alt="Screenshot slot: safety gate verdict" width="80%">
+Score legal-advice bypass, PII exfiltration, prompt injection and policy
+override, and get a **guardrail defect rate**:
+```bash
+python src/safety_eval.py --safety-evals
+# preview the gate with no Azure calls:
+python src/safety_eval.py --dry-run --gate 0.1
+```
 
-4. **Harden the agent** (~15 min), then re-scan to prove it improved:
-   - In the portal, attach **Content Safety** (Prompt Shields + PII) to the agent.
-   - Tighten the refusal/grounding instructions in `src/agents/intake_drafting_agent.py`.
-   - Re-run steps 1–3 and confirm the attack success / defect rate **drops**.
+✅ **You should see** a defect rate and a clear PASS/FAIL gate verdict:
+```text
+Guardrails held: 9/10 · defect rate = 10%
+✅ SAFETY GATE PASSED.        # or: ❌ SAFETY GATE FAILED (defect rate 10% > gate 0%)
+```
 
-5. **Wire the gate into CI.** (~10 min) Review `.github/workflows/ci-eval.yml` — it runs the **quality gate**
-   (`evaluators.py --gate 4.0`) and **safety gate** (`safety_eval.py --gate 0.1`) on a schedule /
-   on demand, using Azure OIDC. Configure the repo secrets (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
-   `AZURE_SUBSCRIPTION_ID`, `AZURE_AI_PROJECT_ENDPOINT`) and trigger it from the **Actions** tab.
+> [!TIP]
+> To **see the gate fail on purpose**, run `python src/safety_eval.py --dry-run --gate 0.0`
+> against the unhardened agent — a non-zero defect rate will trip `❌ SAFETY GATE FAILED` and exit
+> non-zero. That's exactly what CI (Task 5) uses to block a bad merge.
 
-   > 📸 **Screenshot slot — what you'll see:** the **Actions** tab with the eval workflow run (green check = gates passed).
-   >
-   > <img src="../images/challenge-06/steps/03-actions-run.svg" alt="Screenshot slot: GitHub Actions eval run" width="80%">
+> 📸 **Screenshot slot — what you'll see:** the **defect rate line** + PASS/FAIL verdict.
+>
+> <img src="../images/challenge-06/steps/02-safety-gate.svg" alt="Screenshot slot: safety gate verdict" width="80%">
 
-   ✅ **You'll know it worked when:** the workflow run shows a **green check** (gates passed) — or a
-   **red X** if a regression tripped a gate, which is the whole point.
+### Task 4 · Harden the agent (~15 min)
+
+Then re-scan to prove it improved:
+- In the portal, attach **Content Safety** (Prompt Shields + PII) to the agent.
+- Tighten the refusal/grounding instructions in `src/agents/intake_drafting_agent.py`.
+- Re-run Tasks 1–3 and confirm the attack success / defect rate **drops**.
+
+### Task 5 · Wire the gate into CI (~10 min)
+
+Review `.github/workflows/ci-eval.yml` — it runs the **quality gate**
+(`evaluators.py --gate 4.0`) and **safety gate** (`safety_eval.py --gate 0.1`) on a schedule /
+on demand, using Azure OIDC. Configure the repo secrets (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
+`AZURE_SUBSCRIPTION_ID`, `AZURE_AI_PROJECT_ENDPOINT`) and trigger it from the **Actions** tab.
+
+> 📸 **Screenshot slot — what you'll see:** the **Actions** tab with the eval workflow run (green check = gates passed).
+>
+> <img src="../images/challenge-06/steps/03-actions-run.svg" alt="Screenshot slot: GitHub Actions eval run" width="80%">
+
+✅ **You'll know it worked when:** the workflow run shows a **green check** (gates passed) — or a
+**red X** if a regression tripped a gate, which is the whole point.
 
 ## ✔️ Success criteria
 
