@@ -16,9 +16,11 @@ contract corpus the later challenges ground on.
   one-click **Deploy to Azure** button.
 - `.env` populated — the deploy script / `azd` postprovision hook autofills it via
   [`src/scripts/write_env.py`](../../src/scripts/write_env.py).
-- The corpus is crawled into the `clm-corpus` Azure AI Search index by
-  [`src/scripts/seed_corpus.py`](../../src/scripts/seed_corpus.py) (SharePoint path)
-  or the local-PDF fallback over [`src/data/`](../../src/data/).
+- The corpus is crawled into the `clm-corpus` Azure AI Search index. **Default:** one command,
+  [`src/scripts/setup_sharepoint_corpus.py`](../../src/scripts/setup_sharepoint_corpus.py), provisions
+  the whole SharePoint grounding source in your own admin tenant; **fallback:**
+  [`src/scripts/seed_corpus.py`](../../src/scripts/seed_corpus.py) over the local PDFs in
+  [`src/data/`](../../src/data/).
 - **Done when** [`src/scripts/smoke_test.py`](../../src/scripts/smoke_test.py)
   prints `✅ PASS` — a tiny agent runs on **both** the GPT and Claude deployments.
 
@@ -83,10 +85,14 @@ az cognitiveservices account deployment list -g <rg> -n clmfoundry<token> -o tab
 
 ### Task 6 · Seed the corpus
 ```bash
-python src/scripts/seed_corpus.py          # idempotent — crawls SharePoint, or local-PDF fallback over src/data/
+# Default — one command does the whole SharePoint path in your own admin tenant
+# (Entra app + admin consent + site + upload + index):
+python src/scripts/setup_sharepoint_corpus.py
+# Fallback (not an admin / no SharePoint) — local-PDF corpus straight into the index:
+python src/scripts/seed_corpus.py
 python src/scripts/seed_sql.py             # optional — only if you deployed Azure SQL
 ```
-`seed_corpus.py` builds the `clm-corpus` index the later challenges ground on; re-running is safe.
+Both paths build the same idempotent `clm-corpus` index the later challenges ground on; re-running is safe.
 
 > 📸 **Screenshot slot:** the populated **`clm-corpus`** index in Azure AI Search.
 >

@@ -57,10 +57,11 @@ Seeding, setup & gate scripts — run by participants/coaches during the hack �
 | Path | Role |
 |------|------|
 | [`write_env.py`](../src/scripts/write_env.py) | Writes `.env` from deployment outputs (also the `azd` postprovision hook) |
+| [`setup_sharepoint_corpus.py`](../src/scripts/setup_sharepoint_corpus.py) | **Default corpus path** — one command that provisions the whole SharePoint grounding source in your own admin tenant (Entra app + admin consent + SharePoint site + PDF upload + index) |
 | [`seed_corpus.py`](../src/scripts/seed_corpus.py) | Seeds the `clm-corpus` Azure AI Search index (SharePoint crawl or local-PDF fallback over `src/data/`) |
 | [`seed_sql.py`](../src/scripts/seed_sql.py) | Optional — seeds the contract-status table in Azure SQL |
-| [`setup_sharepoint_app.sh`](../src/scripts/setup_sharepoint_app.sh) · [`.ps1`](../src/scripts/setup_sharepoint_app.ps1) | Coach setup — the Entra app registration for the SharePoint crawl |
-| [`upload_corpus_to_sharepoint.py`](../src/scripts/upload_corpus_to_sharepoint.py) | Coach setup — upload the corpus PDFs into a SharePoint library |
+| [`setup_sharepoint_app.sh`](../src/scripts/setup_sharepoint_app.sh) · [`.ps1`](../src/scripts/setup_sharepoint_app.ps1) | Lower-level helper — just the Entra app registration (superseded by `setup_sharepoint_corpus.py`) |
+| [`upload_corpus_to_sharepoint.py`](../src/scripts/upload_corpus_to_sharepoint.py) | Lower-level helper — upload the corpus PDFs into an existing SharePoint library |
 | [`smoke_test.py`](../src/scripts/smoke_test.py) | Gate — confirms a tiny agent runs on **both** the GPT and Claude deployments |
 
 ## Getting started
@@ -68,7 +69,9 @@ Seeding, setup & gate scripts — run by participants/coaches during the hack �
 ```bash
 az login
 ./labautomation/deploy.sh          # or: azd up   (Windows: labautomation\deploy.ps1)
-python src/scripts/seed_corpus.py  # seed the corpus index (idempotent)
+# Default corpus path (own admin tenant): SharePoint app + consent + site + upload + index
+python src/scripts/setup_sharepoint_corpus.py
+# — or the no-SharePoint fallback: python src/scripts/seed_corpus.py
 python src/scripts/smoke_test.py   # expect ✅ PASS before starting Challenge 2
 ```
 

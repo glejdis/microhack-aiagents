@@ -66,19 +66,19 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 - **Point:** stand up the whole Foundry environment + seed the corpus with **zero local install**.
 - **Done when:** `python src/scripts/smoke_test.py` prints `✅ PASS` (a tiny agent runs on **both**
   `gpt-5.4` **and** `claude-sonnet-4-5`) and the `clm-corpus` index shows documents in the portal.
-- **Coach prep (before the event):** the corpus lives in a **bring-your-own SharePoint library** —
-  `azd`/`deploy.sh` do **not** create it. (1) Stand up a SharePoint site + document library. (2) Create
-  the Entra app registration with **`src/scripts/setup_sharepoint_app.sh`** (or `.ps1`) — it adds the Graph
-  permissions (`Sites.ReadWrite.All` + `Files.Read.All`), grants admin consent, and prints the
-  `SHAREPOINT_*` values. (3) Populate the library once with
-  **`python src/scripts/upload_corpus_to_sharepoint.py`** (uploads the 14 corpus PDFs). Hand teams the five
-  `SHAREPOINT_*` values so their `seed_corpus.py` indexer can crawl it. One shared library for everyone
-  is fine. Admin-consent needs Global Admin / Privileged Role Admin / Application Administrator.
-- **No SharePoint license / no admin-consent rights? (sandbox tenants):** skip all of the above. Teams
-  leave the `SHAREPOINT_*` values blank and run `python src/scripts/seed_corpus.py`, which falls back to
-  extracting the local `src/data/**/*.pdf` corpus straight into the `clm-corpus` index (needs the
-  Search Index Data Contributor role, granted by `azd up`). Same grounding outcome, no SharePoint — a
-  reliable default if you're unsure your tenant has an SPO license.
+- **Coach prep (before the event):** essentially **none** for the corpus. Each participant is an
+  **admin of their own sandbox tenant**, so Task 6 has them run a single script —
+  **`python src/scripts/setup_sharepoint_corpus.py`** — that does the *entire* SharePoint path inside
+  their own tenant: registers the Entra app, **self-grants admin consent** (they're the admin, so the
+  greyed-out "Grant admin consent" wall never applies), provisions a SharePoint site, uploads the 14
+  corpus PDFs, and builds the `clm-corpus` indexer. It's **idempotent** and needs only `az login` plus a
+  completed Task 4 deploy (`.env` with `AZURE_SEARCH_ENDPOINT`). Nothing shared to pre-stage.
+- **Not an admin / no SPO license? (fallback):** teams leave the `SHAREPOINT_*` values blank and run
+  `python src/scripts/seed_corpus.py`, which extracts the local `src/data/**/*.pdf` corpus straight into
+  the `clm-corpus` index (needs the Search Index Data Contributor role, granted by `azd up`). Same
+  grounding outcome, no SharePoint. The older `setup_sharepoint_app.sh` / `upload_corpus_to_sharepoint.py`
+  helpers still exist if you ever want a **shared** library, but the per-participant one-command path is
+  the default.
 - **Provisioning paths** — all produce the same resources and `.env`: **`azd up`** (Bicep in
   `labautomation/infra/`), **`labautomation/deploy.sh`** (`.ps1` on Windows), or the one-click **Deploy to
   Azure** button / `az deployment sub create` on `infra/azuredeploy.json` (then
