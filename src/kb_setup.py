@@ -23,28 +23,68 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))  # src (clm_common)
 from clm_common.config import settings  # noqa: E402
 
 
+def _to_jsonable(value):
+    """Recursively convert an SDK/model object into JSON-native primitives.
+
+    Walks ``value`` into plain ``dict`` / ``list`` / scalar values so that a later
+    ``json.dumps`` can never raise. Nested Azure SDK models are converted via
+    ``as_dict()`` (re-walked in case that method is only shallow), pydantic models
+    via ``model_dump()``, and any other mapping-like object via ``items()``; a
+    non-serializable leaf falls back to ``str`` as a last resort so serialization
+    always succeeds.
+    """
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {str(k): _to_jsonable(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [_to_jsonable(v) for v in value]
+    # azure.core / azure.ai.projects models expose as_dict(); it is not always
+    # fully recursive across SDK versions, so re-walk whatever it returns.
+    as_dict = getattr(value, "as_dict", None)
+    if callable(as_dict):
+        try:
+            return _to_jsonable(as_dict())
+        except Exception:  # noqa: BLE001 — try the next strategy instead of failing
+            pass
+    model_dump = getattr(value, "model_dump", None)  # pydantic v2 tool models
+    if callable(model_dump):
+        try:
+            return _to_jsonable(model_dump(mode="python"))
+        except Exception:  # noqa: BLE001
+            pass
+    items = getattr(value, "items", None)  # generic mapping-like objects
+    if callable(items):
+        try:
+            return {str(k): _to_jsonable(v) for k, v in value.items()}
+        except Exception:  # noqa: BLE001
+            pass
+    return str(value)
+
+
 def _normalize_foundry_tool(tool):
-    """Return a Foundry tool as a plain, JSON-serializable dict.
+    """Return a Foundry tool as a plain, **fully** JSON-serializable dict.
 
     The Foundry tool factories (``get_azure_ai_search_tool`` /
     ``get_bing_grounding_tool``) return ``azure.ai.projects.models`` objects
     (``AzureAISearchTool`` wrapping an ``AzureAISearchToolResource``,
     ``BingGroundingTool``, …). Those are dict-*like* SDK models but NOT ``dict``
-    subclasses, so when the Microsoft Agent Framework serializes the request
-    payload ``json.dumps`` raises e.g. ``Object of type AzureAISearchToolResource
-    is not JSON serializable``.
+    subclasses, so ``json.dumps`` raises e.g. ``Object of type
+    AzureAISearchToolResource is not JSON serializable``. The Agent Framework
+    serializes an agent's tools in **two** places: the request payload sent to the
+    model, AND the OpenTelemetry span attributes emitted for Challenge 3 tracing
+    (``gen_ai.tool.definitions``). On agent-framework-core ≤ 1.11.x the tracing
+    ``json.dumps`` is unguarded, so a raw tool object aborts ``agent.run()`` with
+    that exact ``TypeError``.
 
-    Calling ``.as_dict()`` yields a nested plain-``dict`` that keeps the ``type``
-    discriminator and serializes cleanly, which is what the Agent expects. Objects
-    without ``.as_dict()`` (already a dict, or a future tool type) are returned
-    unchanged so this stays a safe pass-through.
+    ``_to_jsonable`` deep-converts the tool into nested plain ``dict``/``list``
+    values (keeping the ``type`` discriminator the Agent needs), so it serializes
+    cleanly on every code path and framework version — even when a given SDK
+    model's ``as_dict()`` is only shallow, or a future tool type lacks it.
     """
     if tool is None:
         return None
-    as_dict = getattr(tool, "as_dict", None)
-    if callable(as_dict):
-        return as_dict()
-    return tool
+    return _to_jsonable(tool)
 
 
 def get_search_connection_id(project) -> str:
