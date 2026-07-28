@@ -57,11 +57,14 @@ Re-run any agent (e.g. the Ch2 demo), then open **Foundry portal → Tracing**. 
 # src/evaluators.py
 def evaluators_dict():
     cfg = judge_model_config()      # an Azure OpenAI GPT deployment as the LLM judge
+    # gpt-5.x judges are reasoning models → flip the evaluators into reasoning mode.
+    is_reasoning = str(cfg.get("azure_deployment", "")).lower().startswith("gpt-5")
+    kwargs = {"model_config": cfg, "is_reasoning_model": is_reasoning}
     return {
-        "groundedness": GroundednessEvaluator(model_config=cfg),
-        "relevance":    RelevanceEvaluator(model_config=cfg),
-        "coherence":    CoherenceEvaluator(model_config=cfg),
-        "fluency":      FluencyEvaluator(model_config=cfg),
+        "groundedness": GroundednessEvaluator(**kwargs),
+        "relevance":    RelevanceEvaluator(**kwargs),
+        "coherence":    CoherenceEvaluator(**kwargs),
+        "fluency":      FluencyEvaluator(**kwargs),
     }
 
 result = evaluate(data=str(DATASET), target=target, evaluators=evaluators_dict(), ...)
@@ -69,6 +72,11 @@ result = evaluate(data=str(DATASET), target=target, evaluators=evaluators_dict()
 ```bash
 python src/evaluators.py
 ```
+
+> ⚙️ **Throttling.** The judges run concurrently against one deployment, so a
+> shared judge easily returns `429`. The target retries 429s with jittered
+> backoff, and evaluator concurrency defaults to `PF_WORKER_COUNT=2`. Drop it
+> further when a run stalls: `python src/evaluators.py --workers 1`.
 ✅ **You should see** (scores 1–5; your numbers differ):
 ```text
 === Intake & Drafting (claude-sonnet-4-5) ===
@@ -137,6 +145,7 @@ python src/tracing_setup.py                 # verify traces flow to App Insights
 python src/evaluators.py                     # print the scorecard
 python src/evaluators.py --bakeoff           # Claude-vs-GPT comparison
 python src/evaluators.py --gate 4.0          # exit code 3 if groundedness < 4.0
+python src/evaluators.py --workers 1         # throttle concurrency if 429s appear
 ```
 
 ## Common issues
@@ -145,3 +154,4 @@ python src/evaluators.py --gate 4.0          # exit code 3 if groundedness < 4.0
 |---------|-------------|
 | No traces in App Insights | Confirm `APPLICATIONINSIGHTS_CONNECTION_STRING` is set in `.env` (Challenge 1 sets it). |
 | Gate never fails | Try `--gate 5.0` to see it trip; exit code 3 signals a failed gate for CI. |
+| `429` / `cannot schedule new futures after shutdown` | Judge or agent deployment is rate-limited. Re-run with `--workers 1` (or set `PF_WORKER_COUNT`); target 429s are retried with backoff automatically. |

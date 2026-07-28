@@ -12,12 +12,14 @@ Usage:
     python src/evaluators.py                 # evaluate Claude (default)
     python src/evaluators.py --bakeoff       # Claude vs GPT comparison
     python src/evaluators.py --gate 4.0      # fail if mean groundedness < 4.0
+    python src/evaluators.py --workers 2     # throttle evaluator concurrency (429s)
 """
 from __future__ import annotations
 
 import argparse
 import json
 import os
+import random
 import sys
 import time
 from pathlib import Path
@@ -33,12 +35,46 @@ from clm_common.foundry import build_chat_client, function_tool, get_project_cli
 
 DATASET = DATA_DIR / "evaluation" / "evaluation_dataset.jsonl"
 
+# Retry budget for target calls that hit Azure OpenAI 429 (rate-limit) bursts.
+MAX_TARGET_ATTEMPTS = 8
+# Default evaluator batch concurrency when neither --workers nor PF_WORKER_COUNT
+# is set. Kept low so the four LLM judges don't overwhelm a throttled deployment.
+DEFAULT_WORKER_COUNT = 2
+
+
+def _is_rate_limit(exc: BaseException) -> bool:
+    """True if `exc` (or anything in its cause/context chain) is a 429 rate-limit.
+
+    Azure OpenAI surfaces throttling as ``openai.RateLimitError`` (HTTP 429,
+    ``code='rate_limit_exceeded'``), but retries can re-wrap it as an
+    ``APIConnectionError`` whose ``__cause__`` is the original 429 — so we walk
+    the chain and also fall back to matching the rendered message.
+    """
+    seen: set[int] = set()
+    cur: BaseException | None = exc
+    while cur is not None and id(cur) not in seen:
+        seen.add(id(cur))
+        status = getattr(cur, "status_code", None) or getattr(cur, "http_status", None)
+        code = getattr(cur, "code", None)
+        if status == 429 or code == "rate_limit_exceeded":
+            return True
+        text = str(cur).lower()
+        if any(m in text for m in ("rate_limit_exceeded", "too_many_requests", "error code: 429")):
+            return True
+        cur = cur.__cause__ or cur.__context__
+    return False
+
 
 def judge_model_config():
     """AzureOpenAIModelConfiguration for the LLM judge (an Azure OpenAI GPT deployment).
 
     Reads AZURE_OPENAI_* if present, otherwise derives the endpoint from the
     Foundry project and uses the orchestrator GPT deployment as the judge.
+
+    The config is assembled as a dict so ``api_key`` is only included when it is
+    actually set. Passing ``api_key=None`` explicitly makes the SDK treat the
+    request as key-based and rejects the AAD (keyless) path — omitting the key
+    lets the evaluators authenticate with the ambient credential.
     """
     from azure.ai.evaluation import AzureOpenAIModelConfiguration
 
@@ -46,12 +82,16 @@ def judge_model_config():
     if not endpoint and settings.project_endpoint:
         # AI Services base endpoint also serves the Azure OpenAI surface.
         endpoint = settings.project_endpoint.split("/api/projects")[0]
-    return AzureOpenAIModelConfiguration(
-        azure_endpoint=endpoint,
-        azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT", settings.model_orchestrator),
-        api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2024-10-21"),
-        api_key=os.environ.get("AZURE_OPENAI_API_KEY"),  # None → SDK uses AAD
-    )
+
+    cfg: dict = {
+        "azure_endpoint": endpoint,
+        "azure_deployment": os.environ.get("AZURE_OPENAI_DEPLOYMENT", settings.model_orchestrator),
+        "api_version": os.environ.get("AZURE_OPENAI_API_VERSION", "2024-10-21"),
+    }
+    api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+    if api_key:  # only pass when set → otherwise SDK uses AAD
+        cfg["api_key"] = api_key
+    return AzureOpenAIModelConfiguration(**cfg)
 
 
 def build_target(model: str, connection_id: str):
@@ -89,7 +129,18 @@ def build_target(model: str, connection_id: str):
 
     def target(query: str, **_: object) -> dict:
         start = time.perf_counter()
-        response = run_prompt(_agent(), query)
+        for attempt in range(1, MAX_TARGET_ATTEMPTS + 1):
+            try:
+                response = run_prompt(_agent(), query)
+                break
+            except Exception as exc:  # retry only on 429s; re-raise everything else
+                if not _is_rate_limit(exc) or attempt == MAX_TARGET_ATTEMPTS:
+                    raise
+                # Exponential backoff with jitter to spread out retry bursts.
+                delay = min(2 ** attempt, 60) + random.uniform(0, 1)
+                print(f"  ⏳ 429 rate-limit on target (attempt {attempt}/"
+                      f"{MAX_TARGET_ATTEMPTS}); backing off {delay:.1f}s")
+                time.sleep(delay)
         meta["latencies"].append(time.perf_counter() - start)
         return {"response": response}
 
@@ -105,11 +156,16 @@ def evaluators_dict():
     )
 
     cfg = judge_model_config()
+    # gpt-5.x judges are reasoning models: tell the evaluators so they use the
+    # reasoning-model prompt/parameters instead of the classic chat path.
+    deployment = str(cfg.get("azure_deployment", "")).lower()
+    is_reasoning = deployment.startswith("gpt-5")
+    kwargs = {"model_config": cfg, "is_reasoning_model": is_reasoning}
     return {
-        "groundedness": GroundednessEvaluator(model_config=cfg),
-        "relevance": RelevanceEvaluator(model_config=cfg),
-        "coherence": CoherenceEvaluator(model_config=cfg),
-        "fluency": FluencyEvaluator(model_config=cfg),
+        "groundedness": GroundednessEvaluator(**kwargs),
+        "relevance": RelevanceEvaluator(**kwargs),
+        "coherence": CoherenceEvaluator(**kwargs),
+        "fluency": FluencyEvaluator(**kwargs),
     }
 
 
@@ -150,12 +206,32 @@ def print_scorecard(title: str, metrics: dict) -> None:
     print(f"  {'mean latency (s)':<40} {metrics.get('_mean_latency_s')}")
 
 
+def _configure_workers(workers: int | None) -> None:
+    """Set PF_WORKER_COUNT (evaluator batch concurrency) and print the active value.
+
+    Precedence: explicit --workers > existing PF_WORKER_COUNT env var > default.
+    Lower concurrency spreads out the four LLM-judge calls per row so a throttled
+    judge deployment is less likely to return HTTP 429.
+    """
+    if workers is not None:
+        os.environ["PF_WORKER_COUNT"] = str(workers)
+    elif not os.environ.get("PF_WORKER_COUNT"):
+        os.environ["PF_WORKER_COUNT"] = str(DEFAULT_WORKER_COUNT)
+    print(f"Evaluator worker concurrency (PF_WORKER_COUNT): {os.environ['PF_WORKER_COUNT']}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bakeoff", action="store_true", help="compare Claude vs GPT")
     parser.add_argument("--gate", type=float, default=None,
                         help="fail if mean groundedness < THRESHOLD (e.g. 4.0)")
+    parser.add_argument("--workers", type=int, default=None,
+                        help="override PF_WORKER_COUNT (evaluator batch concurrency); "
+                             f"lower values reduce 429 rate-limit pressure "
+                             f"(default: {DEFAULT_WORKER_COUNT})")
     args = parser.parse_args()
+
+    _configure_workers(args.workers)
 
     if not DATASET.exists():
         print(f"✗ Missing dataset: {DATASET}")

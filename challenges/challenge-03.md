@@ -131,6 +131,12 @@ agent's answer for each of the **16 rows** in `src/data/evaluation/evaluation_da
    ```
    You'll get a scorecard for the Claude-backed agent.
 
+   > 💡 The four LLM judges run concurrently. If you hit `429` rate-limits on a
+   > shared judge deployment, lower the batch concurrency (defaults to `2`):
+   > ```bash
+   > python src/evaluators.py --workers 1
+   > ```
+
    ✅ **You should see** (scores 1–5; your numbers will differ):
    ```text
    === Intake & Drafting (claude-sonnet-4-5) ===
@@ -203,6 +209,7 @@ agent's answer for each of the **16 rows** in `src/data/evaluation/evaluation_da
 | No spans in the portal | Confirm `APPLICATIONINSIGHTS_CONNECTION_STRING` is set; content flag must be set before SDK import; allow 1–2 min for ingestion. |
 | Evaluator auth error | The judge is an **Azure OpenAI** deployment. Set `AZURE_OPENAI_ENDPOINT`/`AZURE_OPENAI_DEPLOYMENT` (or rely on the derived project endpoint + AAD). |
 | `groundedness` key not found by the gate | Print `result["metrics"]` and adjust the key — SDK versions name it `groundedness` or `groundedness.groundedness`. |
+| `429` rate-limits / `cannot schedule new futures after shutdown` | The judge/agent deployment is throttled. Re-run with `--workers 1` (or set `PF_WORKER_COUNT`); the target auto-retries 429s with backoff, so a slower run still completes. |
 | Bake-off is slow | It runs the dataset twice (once per model). Trim the JSONL while iterating. |
 
 ## 🧠 Reflection
