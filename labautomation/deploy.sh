@@ -7,7 +7,7 @@
 #           rights to deploy GPT and Anthropic Claude models.
 #
 # NOTE: Model + region availability changes over time. Confirm your target
-#       region offers gpt-5.4, gpt-5-mini AND Claude Opus 4.8 in the
+#       region offers gpt-5.4, gpt-5-mini, gpt-5.6-sol AND Claude Opus 4.8 in the
 #       Foundry model catalog before running. See the challenge-0 README.
 # ==========================================================================
 set -euo pipefail
@@ -32,11 +32,12 @@ done
 # Model deployments (name=catalog-model:version:format)
 GPT_ORCH="gpt-5.4"
 GPT_MINI="gpt-5-mini"
+GPT56SOL="gpt-5.6-sol"
 CLAUDE="claude-opus-4-8"
 
 # Claude can be skipped when the subscription has no Anthropic quota or the
-# marketplace offer is unavailable: run with DEPLOY_CLAUDE=false. The two
-# Claude-backed agents then fall back to the GPT orchestrator deployment.
+# marketplace offer is unavailable: run with DEPLOY_CLAUDE=false. The
+# drafting agent then falls back to the GPT orchestrator deployment (Clause & Risk stays on gpt-5.6-sol).
 DEPLOY_CLAUDE="${DEPLOY_CLAUDE:-true}"
 if [[ "$(printf '%s' "$DEPLOY_CLAUDE" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
   DRAFTING_MODEL="$CLAUDE"
@@ -87,6 +88,8 @@ deploy_model "$GPT_ORCH" "gpt-5.4"          "2026-03-05" "OpenAI"    30
 # Renewal / lightweight agent: gpt-4o-mini is deprecating in swedencentral, so
 # deploy gpt-5-mini instead (same GlobalStandard SKU, later deprecation date).
 deploy_model "$GPT_MINI" "gpt-5-mini"       "2025-08-07" "OpenAI"    30
+# Clause & Risk runs on gpt-5.6-sol — its own deployment, independent of Claude.
+deploy_model "$GPT56SOL" "gpt-5.6-sol"      "2026-03-05" "OpenAI"    30
 # Claude: Anthropic deployments REQUIRE a modelProviderData block that the
 # `az cognitiveservices account deployment create` CLI can't send, so deploy it
 # via the ARM REST API instead (auto-accepts the marketplace offer, avoiding
@@ -114,7 +117,7 @@ deploy_claude () {
 if [[ "$DRAFTING_MODEL" == "$CLAUDE" ]]; then
   deploy_claude
 else
-  echo "  · Skipping Claude (DEPLOY_CLAUDE=false) — MODEL_DRAFTING/MODEL_CLAUSE_RISK use $GPT_ORCH"
+  echo "  · Skipping Claude (DEPLOY_CLAUDE=false) — MODEL_DRAFTING uses $GPT_ORCH"
 fi
 
 # ---- 4. Azure AI Search (Foundry IQ backing store) -----------------------
@@ -194,7 +197,7 @@ AZURE_AI_PROJECT_ENDPOINT=${PROJECT_ENDPOINT}
 
 MODEL_ORCHESTRATOR=${GPT_ORCH}
 MODEL_DRAFTING=${DRAFTING_MODEL}
-MODEL_CLAUSE_RISK=${DRAFTING_MODEL}
+MODEL_CLAUSE_RISK=${GPT56SOL}
 MODEL_RENEWAL=${GPT_MINI}
 
 AZURE_SEARCH_ENDPOINT=${SEARCH_ENDPOINT}

@@ -65,13 +65,14 @@ def main() -> int:
     gpt_ok = ping_model(settings.model_orchestrator, "gpt")
 
     # When Claude was skipped at deploy time (DEPLOY_CLAUDE_MODEL=false), the
-    # drafting/clause-risk deployments fall back to the orchestrator model, so
+    # drafting deployment falls back to the orchestrator model, so
     # MODEL_DRAFTING == MODEL_ORCHESTRATOR. Don't ping (or require) Claude then.
+    # (Clause & Risk always runs on its own gpt-5.6-sol deployment.)
     claude_skipped = settings.model_drafting == settings.model_orchestrator
     if claude_skipped:
         print(
             "2) Claude skipped (MODEL_DRAFTING == MODEL_ORCHESTRATOR) — the drafting\n"
-            "   & clause-risk agents run on the orchestrator model. Skipping Claude ping."
+            "   agent runs on the orchestrator model. Skipping Claude ping."
         )
         claude_ok = gpt_ok
     else:

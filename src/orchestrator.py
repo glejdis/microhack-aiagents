@@ -1,11 +1,11 @@
 """Challenge 4 — Orchestrator agent (GPT-5.4) with specialist agents as tools.
 
-Builds the front-door **Orchestrator** on GPT-5.4 and attaches the two Claude
+Builds the front-door **Orchestrator** on GPT-5.4 and attaches the two
 specialists (Intake & Drafting, Clause & Risk) as **tools** using the Microsoft
 Agent Framework's `agent.as_tool(...)`. The orchestrator routes each user request
 to the right specialist, manages hand-offs and human-in-the-loop review.
 
-A GPT orchestrator calling Claude-backed specialists demonstrates multi-model
+A GPT orchestrator calling Claude- and GPT-backed specialists demonstrates multi-model
 composition inside one Foundry project — the model only changes on each agent's
 Foundry chat client.
 
@@ -96,7 +96,7 @@ DEMO = [
 
 async def main() -> None:
     orchestrator = build_orchestrator()
-    print(f"✓ Orchestrator on '{settings.model_orchestrator}' with 2 Claude specialists as tools\n")
+    print(f"✓ Orchestrator on '{settings.model_orchestrator}' with 2 specialists as tools\n")
 
     session = orchestrator.create_session()
     for prompt in DEMO:

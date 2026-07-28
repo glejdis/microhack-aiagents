@@ -1,9 +1,9 @@
-"""Challenge 4 — Clause Extraction & Risk agent (Anthropic Claude Opus 4.8).
+"""Challenge 4 — Clause Extraction & Risk agent (GPT-5.6 Sol).
 
 Ingests a counterparty draft, extracts key clauses, compares them to Contoso
 Global's enterprise standard (the clause library in the corpus), flags deviations
 and returns a risk score with rationale. Built with the **Microsoft Agent
-Framework** and runs on Claude for long-context legal reasoning. Reuses the Ch2
+Framework** and runs on GPT-5.6 Sol for structured legal reasoning. Reuses the Ch2
 grounding pattern, so it's fast to build.
 
 Run:
@@ -83,7 +83,7 @@ def create_agent(model: str | None = None, *, connection_id: str | None = None):
         tools.append(web_search)
 
     return Agent(
-        client=build_chat_client(model or settings.model_clause_risk),  # claude-opus-4-8
+        client=build_chat_client(model or settings.model_clause_risk),  # gpt-5.6-sol
         name=AGENT_NAME,
         instructions=INSTRUCTIONS,
         tools=tools,

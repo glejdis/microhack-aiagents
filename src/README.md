@@ -11,7 +11,7 @@ helpers live in [`clm_common/`](clm_common/); every entry-point script adds `src
 |------|------|-----------|
 | [`clm_common/`](clm_common/) | Shared config (`config.py`, `DATA_DIR`), Foundry client, document + tool helpers | all |
 | [`agents/intake_drafting_agent.py`](agents/intake_drafting_agent.py) | Grounded, cited, guard-railed drafting agent (Claude Opus 4.8) | 2 |
-| [`agents/clause_risk_agent.py`](agents/clause_risk_agent.py) | Clause & Risk specialist (Claude Opus 4.8) | 4 |
+| [`agents/clause_risk_agent.py`](agents/clause_risk_agent.py) | Clause & Risk specialist (GPT-5.6 Sol) | 4 |
 | [`agents/obligation_renewal_agent.py`](agents/obligation_renewal_agent.py) | Obligation & Renewal agent (GPT-5-mini) reading status + renewals | 5 |
 | [`kb_setup.py`](kb_setup.py) | Builds the Foundry IQ knowledge source + web-grounding tool over `clm-corpus` | 2 |
 | [`sample_prompts.md`](sample_prompts.md) | Prompts to exercise drafting, grounded Q&A, guardrails | 2 |

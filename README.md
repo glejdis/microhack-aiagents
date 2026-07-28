@@ -16,7 +16,7 @@ inconsistent clause review, and missed renewals. In this microhack you'll transf
 process into a grounded, **agentic** workflow with a human always in the loop.
 
 The build uniquely combines four things: a **multi-model agent fleet** — orchestration on
-**GPT-5.4** with specialist drafting and clause-analysis running on **Anthropic Claude**, all inside
+**GPT-5.4** with specialist drafting on **Anthropic Claude** and clause-analysis on **GPT-5.6 Sol**, all inside
 a single Foundry project; **grounded retrieval with Foundry IQ** over your own contract corpus so
 every answer is cited; **tools and an MCP server** that expose the workflow to **Microsoft 365
 Copilot**, **Teams**, and any MCP-compatible client; and the full **GenAIOps lifecycle** —
@@ -82,7 +82,7 @@ diagram](images/diagrams/user-journey.png) alongside this table.
 | # | What the manager does | What happens under the hood | Foundry capability | Built in |
 |---|-----------------------|-----------------------------|--------------------|----------|
 | **1 · Request a draft** | *"Draft a mutual NDA with Acme, 2-yr term."* | **Intake & Drafting** agent (Claude Opus 4.8) drafts from an **approved template** | Grounded agent + tools | [C2](challenges/challenge-02.md) |
-| **2 · Check their draft** | Uploads Acme's counter-draft MSA | **Clause & Risk** agent (Claude Opus 4.8) scores every clause against the **Standard Clause Library** and flags deviations | Specialist agent + orchestration | [C4](challenges/challenge-04.md) |
+| **2 · Check their draft** | Uploads Acme's counter-draft MSA | **Clause & Risk** agent (GPT-5.6 Sol) scores every clause against the **Standard Clause Library** and flags deviations | Specialist agent + orchestration | [C4](challenges/challenge-04.md) |
 | **3 · Ask, with citations** | *"What's our standard indemnity cap?"* | **Foundry IQ** answers over the Contoso corpus — **with sources** | Agentic retrieval (Foundry IQ) | [C2](challenges/challenge-02.md) |
 | **4 · Review & sign off** | Reads flags + citations, edits, **approves** | **Human-in-the-loop** — nothing is finalized without sign-off | HITL + guardrails | [C2](challenges/challenge-02.md) · [C4](challenges/challenge-04.md) |
 | **5 · Track obligations** | Reviews upcoming renewals | **Obligation & Renewal** agent (GPT-5-mini) **reads** contract status & upcoming renewals via function tools — **Azure SQL** (seed-data fallback) | Function tool / MCP server | [C4](challenges/challenge-04.md) · [C5](challenges/challenge-05.md) |
@@ -123,8 +123,8 @@ call, hands off the right context, and composes the final answer. GPT-5.4 is cho
 deterministic routing and tool/hand-off calls rather than long-form generation.
 
 ❹ **Specialist agents — each matched to its task *and* its model.** The Orchestrator delegates to three
-grounded specialists: **Intake & Drafting** and **Clause & Risk** run on **Claude Opus 4.8** (purple)
-for high-fidelity drafting and 200K-context clause comparison; **Obligation & Renewal** runs on the
+grounded specialists: **Intake & Drafting** runs on **Claude Opus 4.8** (purple) for high-fidelity
+drafting while **Clause & Risk** runs on **GPT-5.6 Sol** for structured clause comparison; **Obligation & Renewal** runs on the
 cheaper **GPT-5-mini** (blue) for high-frequency date and obligation extraction.
 
 ❺ **Grounding & tools (blue) — how agents stay factual and act on the world.** **Foundry IQ** (over
@@ -173,11 +173,12 @@ flowchart TB
         subgraph Farm["LLM farm · model deployments"]
             gpt53["GPT-5.4<br/>OpenAI · GlobalStandard"]
             claude["Claude Opus 4.8<br/>Anthropic"]
+            gpt56sol["GPT-5.6 Sol<br/>OpenAI · GlobalStandard"]
             gpt4omini["GPT-5-mini<br/>OpenAI · GlobalStandard"]
         end
         orch -->|runs on| gpt53
         intake -->|runs on| claude
-        clause -->|runs on| claude
+        clause -->|runs on| gpt56sol
         renew -->|runs on| gpt4omini
     end
     hitl <--> orch
@@ -221,13 +222,13 @@ flowchart TB
 
 Anthropic **Claude is generally available in Microsoft Foundry** (model catalog **and** Foundry Agent
 Service), Azure-hosted with Entra identity, consolidated billing, and data-residency controls — so
-specialists run on Claude while orchestration runs on GPT, all inside **one** Foundry project.
+specialists run on Claude and GPT-5.6 Sol while orchestration runs on GPT, all inside **one** Foundry project.
 
 | Agent | Model | Why this model |
 |-------|-------|----------------|
 | **Orchestrator** | GPT-5.4 | Fast, deterministic routing + tool/hand-off calls |
 | **Intake & Drafting** | **Claude Opus 4.8** | High-fidelity, template-grounded drafting |
-| **Clause & Risk** | **Claude Opus 4.8** | 200K-context clause comparison + nuanced risk rationale |
+| **Clause & Risk** | **GPT-5.6 Sol** | Structured clause comparison + nuanced risk rationale |
 | **Obligation & Renewal** | GPT-5-mini | Cheap, high-frequency structured extraction + alerts |
 
 ---

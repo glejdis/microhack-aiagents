@@ -21,7 +21,7 @@
       "type": "string",
       "minLength": 1,
       "metadata": {
-        "description": "Azure region for all resources. Must offer gpt-5.4 and gpt-5-mini (and Claude Opus 4.8 unless DEPLOY_CLAUDE_MODEL=false)."
+        "description": "Azure region for all resources. Must offer gpt-5.4, gpt-5-mini and gpt-5.6-sol (and Claude Opus 4.8 unless DEPLOY_CLAUDE_MODEL=false)."
       }
     },
     "principalId": {
@@ -200,7 +200,7 @@
               "type": "string",
               "defaultValue": "true",
               "metadata": {
-                "description": "Deploy the Anthropic Claude model (\"true\"/\"false\"). Set to \"false\" (azd env set DEPLOY_CLAUDE_MODEL false) if your subscription has no Claude quota or the Anthropic marketplace offer is unavailable — the two Claude-backed agents then fall back to the GPT orchestrator model."
+                "description": "Deploy the Anthropic Claude model (\"true\"/\"false\"). Set to \"false\" (azd env set DEPLOY_CLAUDE_MODEL false) if your subscription has no Claude quota or the Anthropic marketplace offer is unavailable — the drafting agent then falls back to the GPT orchestrator model (Clause & Risk stays on gpt-5.6-sol)."
               }
             },
             "claudeOrganizationName": {
@@ -265,11 +265,14 @@
             "bingConnectionName": "clm-bing",
             "gptOrchestrator": "gpt-5.4",
             "gptMini": "gpt-5-mini",
+            "gpt56sol": "gpt-5.6-sol",
             "claude": "claude-opus-4-8",
             "gptOrchestratorModel": "gpt-5.4",
             "gptOrchestratorVersion": "2026-03-05",
             "gptMiniModel": "gpt-5-mini",
             "gptMiniVersion": "2025-08-07",
+            "gpt56solModel": "gpt-5.6-sol",
+            "gpt56solVersion": "2026-03-05",
             "roleAiDeveloper": "64702f94-c441-49e6-a78b-ef80e0188fee",
             "roleCognitiveServicesUser": "a97b65f3-24c7-4388-baec-2e87135dc908",
             "roleSearchIndexDataContributor": "8ebe5a00-799e-43f5-93ac-243d3dce84a7",
@@ -410,6 +413,26 @@
               ]
             },
             {
+              "type": "Microsoft.CognitiveServices/accounts/deployments",
+              "apiVersion": "2025-04-01-preview",
+              "name": "[format('{0}/{1}', variables('foundryName'), variables('gpt56sol'))]",
+              "sku": {
+                "name": "GlobalStandard",
+                "capacity": 30
+              },
+              "properties": {
+                "model": {
+                  "format": "OpenAI",
+                  "name": "[variables('gpt56solModel')]",
+                  "version": "[variables('gpt56solVersion')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', variables('foundryName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts/deployments', variables('foundryName'), variables('gptMini'))]"
+              ]
+            },
+            {
               "condition": "[variables('wantClaude')]",
               "type": "Microsoft.CognitiveServices/accounts/deployments",
               "apiVersion": "2025-04-01-preview",
@@ -432,7 +455,7 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.CognitiveServices/accounts', variables('foundryName'))]",
-                "[resourceId('Microsoft.CognitiveServices/accounts/deployments', variables('foundryName'), variables('gptMini'))]"
+                "[resourceId('Microsoft.CognitiveServices/accounts/deployments', variables('foundryName'), variables('gpt56sol'))]"
               ]
             },
             {
@@ -670,7 +693,7 @@
             },
             "MODEL_CLAUSE_RISK": {
               "type": "string",
-              "value": "[if(variables('wantClaude'), variables('claude'), variables('gptOrchestrator'))]"
+              "value": "[variables('gpt56sol')]"
             },
             "MODEL_RENEWAL": {
               "type": "string",

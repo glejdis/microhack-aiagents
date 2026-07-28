@@ -102,8 +102,8 @@ function Get-MhhClaudeDeployFlag {
       quota. Hardcoding deployClaudeModel=true made the ENTIRE deployment fail (quota
       preflight / "model not found") even though GPT + all other infra would have
       succeeded — and the region-fallback loop then failed everywhere. The Bicep/ARM
-      templates already fall the two Claude-backed agents (drafting, clause & risk)
-      back to the GPT orchestrator when Claude is skipped, so gating on real quota here
+      templates already fall the drafting agent back to the GPT orchestrator when
+      Claude is skipped (Clause & Risk keeps its own gpt-5.6-sol deployment), so gating on real quota here
       makes the deploy "just work" for every attendee: they get GPT + full infra, and
       Claude only when their subscription can actually host it.
 
@@ -334,6 +334,7 @@ $searchEndpoint  = Get-OutVal $deployOutputs 'AZURE_SEARCH_ENDPOINT'
 $searchIndex     = Get-OutVal $deployOutputs 'AZURE_SEARCH_INDEX'
 $modelOrch       = Get-OutVal $deployOutputs 'MODEL_ORCHESTRATOR'
 $modelDraft      = Get-OutVal $deployOutputs 'MODEL_DRAFTING'
+$modelClauseRisk = Get-OutVal $deployOutputs 'MODEL_CLAUSE_RISK'
 $modelRenewal    = Get-OutVal $deployOutputs 'MODEL_RENEWAL'
 
 Write-Host ""
@@ -341,14 +342,14 @@ Write-Host "==================== Your CLM microhack environment ================
 Write-Host "  Resource group          : $effectiveResourceGroup ($effectiveLocation)"
 Write-Host "  Foundry project endpoint: $projectEndpoint"
 Write-Host "  Azure AI Search endpoint: $searchEndpoint (index '$searchIndex')"
-Write-Host "  Models                  : orchestrator=$modelOrch, drafting=$modelDraft, renewal=$modelRenewal"
+Write-Host "  Models                  : orchestrator=$modelOrch, drafting=$modelDraft, clause-risk=$modelClauseRisk, renewal=$modelRenewal"
 Write-Host "  Next                    : paste these into the repo-root .env (see Challenge 1)."
 Write-Host "========================================================================"
 
 # Surface the Claude preflight outcome from the template's authoritative output:
 # MODEL_DRAFTING is claude-opus-4-8 when Claude deployed, else the GPT orchestrator.
 if ($modelDraft -and $modelDraft -notmatch 'claude') {
-    Write-Host "[WARN]  Claude was not deployed in '$effectiveLocation' (no Anthropic quota / model not offered). The Drafting and Clause & Risk agents run on '$modelDraft' instead. Grant Anthropic quota (or set DEPLOY_CLAUDE_MODEL=true) and redeploy to enable the Claude bake-off in Challenge 3."
+    Write-Host "[WARN]  Claude was not deployed in '$effectiveLocation' (no Anthropic quota / model not offered). The Drafting agent runs on '$modelDraft' instead (Clause & Risk stays on '$modelClauseRisk'). Grant Anthropic quota (or set DEPLOY_CLAUDE_MODEL=true) and redeploy to enable the Claude bake-off in Challenge 3."
 }
 
 @{ HackboxCredential = @{ name = 'ResourceGroup'; value = $effectiveResourceGroup; note = 'Resource group holding your CLM microhack resources' } }
@@ -367,6 +368,9 @@ if ($modelOrch) {
 }
 if ($modelDraft) {
     @{ HackboxCredential = @{ name = 'ModelDrafting'; value = $modelDraft; note = 'Drafting model deployment -> MODEL_DRAFTING in .env' } }
+}
+if ($modelClauseRisk) {
+    @{ HackboxCredential = @{ name = 'ModelClauseRisk'; value = $modelClauseRisk; note = 'Clause & Risk model deployment -> MODEL_CLAUSE_RISK in .env' } }
 }
 if ($modelRenewal) {
     @{ HackboxCredential = @{ name = 'ModelRenewal'; value = $modelRenewal; note = 'Renewal model deployment -> MODEL_RENEWAL in .env' } }

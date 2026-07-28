@@ -3,7 +3,7 @@
 **[🏠 Home](../README.md)**  ·  [← Challenge 3: Observability](challenge-03.md)  ·  [Challenge 5: Publish to M365 →](challenge-05.md)
 
 Welcome back! You have one grounded specialist so far. In this challenge you'll add the **second
-specialist** — **Clause & Risk** on Claude — then stand up an **Orchestrator** (GPT-5.4) that routes
+specialist** — **Clause & Risk** on GPT-5.6 Sol — then stand up an **Orchestrator** (GPT-5.4) that routes
 to both via the **agent-as-tool pattern**, and finally expose the whole workflow as an **MCP server**
 any client (VS Code, GitHub Copilot) can call. This is where the system becomes truly **multi-agent**.
 
@@ -21,7 +21,7 @@ If something isn't working as expected, please let your coach know.
 
 ## 🎯 Objective
 
-Add the **2nd specialist** (Clause & Risk on Claude), stand up an **Orchestrator agent** (GPT-5.4)
+Add the **2nd specialist** (Clause & Risk on GPT-5.6 Sol), stand up an **Orchestrator agent** (GPT-5.4)
 that routes to both specialists via the **agent-as-tool pattern**, then expose the whole workflow as an **MCP
 server** callable from VS Code / GitHub Copilot.
 
@@ -30,7 +30,7 @@ server** callable from VS Code / GitHub Copilot.
 - **Clause & Risk agent** reuses the Ch1 grounding pattern → fast to build. It compares a
   counterparty draft to the enterprise standard and returns a **risk score**.
 - **Orchestrator** (GPT-5.4) uses the Agent Framework's **`agent.as_tool(...)`** to call each specialist as a tool. A
-  **GPT orchestrator coordinating Claude specialists** is multi-model composition in one project. It
+  **GPT orchestrator coordinating Claude + GPT-5.6 Sol specialists** is multi-model composition in one project. It
   manages routing, hand-offs and human-in-the-loop.
 - **MCP** (Model Context Protocol) lets you expose the workflow as standard tools so *any* MCP client
   can reuse it. You'll run a local **stdio** server and call it from VS Code.
@@ -40,7 +40,7 @@ server** callable from VS Code / GitHub Copilot.
  user → │  routes + hand-offs + human-in-the-loop            │
         └───────┬───────────────────────────┬───────────────┘
                 │ agent-as-tool             │ agent-as-tool
-        Intake & Drafting (Claude)   Clause & Risk (Claude)
+        Intake & Drafting (Claude)   Clause & Risk (GPT-5.6 Sol)
                 └──────────── grounded on Foundry IQ ─────────┘
         Also exposed as an MCP server: draft_contract · analyze_contract · get_contract_status
 ```
@@ -58,7 +58,7 @@ calls a function.
 
 - **Separation of concerns** — each specialist has its own model, instructions and evaluation.
 - The orchestrator handles **routing, hand-offs and human-in-the-loop**.
-- A **GPT orchestrator coordinating Claude specialists** = multi-model composition in one project.
+- A **GPT orchestrator coordinating Claude + GPT-5.6 Sol specialists** = multi-model composition in one project.
 - `agent.as_tool(name=..., description=...)` wires each specialist into
   [`src/orchestrator.py`](../src/orchestrator.py); agents are built in-process, so there's nothing to keep.
 
@@ -126,7 +126,7 @@ the standard clause library.
 
 ✅ **You should see** (wording/format will vary — the analysis is the point):
 ```text
-✓ Built clause-risk-agent on model 'claude-opus-4-8'
+✓ Built clause-risk-agent on model 'gpt-5.6-sol'
 
 ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 DRAFT: acme_msa_draft.pdf
@@ -152,7 +152,7 @@ Note which specialist the orchestrator says it used for each turn.
 
 ✅ **You should see** the orchestrator delegate each turn to the right specialist:
 ```text
-✓ Orchestrator on 'gpt-5.4' with 2 Claude specialists as tools
+✓ Orchestrator on 'gpt-5.4' with 2 specialists as tools
 
 ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 USER: Draft an NDA for Northwind, review the Acme MSA draft, and give me CT-4821's status.

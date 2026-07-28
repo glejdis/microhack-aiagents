@@ -47,7 +47,7 @@ Pick **one** path — all three provision the same Foundry project, models, Sear
 azd up                             # Bicep in labautomation/infra/ (recommended)
 # — or the scripted path —
 ./labautomation/deploy.sh          # bash;  deploy.ps1 on Windows
-# — no Claude entitlement? skip it (drafting/clause-risk fall back to gpt-5.4) —
+# — no Claude entitlement? skip it (drafting falls back to gpt-5.4; clause-risk stays on gpt-5.6-sol) —
 DEPLOY_CLAUDE=false ./labautomation/deploy.sh   # azd equivalent: azd env set DEPLOY_CLAUDE_MODEL false
 ```
 The `.env` is written for you by the postprovision hook → [`src/scripts/write_env.py`](../../src/scripts/write_env.py), which reads the deployment outputs (`azd env get-values`, or `--deployment` for the ARM path) and writes every env var the agents use — filling constants from a `DEFAULTS` map when an output is absent:
@@ -56,7 +56,7 @@ The `.env` is written for you by the postprovision hook → [`src/scripts/write_
 DEFAULTS = {
     "MODEL_ORCHESTRATOR": "gpt-5.4",
     "MODEL_DRAFTING": "claude-opus-4-8",
-    "MODEL_CLAUSE_RISK": "claude-opus-4-8",
+    "MODEL_CLAUSE_RISK": "gpt-5.6-sol",
     "MODEL_RENEWAL": "gpt-5-mini",
     "AZURE_SEARCH_INDEX": "clm-corpus",
     "AZURE_SEARCH_CONNECTION_NAME": "clm-search",

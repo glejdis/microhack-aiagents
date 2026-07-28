@@ -11,7 +11,7 @@ targetScope = 'subscription'
 param environmentName string
 
 @minLength(1)
-@description('Azure region for all resources. Must offer gpt-5.4 and gpt-5-mini (and Claude Opus 4.8 unless DEPLOY_CLAUDE_MODEL=false).')
+@description('Azure region for all resources. Must offer gpt-5.4, gpt-5-mini and gpt-5.6-sol (and Claude Opus 4.8 unless DEPLOY_CLAUDE_MODEL=false).')
 param location string
 
 @description('Object id of the user/service principal running the deployment (azd provides AZURE_PRINCIPAL_ID). Used for RBAC.')

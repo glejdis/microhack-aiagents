@@ -15,10 +15,10 @@ $Project     = $env:PROJECT     ?? "clm-project"
 $Search      = $env:SEARCH      ?? "clmsearch$Suffix"
 $AppInsights = "clm-appinsights"
 
-$GptOrch = "gpt-5.4"; $GptMini = "gpt-5-mini"; $Claude = "claude-opus-4-8"
+$GptOrch = "gpt-5.4"; $GptMini = "gpt-5-mini"; $Gpt56Sol = "gpt-5.6-sol"; $Claude = "claude-opus-4-8"
 
 # Claude can be skipped (no Anthropic quota / marketplace offer): set
-# $env:DEPLOY_CLAUDE = "false". The Claude-backed agents then use the orchestrator.
+# $env:DEPLOY_CLAUDE = "false". The drafting agent then uses the orchestrator (Clause & Risk stays on gpt-5.6-sol).
 $DeployClaude = ($env:DEPLOY_CLAUDE ?? "true").ToLower() -eq "true"
 $DraftingModel = if ($DeployClaude) { $Claude } else { $GptOrch }
 
@@ -47,8 +47,10 @@ function Deploy-Model($name, $model, $version, $format, $cap) {
     --sku-name GlobalStandard --sku-capacity $cap -o none 2>$null
   if ($LASTEXITCODE -ne 0) { Write-Host "    ! $name failed — check availability in $Location." }
 }
-Deploy-Model $GptOrch "gpt-5.4"          "2026-03-05" "OpenAI"    30
-Deploy-Model $GptMini "gpt-5-mini"       "2025-08-07" "OpenAI"    30
+Deploy-Model $GptOrch  "gpt-5.4"          "2026-03-05" "OpenAI"    30
+Deploy-Model $GptMini  "gpt-5-mini"       "2025-08-07" "OpenAI"    30
+# Clause & Risk runs on gpt-5.6-sol — its own deployment, independent of Claude.
+Deploy-Model $Gpt56Sol "gpt-5.6-sol"      "2026-03-05" "OpenAI"    30
 # Claude: Anthropic deployments REQUIRE a modelProviderData block the CLI can't
 # send, so deploy via the ARM REST API (auto-accepts the marketplace offer).
 function Deploy-Claude {
@@ -81,7 +83,7 @@ function Deploy-Claude {
 if ($DeployClaude) {
   Deploy-Claude
 } else {
-  Write-Host "  · Skipping Claude (DEPLOY_CLAUDE=false) — drafting/clause-risk use $GptOrch"
+  Write-Host "  · Skipping Claude (DEPLOY_CLAUDE=false) — drafting uses $GptOrch"
 }
 
 az search service create -n $Search -g $Rg -l $Location --sku basic --partition-count 1 --replica-count 1 -o none
@@ -146,7 +148,7 @@ AZURE_AI_PROJECT_ENDPOINT=$ProjectEndpoint
 
 MODEL_ORCHESTRATOR=$GptOrch
 MODEL_DRAFTING=$DraftingModel
-MODEL_CLAUSE_RISK=$DraftingModel
+MODEL_CLAUSE_RISK=$Gpt56Sol
 MODEL_RENEWAL=$GptMini
 
 AZURE_SEARCH_ENDPOINT=$SearchEndpoint

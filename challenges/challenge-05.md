@@ -187,7 +187,7 @@ python src/proactive_alerts.py --from-renewals --days 30
 
 - Conversational (pull) vs proactive (push) — which contract-management moments deserve an
   interruption, and which should wait for the user to ask?
-- You just shipped a **GPT orchestrator + Claude specialists + proactive alerts** to where legal
+- You just shipped a **GPT orchestrator + Claude/GPT specialists + proactive alerts** to where legal
   actually works (Teams). What's the next agent from the 5-agent vision you'd add, and why?
 
 🎉 **You've completed the microhack** — a multi-model, multi-agent CLM assistant, grounded with

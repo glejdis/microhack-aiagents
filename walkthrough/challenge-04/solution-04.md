@@ -2,7 +2,7 @@
 
 **[← Back to Challenge 4](../../challenges/challenge-04.md)** · [Home](../../README.md)
 
-Add the **2nd specialist** (Clause & Risk on Claude), stand up an **Orchestrator
+Add the **2nd specialist** (Clause & Risk on GPT-5.6 Sol), stand up an **Orchestrator
 agent** (GPT-5.4) that delegates via the `agent.as_tool(...)` pattern, then expose the
 whole workflow as an **MCP server** any client can call.
 
@@ -22,7 +22,7 @@ whole workflow as an **MCP server** any client can call.
 ## 🛠️ Task-by-task walkthrough
 
 ### Task 1 · Build the Clause & Risk agent
-[`src/agents/clause_risk_agent.py`](../../src/agents/clause_risk_agent.py) reuses the Ch2 grounding pattern on Claude, and conditionally attaches web search for counterparty due-diligence:
+[`src/agents/clause_risk_agent.py`](../../src/agents/clause_risk_agent.py) reuses the Ch2 grounding pattern on GPT-5.6 Sol, and conditionally attaches web search for counterparty due-diligence:
 ```python
 # src/agents/clause_risk_agent.py
 def create_agent(model=None, *, connection_id=None):
@@ -31,7 +31,7 @@ def create_agent(model=None, *, connection_id=None):
     if web_search is not None:
         tools.append(web_search)
     return Agent(
-        client=build_chat_client(model or settings.model_clause_risk),  # claude-opus-4-8
+        client=build_chat_client(model or settings.model_clause_risk),  # gpt-5.6-sol
         name=AGENT_NAME, instructions=INSTRUCTIONS, tools=tools,
     )
 ```
@@ -40,7 +40,7 @@ python src/agents/clause_risk_agent.py     # analyzes BOTH sample drafts (delibe
 ```
 ✅ **You should see** (format varies — the analysis is the point):
 ```text
-✓ Built clause-risk-agent on model 'claude-opus-4-8'
+✓ Built clause-risk-agent on model 'gpt-5.6-sol'
 DRAFT: acme_msa_draft.pdf
   • Limitation of liability — UNCAPPED vs standard 12-month cap [CL-04]  → ❌ deviation
   • Auto-renewal — 60-day vs standard 30-day notice [CL-07]             → ⚠️ deviation
@@ -64,14 +64,14 @@ clause_tool = clause_risk.as_tool(name="clause_risk", arg_name="request",
 return Agent(
     client=build_chat_client(settings.model_orchestrator),   # gpt-5.4
     name=ORCHESTRATOR_NAME, instructions=INSTRUCTIONS,
-    tools=[intake_tool, clause_tool],                        # Claude specialists as tools of a GPT agent
+    tools=[intake_tool, clause_tool],                        # specialists as tools of a GPT agent
 )
 ```
 ```bash
 python src/orchestrator.py
 ```
 ```text
-✓ Orchestrator on 'gpt-5.4' with 2 Claude specialists as tools
+✓ Orchestrator on 'gpt-5.4' with 2 specialists as tools
 ORCHESTRATOR: [→ intake_drafting] Draft ready... [→ clause_risk] Acme draft is HIGH risk...
               [→ get_contract_status] CT-4821 is Active, renews 2026-09-01.
 ```
@@ -138,7 +138,7 @@ python src/orchestrator_mcp.py      # you don't start the server yourself
 
 | Path | Role |
 |------|------|
-| [`src/agents/clause_risk_agent.py`](../../src/agents/clause_risk_agent.py) | Clause & Risk specialist (Claude Opus 4.8) |
+| [`src/agents/clause_risk_agent.py`](../../src/agents/clause_risk_agent.py) | Clause & Risk specialist (GPT-5.6 Sol) |
 | [`src/orchestrator.py`](../../src/orchestrator.py) | Orchestrator with specialists as tools |
 | [`src/mcp_server/server.py`](../../src/mcp_server/server.py) | MCP server exposing the CLM workflow over stdio |
 | [`src/.vscode/mcp.json`](../../src/.vscode/mcp.json) | VS Code MCP client config (`clm-mcp`) |

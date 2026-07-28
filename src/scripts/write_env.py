@@ -27,7 +27,7 @@ ENV_PATH = REPO_ROOT / ".env"
 DEFAULTS = {
     "MODEL_ORCHESTRATOR": "gpt-5.4",
     "MODEL_DRAFTING": "claude-opus-4-8",
-    "MODEL_CLAUSE_RISK": "claude-opus-4-8",
+    "MODEL_CLAUSE_RISK": "gpt-5.6-sol",
     "MODEL_RENEWAL": "gpt-5-mini",
     "AZURE_SEARCH_INDEX": "clm-corpus",
     "AZURE_SEARCH_CONNECTION_NAME": "clm-search",

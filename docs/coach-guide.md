@@ -22,8 +22,8 @@ tips. Participants never see this file; it's for the people running the room.
 
 | Task | Why it matters |
 |------|----------------|
-| **Pick a region with all 3 models** (`gpt-5.4`, `gpt-5-mini`, `claude-opus-4-8`). `swedencentral` is a good default. | Challenge 1 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** Model versions drift — the repo tracks non-deprecating pins; if you re-pin, avoid versions with a near/past `deprecation.inference` date (`az cognitiveservices model list`). |
-| **Confirm Claude is enabled** in both the **model catalog** *and* the **Foundry chat runner** for that region, and that you have **Anthropic quota**. | If Foundry can't serve Claude via the chat client, Ch2 needs the Anthropic-SDK fallback. The infra now auto-accepts the Anthropic marketplace offer (it sends the `modelProviderData` attestation — override the org via `CLAUDE_ORGANIZATION_NAME`), so `InvalidModelProviderData` from *missing* attestation is gone. If there's genuinely **zero Claude quota / no entitlement**, tell teams to deploy with **`DEPLOY_CLAUDE_MODEL=false`** (`DEPLOY_CLAUDE=false` for the deploy scripts) — drafting/clause-risk fall back to `gpt-5.4` and the smoke test still passes. |
+| **Pick a region with all 4 models** (`gpt-5.4`, `gpt-5-mini`, `gpt-5.6-sol`, `claude-opus-4-8`). `swedencentral` is a good default. | Challenge 1 dies here if a model isn't offered. **Verify in the Foundry model catalog for your exact subscription.** Model versions drift — the repo tracks non-deprecating pins; if you re-pin, avoid versions with a near/past `deprecation.inference` date (`az cognitiveservices model list`). |
+| **Confirm Claude is enabled** in both the **model catalog** *and* the **Foundry chat runner** for that region, and that you have **Anthropic quota**. | If Foundry can't serve Claude via the chat client, Ch2 needs the Anthropic-SDK fallback. The infra now auto-accepts the Anthropic marketplace offer (it sends the `modelProviderData` attestation — override the org via `CLAUDE_ORGANIZATION_NAME`), so `InvalidModelProviderData` from *missing* attestation is gone. If there's genuinely **zero Claude quota / no entitlement**, tell teams to deploy with **`DEPLOY_CLAUDE_MODEL=false`** (`DEPLOY_CLAUDE=false` for the deploy scripts) — drafting falls back to `gpt-5.4` (Clause & Risk stays on `gpt-5.6-sol`) and the smoke test still passes. |
 | **Check quota** — Basic Azure AI Search + the model SKUs (TPM for each deployment). Request increases early. | Quota denials are the #1 day-of blocker and can take hours to approve. |
 | **Decide the subscription model** — one sub per team (cleanest) vs a shared sub with per-team resource groups / env names. | `azd up` uses an environment name as the RG suffix; shared subs need unique names per team. |
 | **Do a full dry-run** in the target region, including `azd up` **and** `labautomation/deploy.sh`. | You'll hit the region/quota issues before the participants do. |
@@ -144,7 +144,7 @@ of the challenge, what "done" looks like, where teams get stuck, and the hint to
 
 ### Challenge 4 · Orchestration + MCP Server *(60 min · orchestration · MCP)*
 
-- **Point:** add the **Clause & Risk** specialist (Claude), stand up a **GPT-5.4 Orchestrator** that
+- **Point:** add the **Clause & Risk** specialist (GPT-5.6 Sol), stand up a **GPT-5.4 Orchestrator** that
   routes to both specialists via the **agent-as-tool pattern**, and expose the workflow as an **MCP server**.
 - **Done when:** one orchestrator thread runs **draft → extract → risk** by delegating; the Clause & Risk
   agent returns a structured, cited risk assessment; the **MCP server is discoverable + callable** from

@@ -170,7 +170,7 @@ def build_web_search_tool(*, connection_id: str | None = None, project=None):
                 connection_id = get_bing_connection_id(own_project)
 
     # Grounding with Bing Search (preview) — works on non-OpenAI Foundry models
-    # (the Claude specialists) and exposes finer Bing params than the GA
+    # (e.g. the Claude drafting specialist) and exposes finer Bing params than the GA
     # get_web_search_tool (which is Azure-OpenAI-only).
     return _normalize_foundry_tool(
         FoundryChatClient.get_bing_grounding_tool(
