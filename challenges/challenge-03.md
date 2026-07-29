@@ -106,6 +106,14 @@ python src/tracing_setup.py
 > `AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true` must be set **before** the agents SDK is
 > imported — `tracing_setup` does this on import, so import it first in any entry point.
 
+> [!IMPORTANT]
+> Tracing is **per-process**. `python src/tracing_setup.py` wires the exporter, prints the line
+> below, then **exits** — it does *not* leave tracing "on" for a separate demo you launch afterwards.
+> Each agent demo (`intake_drafting_agent.py`, `clause_risk_agent.py`,
+> `obligation_renewal_agent.py`, `orchestrator.py`) and `evaluators.py` now call
+> `tracing_setup.enable_tracing()` themselves at start-up, so **just running a demo exports spans** —
+> this standalone command is only a connectivity check.
+
 ✅ **You should see:**
 ```text
 ✓ Tracing enabled → Application Insights (content recording ON).
@@ -118,8 +126,18 @@ Run an agent now; open Foundry portal → Tracing to see spans.
 
 ### Task 2 · Generate traffic (~15 min)
 
-Open **Foundry portal → Tracing**. Run a few prompts (e.g. re-run the
-Ch1 demo) and inspect the **prompt / retrieval / tool** spans and the token counts.
+**One-time — connect Application Insights to your project.** The Foundry portal **Tracing** tab only
+renders spans from an App Insights resource that is *connected to the project*; provisioning the
+resource in Challenge 1 is not enough on its own. In the portal open your **project → Tracing** (or
+**Observability → Tracing**) and, if prompted, click **Connect** and pick the `clm-appinsights`
+resource. *(Fresh `azd up` / `deploy.ps1` / `deploy.sh` deployments now create this connection for
+you — this step is only needed if Tracing still shows "connect a resource".)*
+
+Then run any agent demo — each one enables tracing itself, so a normal run emits spans:
+```bash
+python src/agents/intake_drafting_agent.py     # or orchestrator.py / clause_risk_agent.py
+```
+Open **Foundry portal → Tracing** and inspect the **prompt / retrieval / tool** spans and token counts.
 
 > 📸 **Screenshot slot — what you'll see:** a run's span timeline in **Tracing**, and the **Agent Monitoring** dashboard.
 >
@@ -127,7 +145,10 @@ Ch1 demo) and inspect the **prompt / retrieval / tool** spans and the token coun
 > <img src="../images/challenge-03/steps/03-agent-monitoring.svg" alt="Screenshot slot: Agent Monitoring" width="75%">
 
 > [!NOTE]
-> Spans take **1–2 minutes** to appear after a run — refresh if the timeline is empty at first.
+> Spans take **1–2 minutes** to appear after a run — refresh if the timeline is empty at first. To
+> confirm data is flowing independently of the portal tab, open **Azure portal → your
+> `clm-appinsights` → Logs** and run `dependencies | order by timestamp desc` (or `union traces,
+> dependencies`) — Agent Framework spans land as `dependencies`.
 
 ### Task 3 · Run the evaluation (~10 min)
 
@@ -218,7 +239,7 @@ Python API yet; the `--gate` flag is the code-first equivalent for CI.)
 
 | Symptom | Fix |
 |---------|-----|
-| No spans in the portal | Confirm `APPLICATIONINSIGHTS_CONNECTION_STRING` is set; content flag must be set before SDK import; allow 1–2 min for ingestion. |
+| No spans in the portal | **(1)** Make sure you ran an **agent demo** (`intake_drafting_agent.py`, `orchestrator.py`, …) or `evaluators.py` — these enable tracing per-process. Running `python src/tracing_setup.py` alone only prints the confirmation and exits, so a demo launched separately still traces because each demo now calls `enable_tracing()` itself. **(2)** The portal **Tracing** tab needs App Insights *connected to the project* — open **project → Tracing → Connect** and pick `clm-appinsights` (Task 2). **(3)** Confirm `APPLICATIONINSIGHTS_CONNECTION_STRING` is set in `.env`; allow 1–2 min for ingestion. To check data independently, query `dependencies` in **Azure portal → clm-appinsights → Logs**. |
 | Evaluator auth error | The judge is an **Azure OpenAI** deployment. Set `AZURE_OPENAI_ENDPOINT`/`AZURE_OPENAI_DEPLOYMENT` (or rely on the derived project endpoint + AAD). |
 | `groundedness` key not found by the gate | Print `result["metrics"]` and adjust the key — SDK versions name it `groundedness` or `groundedness.groundedness`. |
 | `429` rate-limits / `cannot schedule new futures after shutdown` | The judge/agent deployment is throttled. Re-run with `--workers 1` (or set `PF_WORKER_COUNT`); the target auto-retries 429s with backoff, so a slower run still completes. |

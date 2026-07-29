@@ -56,6 +56,7 @@ var appInsightsName = 'clm-appinsights-${resourceToken}'
 var logAnalyticsName = 'clm-logs-${resourceToken}'
 var searchIndexName = 'clm-corpus'
 var searchConnectionName = 'clm-search'
+var appInsightsConnectionName = 'clm-appinsights'
 var bingName = 'clmbing${resourceToken}'
 var bingConnectionName = 'clm-bing'
 
@@ -265,8 +266,29 @@ resource searchConnection 'Microsoft.CognitiveServices/accounts/projects/connect
   }
 }
 
+// Observability connection: project -> Application Insights. Foundry stores
+// traces in App Insights, but the portal Tracing tab only renders them once the
+// resource is *connected* to the project — creating the App Insights component
+// alone is not enough. (Challenge 3.)
+resource appInsightsConnection 'Microsoft.CognitiveServices/accounts/projects/connections@2025-04-01-preview' = {
+  parent: project
+  name: appInsightsConnectionName
+  properties: {
+    category: 'AppInsights'
+    target: appInsights.id
+    authType: 'ApiKey'
+    isSharedToAll: true
+    credentials: {
+      key: appInsights.properties.ConnectionString
+    }
+    metadata: {
+      ApiType: 'Azure'
+      ResourceId: appInsights.id
+    }
+  }
+}
+
 // ==========================================================================
-// Grounding with Bing Search (optional) — web grounding for the Clause & Risk
 // agent (Ch4 "Go Further"). The Bing account is a global resource; the project
 // connection (category ApiKey, resolved by name AZURE_BING_CONNECTION_NAME) is
 // what build_web_search_tool() attaches to the agent. Bing search data leaves
