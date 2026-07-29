@@ -180,6 +180,22 @@ $armFile    = Join-Path $scriptPath 'infra/azuredeploy.json'
 $primaryPrincipalId = if ($AllowedEntraUserIds.Count -gt 0) { $AllowedEntraUserIds[0] } else { '' }
 $tags = @{ project = 'foundry-clm-microhack'; 'lab-deployment-type' = $DeploymentType }
 
+# Guard: ALL participant data-plane RBAC is keyed off $AllowedEntraUserIds — both the
+# template's first-user grant (via principalId) and the multi-user loop after provisioning.
+# An empty list therefore leaves participants with ZERO data-plane roles, so Challenge 1
+# corpus seeding fails on BOTH paths: the SharePoint indexer and the local-PDF fallback each
+# need 'Search Index Data Contributor'. The MicroHack platform always passes the lab's
+# participant object id(s) here (one job per lab); warn loudly if a manual/misconfigured run
+# did not, since the deploy otherwise "succeeds" while leaving the user unable to seed.
+if ($AllowedEntraUserIds.Count -eq 0) {
+    Write-Host "[WARN]  AllowedEntraUserIds is EMPTY — no participant will receive data-plane RBAC"
+    Write-Host "[WARN]  (Search Index Data Contributor, Azure AI Developer, Cognitive Services User,"
+    Write-Host "[WARN]  Search Service Contributor). Challenge 1 corpus seeding will fail for BOTH the"
+    Write-Host "[WARN]  SharePoint indexer and the local-PDF fallback until a user holds those roles."
+    Write-Host "[WARN]  The platform normally sets this per lab; for a manual run pass"
+    Write-Host "[WARN]  -AllowedEntraUserIds <entraObjectId> (comma-separate ids for a team lab)."
+}
+
 # --- Choose the engine ------------------------------------------------------
 $armRequested = $UseArm.IsPresent
 if ($armRequested -and $DeploymentType -ne 'subscription') {
