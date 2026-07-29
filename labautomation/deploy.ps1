@@ -19,7 +19,45 @@ $GptOrch = "gpt-5.4"; $GptMini = "gpt-5-mini"; $Gpt56Sol = "gpt-5.6-sol"; $Claud
 
 # Claude can be skipped (no Anthropic quota / marketplace offer): set
 # $env:DEPLOY_CLAUDE = "false". The drafting agent then uses the orchestrator (Clause & Risk stays on gpt-5.6-sol).
-$DeployClaude = ($env:DEPLOY_CLAUDE ?? "true").ToLower() -eq "true"
+# When $env:DEPLOY_CLAUDE is NOT set, auto-probe Anthropic Claude Opus 4.8 quota in
+# $Location and skip Claude when it is 0 — otherwise the deployment fails with
+# "InsufficientQuota ... Claude Opus 4.8 ... available capacity 0". Availability !=
+# quota: even in a region that offers the model a fresh sandbox sub usually starts at 0.
+function Test-ClaudeQuota {
+  param([string]$Region, [int]$RequiredCapacity = 20)
+  $quotaFamily = "AIServices.GlobalStandard.claude-opus-4-8"
+  try {
+    $subId = az account show --query id -o tsv
+    if (-not $subId) { throw "could not resolve subscription id (run az login)" }
+    $uri = "https://management.azure.com/subscriptions/$subId/providers/Microsoft.CognitiveServices/locations/$Region/usages?api-version=2024-10-01"
+    $json = az rest --method get --url $uri -o json 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $json) { throw "usages query failed" }
+    $usages = ($json | ConvertFrom-Json).value
+    $entry = $usages | Where-Object { $_.name.value -eq $quotaFamily } | Select-Object -First 1
+    if (-not $entry) {
+      $entry = $usages | Where-Object { $_.name.value -match 'claude-opus-4-8' } |
+        Sort-Object { [double]$_.limit } -Descending | Select-Object -First 1
+    }
+    if (-not $entry) { Write-Host "  · Claude preflight: no quota entry for claude-opus-4-8 in $Region — skipping Claude (GPT-only)."; return $false }
+    $limit = [double]$entry.limit; $used = [double]$entry.currentValue
+    if ($limit -le 0 -or ($limit - $used) -lt $RequiredCapacity) {
+      Write-Host "  · Claude preflight: insufficient quota in $Region (limit=$limit, used=$used, need=$RequiredCapacity) — skipping Claude (GPT-only)."
+      return $false
+    }
+    Write-Host "  ✓ Claude preflight: claude-opus-4-8 deployable in $Region (limit=$limit, used=$used)."
+    return $true
+  }
+  catch {
+    Write-Host "  · Claude preflight: quota probe failed ($($_.Exception.Message)) — skipping Claude (GPT-only). Set `$env:DEPLOY_CLAUDE='true' to force it."
+    return $false
+  }
+}
+
+if ([string]::IsNullOrWhiteSpace($env:DEPLOY_CLAUDE)) {
+  $DeployClaude = Test-ClaudeQuota -Region $Location
+} else {
+  $DeployClaude = $env:DEPLOY_CLAUDE.ToLower() -eq "true"
+}
 $DraftingModel = if ($DeployClaude) { $Claude } else { $GptOrch }
 
 # Anthropic Marketplace attestation — REQUIRED by the Cognitive Services RP for
