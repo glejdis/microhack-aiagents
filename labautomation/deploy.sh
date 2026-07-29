@@ -38,7 +38,50 @@ CLAUDE="claude-opus-4-8"
 # Claude can be skipped when the subscription has no Anthropic quota or the
 # marketplace offer is unavailable: run with DEPLOY_CLAUDE=false. The
 # drafting agent then falls back to the GPT orchestrator deployment (Clause & Risk stays on gpt-5.6-sol).
-DEPLOY_CLAUDE="${DEPLOY_CLAUDE:-true}"
+# When DEPLOY_CLAUDE is NOT set, auto-probe Anthropic Claude Opus 4.8 quota in
+# $LOCATION and skip Claude when it is 0 — otherwise the deployment fails with
+# "InsufficientQuota ... Claude Opus 4.8 ... available capacity 0". Availability !=
+# quota: even in a region that offers the model a fresh sandbox sub usually starts at 0.
+claude_quota_ok () {  # region [required-capacity] -> exit 0 if deployable
+  local region="$1" required="${2:-20}" sub_id url json limit used avail
+  sub_id=$(az account show --query id -o tsv 2>/dev/null || echo "")
+  if [[ -z "$sub_id" ]]; then
+    echo "  · Claude preflight: could not resolve subscription id (run az login) — skipping Claude (GPT-only)." >&2
+    return 1
+  fi
+  url="https://management.azure.com/subscriptions/${sub_id}/providers/Microsoft.CognitiveServices/locations/${region}/usages?api-version=2024-10-01"
+  json=$(az rest --method get --url "$url" -o json 2>/dev/null || echo "")
+  if [[ -z "$json" ]]; then
+    echo "  · Claude preflight: usages query failed for $region — skipping Claude (GPT-only). Set DEPLOY_CLAUDE=true to force it." >&2
+    return 1
+  fi
+  # Prefer the exact quota family; fall back to any entry mentioning the model.
+  read -r limit used < <(printf '%s' "$json" | python3 -c '
+import json,sys
+data=json.load(sys.stdin).get("value",[])
+fam="AIServices.GlobalStandard.claude-opus-4-8"
+def nm(e):
+    n=e.get("name"); return n.get("value","") if isinstance(n,dict) else str(n or "")
+e=next((u for u in data if nm(u)==fam),None)
+if e is None:
+    c=[u for u in data if "claude-opus-4-8" in nm(u)]
+    c.sort(key=lambda u: float(u.get("limit",0) or 0), reverse=True)
+    e=c[0] if c else None
+if e is None: print("0 0")
+else: print(float(e.get("limit",0) or 0), float(e.get("currentValue",0) or 0))
+' 2>/dev/null || echo "0 0")
+  avail=$(python3 -c "print(${limit:-0} - ${used:-0})" 2>/dev/null || echo "0")
+  if python3 -c "import sys; sys.exit(0 if (${limit:-0} > 0 and ${avail:-0} >= ${required}) else 1)" 2>/dev/null; then
+    echo "  ✓ Claude preflight: claude-opus-4-8 deployable in $region (limit=${limit}, used=${used})."
+    return 0
+  fi
+  echo "  · Claude preflight: insufficient quota in $region (limit=${limit}, used=${used}, need=${required}) — skipping Claude (GPT-only)." >&2
+  return 1
+}
+
+if [[ -z "${DEPLOY_CLAUDE:-}" ]]; then
+  if claude_quota_ok "$LOCATION"; then DEPLOY_CLAUDE="true"; else DEPLOY_CLAUDE="false"; fi
+fi
 if [[ "$(printf '%s' "$DEPLOY_CLAUDE" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
   DRAFTING_MODEL="$CLAUDE"
 else

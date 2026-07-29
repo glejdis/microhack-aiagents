@@ -489,6 +489,44 @@ Contributor** role, which `azd up` already granted you.)*
 </details>
 
 <details>
+<summary><strong>Path C — coach / tenant-admin pre-consent (shared tenant · participants are NOT admins)</strong></summary>
+
+Running in a **shared tenant** where participants **aren't** tenant admins? Then Path A's
+automatic admin consent can't run — and, importantly, **the lab deploy can't grant it for you
+either.** Consenting to Microsoft Graph *application* permissions (`Sites.ReadWrite.All`,
+`Files.Read.All`) is a **directory-plane** action that needs a directory role (Global
+Administrator / Privileged Role Administrator / Application Administrator). Azure **`Owner`** on
+the subscription — the most `deploy-lab.ps1` is ever guaranteed — is a *resource*-plane role and does **not**
+include directory consent, so it's neither in the Bicep nor grantable via `AllowedEntraUserIds`.
+
+The fix: a **tenant admin does the consent once** and shares one app with the whole room.
+
+1. **Admin (once):** register the app, add both Graph permissions, **grant admin consent**, and
+   mint a secret — the helper does all of it:
+   ```bash
+   pwsh src/scripts/setup_sharepoint_app.ps1        # Windows / PowerShell
+   # — or —
+   bash src/scripts/setup_sharepoint_app.sh         # Codespaces / Linux / macOS
+   ```
+   Create (or pick) **one** shared SharePoint site + **Documents** library and upload the 14
+   corpus PDFs once: `python src/scripts/upload_corpus_to_sharepoint.py`.
+2. **Admin → participants:** hand out the five `SHAREPOINT_*` values (site URL, library, tenant
+   id, app id, **secret**). One admin-consented app is shared by everyone — participants do **not**
+   each need consent.
+3. **Each participant:** paste those values into `.env`, then build *their own* index against the
+   shared library (skip the upload — the admin already did it):
+   ```bash
+   python src/scripts/seed_corpus.py
+   ```
+   Each participant's Foundry + Search resources are their own; only the SharePoint corpus is
+   shared. The indexer signs in as the shared app (app-only), so no per-user consent is involved.
+
+Prefer no shared secret, or no admin on hand? Use **Path B** — the local-PDF fallback needs
+neither SharePoint nor consent and produces the identical `clm-corpus` index.
+
+</details>
+
+<details>
 <summary><strong>Manual SharePoint setup (advanced · click-by-click — only if you can't run the Path A script)</strong></summary>
 
 > [!TIP]
@@ -664,7 +702,7 @@ the index is populated immediately.)*
 > The entire corpus is **PDF** — Contoso-authored templates, the clause library and policies, the 5
 > executed contracts in `data/contracts/` (one per row seeded into Azure SQL) and the inbound
 > counterparty drafts. `seed_corpus.py` lands each document's text in the `clm-corpus` index for
-> Foundry IQ — via the SharePoint indexer (Path B) or by extracting the local PDFs directly (Path A).
+> Foundry IQ — via the SharePoint indexer (Path A) or by extracting the local PDFs directly (Path B).
 > To rebuild the PDFs from source, see
 > [`data/README.md`](../src/data/README.md#regenerating-the-pdfs).
 
@@ -739,7 +777,7 @@ Smoke test: ✅ PASS
 | `DeploymentModelNotSupported` / `deployment failed` for a model | **First: are you on a stale fork?** Run the [preflight grep](#task-4--deploy-the-resources) — it must show `gpt-5.4`+`2026-03-05`, `gpt-5.6-sol`+`2026-07-09`, `gpt-5-mini`+`2025-08-07`, and `claude-opus-4-8`+`2`. If you see `gpt-5.3-chat`, `2026-03-03`, `2025-11-01`, or `gpt-4o-mini`, [sync your fork](#task-1--fork-the-repository) and `git pull`, then redeploy. **Otherwise** the model **name or version** isn't offered in your region: list what *is* available with `az cognitiveservices model list --location <region> --output table`, then update the model/version in [`infra/resources.bicep`](../labautomation/infra/resources.bicep) (and `labautomation/deploy.sh`). This repo is pre-pinned for `swedencentral`; if you changed regions, switch back or re-pin. |
 | `ServiceModelDeprecating` for `gpt-4o-mini` (or another model) | You're on a **stale template** pinning a deprecating model. The repo now uses `gpt-5-mini` `2025-08-07` for the renewal agent — sync your fork + `git pull`. If you deliberately changed a version, pick a current one from `az cognitiveservices model list --location <region> --output table` (avoid ones with a near/past `deprecation.inference` date). |
 | Claude: `InvalidModelProviderData` (marketplace `industry`/`organizationName`/`countryCode`) | **This should no longer occur** — the template now sends the `modelProviderData` attestation on every Claude deployment (defaults `Contoso`/`US`/`technology`, override with `azd env set CLAUDE_ORGANIZATION_NAME …`). If it still fails, your subscription likely isn't **entitled** to the Anthropic offer at all — **skip Claude**: `azd env set DEPLOY_CLAUDE_MODEL false` and redeploy. |
-| Claude: **zero quota** in every region | Anthropic deployment needs Claude **quota** in the region. If you can't get it, **skip Claude**: `azd env set DEPLOY_CLAUDE_MODEL false` (or `DEPLOY_CLAUDE=false` for the deploy scripts) and redeploy — the drafting agent falls back to the `gpt-5.4` orchestrator (Clause & Risk stays on `gpt-5.6-sol`) and the smoke test still passes. |
+| Claude: **zero quota** / `InsufficientQuota … Claude Opus 4.8 … available capacity 0` | Anthropic deployment needs Claude **quota** in the region (availability ≠ quota — a fresh sandbox sub is usually **0 even in swedencentral**). **This is now auto-handled:** every deploy path probes the quota first and skips Claude when it's insufficient — the platform `deploy-lab.ps1`, `azd up` (via the `preprovision` hook `src/scripts/claude_quota_preflight.py`), and `deploy.ps1`/`deploy.sh`. You just get GPT-only automatically (drafting falls back to `gpt-5.4`; Clause & Risk stays on `gpt-5.6-sol`) and the smoke test still passes. To **force** the decision: `azd env set DEPLOY_CLAUDE_MODEL false` (azd), `DEPLOY_CLAUDE_MODEL_FORCE=true` (azd, to force it **on** once you have quota), or `DEPLOY_CLAUDE=false`/`true` (deploy scripts). |
 | `Project can only be created under AIServices Kind account with allowProjectManagement set to true` | Fixed in the template (`account.properties.allowProjectManagement: true`). If you hit it, you're on a stale fork — sync + `git pull` and redeploy. |
 | SharePoint: *"Tenant does not have a SPO license"*, or you can't grant the app's Graph **admin consent** (only Global Reader / **"Grant admin consent" greyed out**) | Only happens if you're **not** an admin of the tenant — in your own sandbox tenant the Path A script self-grants consent. If you hit it, it's **not** a failure: use the **local-PDF fallback (Path B)** — leave the `SHAREPOINT_*` values blank in `.env` and run `python src/scripts/seed_corpus.py`. It extracts `src/data/**/*.pdf` and populates `clm-corpus` directly (needs the Search Index Data Contributor role, granted by `azd up`) — the **same index** the SharePoint path builds, so Challenges 2–6 are unaffected. See [Task 6, Path B](#task-6--seed-the-corpus). |
 | `account project create` unavailable | The CLI project command is preview. Create the project in the **Foundry portal**, then set `AZURE_AI_PROJECT_ENDPOINT` in `.env` manually (Overview → Endpoint). |
