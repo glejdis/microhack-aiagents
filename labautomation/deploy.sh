@@ -139,6 +139,21 @@ az monitor app-insights component create \
 APPINSIGHTS_CONN=$(az monitor app-insights component show --app "$APPINSIGHTS" -g "$RG" --query connectionString -o tsv)
 echo "  ✓ Application Insights created"
 
+# Connect App Insights to the Foundry project so the portal Tracing tab renders
+# spans. Creating the component alone is NOT enough — the project needs a
+# connection to it, otherwise Tracing stays empty even when spans reach App
+# Insights. (Challenge 3.)
+APPINSIGHTS_ID=$(az monitor app-insights component show --app "$APPINSIGHTS" -g "$RG" --query id -o tsv)
+SUB_ID=$(az account show --query id -o tsv)
+PROJECT_ARM_ID="/subscriptions/${SUB_ID}/resourceGroups/${RG}/providers/Microsoft.CognitiveServices/accounts/${FOUNDRY}/projects/${PROJECT}"
+if [[ -n "$APPINSIGHTS_ID" && -n "$APPINSIGHTS_CONN" ]]; then
+  az rest --method put \
+    --url "https://management.azure.com${PROJECT_ARM_ID}/connections/clm-appinsights?api-version=2025-04-01-preview" \
+    --body "{\"properties\":{\"category\":\"AppInsights\",\"target\":\"${APPINSIGHTS_ID}\",\"authType\":\"ApiKey\",\"credentials\":{\"key\":\"${APPINSIGHTS_CONN}\"},\"isSharedToAll\":true,\"metadata\":{\"ApiType\":\"Azure\",\"ResourceId\":\"${APPINSIGHTS_ID}\"}}}" -o none \
+    && echo "  ✓ Application Insights connected to project '$PROJECT' — portal Tracing enabled" \
+    || echo "    ! App Insights connection failed — in the portal open project '$PROJECT' → Tracing → Connect and pick '$APPINSIGHTS'."
+fi
+
 # ---- 7. Grounding with Bing Search (optional web grounding) --------------
 # Provisions a Bing.Grounding resource + a Foundry project connection (resolved
 # by name AZURE_BING_CONNECTION_NAME) that the Clause & Risk agent's

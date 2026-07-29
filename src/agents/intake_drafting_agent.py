@@ -23,6 +23,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))          # src (clm_common, kb_setup)
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agents"))  # sibling agent modules
 
+import tracing_setup  # noqa: E402  (Challenge 3 — sets content-recording flag before agent_framework loads)
+
 from clm_common.config import settings  # noqa: E402
 from clm_common.foundry import build_chat_client, function_tool, run_agent_with_retry  # noqa: E402
 from clm_common.tools import get_contract_status  # noqa: E402
@@ -98,6 +100,13 @@ DEMO_PROMPTS = [
 
 
 async def main() -> None:
+    # Challenge 3 — export this run's OpenTelemetry spans to Application Insights
+    # (and the Foundry portal Tracing tab). Tracing is per-process, so every demo
+    # entry point must enable it; without this the run emits no spans.
+    from clm_common.foundry import get_project_client
+    with get_project_client() as project:
+        tracing_setup.enable_tracing(project)
+
     agent = create_agent()
     print(f"✓ Built {AGENT_NAME} on model '{settings.model_drafting}'\n")
 

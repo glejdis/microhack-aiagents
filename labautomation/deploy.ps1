@@ -97,6 +97,26 @@ az monitor app-insights component create --app $AppInsights -g $Rg -l $Location 
 $AppInsightsConn = az monitor app-insights component show --app $AppInsights -g $Rg --query connectionString -o tsv
 Write-Host "  ✓ Application Insights created"
 
+# Connect App Insights to the Foundry project so the portal Tracing tab renders
+# spans. Creating the component (above) is NOT enough — the project needs a
+# connection to it, otherwise Tracing stays empty even when spans reach App
+# Insights. (Challenge 3.)
+$AppInsightsId = az monitor app-insights component show --app $AppInsights -g $Rg --query id -o tsv
+$SubId = az account show --query id -o tsv
+$ProjectArmId = "/subscriptions/$SubId/resourceGroups/$Rg/providers/Microsoft.CognitiveServices/accounts/$Foundry/projects/$Project"
+if ($AppInsightsId -and $AppInsightsConn) {
+  $AiBody = @{ properties = @{ category = "AppInsights"; target = $AppInsightsId; authType = "ApiKey";
+    credentials = @{ key = $AppInsightsConn }; isSharedToAll = $true;
+    metadata = @{ ApiType = "Azure"; ResourceId = $AppInsightsId } } } |
+    ConvertTo-Json -Depth 6 -Compress
+  $AiTmp = New-TemporaryFile
+  $AiBody | Out-File -FilePath $AiTmp -Encoding utf8
+  az rest --method put --url "https://management.azure.com$ProjectArmId/connections/clm-appinsights`?api-version=2025-04-01-preview" --body "@$($AiTmp.FullName)" -o none 2>$null
+  if ($LASTEXITCODE -eq 0) { Write-Host "  ✓ Application Insights connected to project '$Project' — portal Tracing enabled" }
+  else { Write-Host "    ! App Insights connection failed — in the portal open project '$Project' → Tracing → Connect and pick '$AppInsights'." }
+  Remove-Item $AiTmp -ErrorAction SilentlyContinue
+}
+
 # Grounding with Bing Search (optional web grounding for the Clause & Risk agent).
 # Bing search data leaves the Azure compliance boundary — opt in with -WithBing.
 $BingConnName = ""

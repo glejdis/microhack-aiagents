@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "14481080582103578393"
+      "templateHash": "478454005631202934"
     }
   },
   "parameters": {
@@ -162,7 +162,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "9482686922093654776"
+              "templateHash": "1365307448099890225"
             }
           },
           "parameters": {
@@ -261,6 +261,7 @@
             "logAnalyticsName": "[format('clm-logs-{0}', parameters('resourceToken'))]",
             "searchIndexName": "clm-corpus",
             "searchConnectionName": "clm-search",
+            "appInsightsConnectionName": "clm-appinsights",
             "bingName": "[format('clmbing{0}', parameters('resourceToken'))]",
             "bingConnectionName": "clm-bing",
             "gptOrchestrator": "gpt-5.4",
@@ -269,10 +270,10 @@
             "claude": "claude-opus-4-8",
             "gptOrchestratorModel": "gpt-5.4",
             "gptOrchestratorVersion": "2026-03-05",
-            "gptMiniModel": "gpt-5-mini",
-            "gptMiniVersion": "2025-08-07",
             "gpt56solModel": "gpt-5.6-sol",
             "gpt56solVersion": "2026-07-09",
+            "gptMiniModel": "gpt-5-mini",
+            "gptMiniVersion": "2025-08-07",
             "roleAiDeveloper": "64702f94-c441-49e6-a78b-ef80e0188fee",
             "roleCognitiveServicesUser": "a97b65f3-24c7-4388-baec-2e87135dc908",
             "roleSearchIndexDataContributor": "8ebe5a00-799e-43f5-93ac-243d3dce84a7",
@@ -476,6 +477,28 @@
               "dependsOn": [
                 "[resourceId('Microsoft.CognitiveServices/accounts/projects', variables('foundryName'), variables('projectName'))]",
                 "[resourceId('Microsoft.Search/searchServices', variables('searchName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.CognitiveServices/accounts/projects/connections",
+              "apiVersion": "2025-04-01-preview",
+              "name": "[format('{0}/{1}/{2}', variables('foundryName'), variables('projectName'), variables('appInsightsConnectionName'))]",
+              "properties": {
+                "category": "AppInsights",
+                "target": "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
+                "authType": "ApiKey",
+                "isSharedToAll": true,
+                "credentials": {
+                  "key": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2020-02-02').ConnectionString]"
+                },
+                "metadata": {
+                  "ApiType": "Azure",
+                  "ResourceId": "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts/projects', variables('foundryName'), variables('projectName'))]"
               ]
             },
             {

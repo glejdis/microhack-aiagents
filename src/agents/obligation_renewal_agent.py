@@ -17,6 +17,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # src (clm_common)
 
+import tracing_setup  # noqa: E402  (Challenge 3 — sets content-recording flag before agent_framework loads)
+
 from clm_common.config import settings  # noqa: E402
 from clm_common.foundry import build_chat_client, function_tool, run_prompt  # noqa: E402
 from clm_common.tools import get_contract_status, list_upcoming_renewals  # noqa: E402
@@ -63,6 +65,11 @@ def summarize_renewals(days: int = 90) -> str:
 
 
 def main() -> None:
+    # Challenge 3 — export this run's spans to Application Insights (per-process).
+    from clm_common.foundry import get_project_client
+    with get_project_client() as project:
+        tracing_setup.enable_tracing(project)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--days", type=int, default=90, help="renewal look-ahead window")
     args = parser.parse_args()
