@@ -417,12 +417,24 @@ APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=...
 
 ### Task 6 · Seed the corpus (~7 min)
 
-Build the `clm-corpus` search index that grounds every later challenge (2–6). Because each
-participant is an **admin of their own sandbox tenant**, the default is the real,
-production-shaped **SharePoint** path — and a single script does all of it for you.
+Build the `clm-corpus` search index that grounds every later challenge (2–6). There are two
+supported ways to do it — **pick based on your tenant rights**:
+
+> [!NOTE]
+> **Which path is mine?**
+> - **Path A (SharePoint)** — use it **only if you're a tenant admin** (Global Administrator /
+>   Privileged Role Administrator / Application Administrator) of the tenant you're signed into.
+>   It builds the real, production-shaped SharePoint corpus in one command.
+> - **Path B (local-PDF fallback)** — use it if you're **not** a tenant admin. This is common in
+>   **shared or managed sandbox tenants** (e.g. accounts like `t-…@MngEnv…onmicrosoft.com`), where
+>   Path A's admin consent silently fails with *"Admin consent did not take effect. You must be a
+>   tenant admin…"*. Path B needs **no SharePoint and no admin consent**, and builds the **identical
+>   `clm-corpus` index** — Challenges 2–6 are completely unaffected.
+>
+> Not sure? **Path B always works.** If Path A errors on admin consent, switch to Path B and move on.
 
 > [!IMPORTANT]
-> **Path A — SharePoint corpus, one command (default · recommended).** One script does the
+> **Path A — SharePoint corpus, one command (tenant admins only).** One script does the
 > *entire* SharePoint path — Entra app registration, **admin consent**, a SharePoint site,
 > uploading the 14 corpus PDFs, and building the index — with **no portal clicks**:
 > ```bash
@@ -444,23 +456,32 @@ production-shaped **SharePoint** path — and a single script does all of it for
 > flags `--dry-run` (preview only), `--skip-upload`, `--skip-index`, and
 > `--site-url https://<tenant>.sharepoint.com/sites/<name>` (to reuse a site you already have).
 
-<details>
-<summary><strong>Path B — local-PDF fallback (no SharePoint · works in any tenant · use if you're not an admin)</strong></summary>
-
-Not an admin of your tenant, or SharePoint/SPO unavailable? Skip SharePoint entirely: leave the
-five `SHAREPOINT_*` values **blank** in `.env` and run:
-```bash
-python src/scripts/seed_corpus.py
-```
-It extracts the local `src/data/**/*.pdf` corpus straight into the `clm-corpus` index — the
-**same Foundry IQ grounding** the agents use, no SharePoint required. You should see
-`✓ uploaded 14/14 local PDF(s) into 'clm-corpus'`. *(This needs the **Search Index Data
-Contributor** role, which `azd up` already granted you.)*
-
-**Skipping SharePoint has zero impact on Challenges 2–6** — the agents only ever read the
-`clm-corpus` index, never SharePoint directly. Both paths produce the identical index.
-
-</details>
+> [!IMPORTANT]
+> **Path B — local-PDF fallback (no SharePoint · no admin consent · works in any tenant).**
+> Use this if you're **not** a tenant admin — including the very common case where Path A above
+> failed with *"Admin consent did not take effect. You must be a tenant admin…"*. It skips
+> SharePoint entirely and extracts the local `src/data/**/*.pdf` corpus straight into the
+> `clm-corpus` index — the **same Foundry IQ grounding** the agents use.
+>
+> 1. **Blank the five `SHAREPOINT_*` values in `.env`** (the fallback triggers when any of the
+>    site / app id / secret / tenant is empty). One command does it:
+>    ```bash
+>    sed -i -E 's/^(SHAREPOINT_SITE_URL|SHAREPOINT_APP_ID|SHAREPOINT_APP_SECRET|SHAREPOINT_TENANT_ID)=.*/\1=/' .env
+>    ```
+>    (Confirm `AZURE_SEARCH_ENDPOINT=` is still set from Task 4's deploy.)
+> 2. **Seed the corpus:**
+>    ```bash
+>    python src/scripts/seed_corpus.py
+>    ```
+>    You should see `· SharePoint settings not set — using the LOCAL-PDF fallback` followed by
+>    `✓ uploaded 14/14 local PDF(s) into 'clm-corpus'`. *(This needs the **Search Index Data
+>    Contributor** role, which `azd up` already granted you — if a doc fails, wait a minute for
+>    role propagation and re-run; the script is idempotent.)*
+> 3. Confirm a **non-zero document count** (portal → Search service → Indexes → `clm-corpus`), then
+>    **jump to [Task 7](#task-7--smoke-test).**
+>
+> **Skipping SharePoint has zero impact on Challenges 2–6** — the agents only ever read the
+> `clm-corpus` index, never SharePoint directly. Both paths produce the identical index.
 
 <details>
 <summary><strong>Path C — coach / tenant-admin pre-consent (shared tenant · participants are NOT admins)</strong></summary>
