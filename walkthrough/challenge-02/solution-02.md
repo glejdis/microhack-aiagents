@@ -104,6 +104,8 @@ Work through [`src/sample_prompts.md`](../../src/sample_prompts.md). The `get_co
  "_note": "(source: contracts_seed.json)"}
 ```
 
+The demo agent runs **in-process** (`FoundryChatClient`), so it does not appear in portal → Agents/Playground. To get the Playground path, publish it as a persistent Foundry agent: `python src/agents/publish_agent.py` (`--list` / `--delete` to manage). Grounded Q&A/drafting/refusal work in the Playground; `get_contract_status` stays client-side.
+
 > 📸 **Screenshot slot:** the Foundry **Playground** with the agent giving a grounded, cited answer.
 >
 > <img src="../../images/challenge-02/steps/03-portal-playground.svg" alt="Screenshot slot: Foundry Playground" width="80%">
