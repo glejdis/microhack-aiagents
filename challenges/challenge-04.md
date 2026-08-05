@@ -217,7 +217,6 @@ python src/mcp_server/server.py       # serves over stdio (Ctrl-C to stop)
 (you don't run `server.py`; a hand-run terminal never registers it):
 
 1. **Open the repo root** in VS Code — the folder that contains `.vscode/mcp.json`, **not** `src/`.
-   *(Cloned/forked earlier and don't see it at the root? Pull latest — it used to ship under `src/.vscode/`.)*
 2. Command Palette → *MCP: List Servers* → **clm-mcp** → **Start**. VS Code launches the server for you.
 3. In Copilot Chat (**Agent mode**) call `#draft_contract` / `#analyze_contract` / `#get_contract_status`.
 
