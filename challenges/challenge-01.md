@@ -198,13 +198,13 @@ For a **MicroHack event your Azure resources are already provisioned** — a res
 Foundry project, the three-model GPT fleet, and Azure AI Search. You don't deploy anything; you just
 point your `.env` at them using the values on your **lab dashboard**.
 
-**Step 4a — create your `.env`** from the template (Codespace terminal, at the repo root):
+**Step 3a — create your `.env`** from the template (Codespace terminal, at the repo root):
 
 ```bash
 cp .env.example .env
 ```
 
-**Step 4b — copy your dashboard values into `.env`.** Open `.env` in the Codespace editor and fill in
+**Step 3b — copy your dashboard values into `.env`.** Open `.env` in the Codespace editor and fill in
 the values shown on your lab dashboard:
 
 | Lab dashboard credential | `.env` variable | Example value |
@@ -251,7 +251,7 @@ azd up                  # answer: environment name (e.g. clm-microhack), your su
 
 It provisions for **5–10 minutes**, assigns the RBAC roles the later challenges need, creates the
 `clm-search` Foundry IQ connection, and runs the `postprovision` hook (`src/scripts/write_env.py`) to
-**write your `.env` automatically** — so you can skip Step 4b above. Add Azure SQL with
+**write your `.env` automatically** — so you can skip Step 3b above. Add Azure SQL with
 `azd env set DEPLOY_SQL true` (+ `azd env set SQL_ADMIN_PASSWORD '<StrongP@ssw0rd!>'`) or Bing web
 grounding with `azd env set DEPLOY_BING true` before `azd up`.
 
@@ -268,7 +268,7 @@ grounding with `azd env set DEPLOY_BING true` before `azd up`.
 
 Let's confirm everything landed. Do all three checks:
 
-**5a — Resource group in the Azure Portal.** Open the [Azure Portal](https://portal.azure.com/) →
+**4a — Resource group in the Azure Portal.** Open the [Azure Portal](https://portal.azure.com/) →
 search for **your resource group** (its name is on your dashboard as **ResourceGroup**; the
 self-hosted default is **`rg-clm-microhack`**) → click it. You should see ~7 resources (Foundry account, Azure AI Search,
 Application Insights, Log Analytics, and the model deployments live inside the Foundry account).
@@ -277,7 +277,7 @@ Application Insights, Log Analytics, and the model deployments live inside the F
 >
 > <img src="../images/challenge-01/steps/07-portal-resource-group.png" alt="Screenshot slot: resource group" width="80%">
 
-**5b — Model deployments in the Foundry portal.** Open [ai.azure.com](https://ai.azure.com) → select
+**4b — Model deployments in the Foundry portal.** Open [ai.azure.com](https://ai.azure.com) → select
 your **`clm-project`** → **Models + endpoints**. Confirm the deployments show **Succeeded**:
 `gpt-5.4`, `gpt-5.6-sol`, and `gpt-5.4-nano` (**three** model deployments).
 
@@ -285,7 +285,7 @@ your **`clm-project`** → **Models + endpoints**. Confirm the deployments show 
 >
 > <img src="../images/challenge-01/steps/08-foundry-deployments.png" alt="Screenshot slot: model deployments" width="80%">
 
-**5c — Your `.env` file.** In the Codespace file explorer, open **`.env`** at the repo root. Confirm the
+**4c — Your `.env` file.** In the Codespace file explorer, open **`.env`** at the repo root. Confirm the
 values are filled in (every entry has a value **except** the `SHAREPOINT_*` corpus and the Challenge 5
 `MICROSOFT_APP_*` / `TEAMS_*` variables, which you fill later).
 
