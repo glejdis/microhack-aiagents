@@ -750,20 +750,6 @@ Expected smoke-test output:
 Smoke test: ✅ PASS
 ```
 
-## 🚀 Go Further
-
-> [!NOTE]
-> Finished early? These are **optional** — feel free to move on and come back later.
-
-- Inspect the **Bicep** in [`infra/`](../labautomation/infra/) (`main.bicep` + `resources.bicep`) — it mirrors
-  `deploy.sh` and is what `azd up` runs. Try `azd provision --preview` for a what-if before deploying.
-  [`infra/azuredeploy.json`](../labautomation/infra/azuredeploy.json) is that same template compiled to ARM (for the
-  one-click button in Option C) — regenerate it with
-  `az bicep build --file labautomation/infra/main.bicep --outfile labautomation/infra/azuredeploy.json`.
-- Regenerate this challenge's resource diagram: `python src/scripts/make_challenge0_resources.py`.
-- Add a **US Data Zone** deployment tier for data-residency, or scope RBAC to least privilege.
-- Deploy an alternative lightweight model (e.g. another GPT mini tier) and compare it against `gpt-5.4-nano` for the renewal agent later.
-
 ## 🛠️ Troubleshooting
 
 | Symptom | Fix |
