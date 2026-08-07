@@ -690,12 +690,6 @@ the index is populated immediately.)*
 
 </details>
 
-> 📸 **Screenshot slot — what you'll see:** the `clm-corpus` index with a non-zero document count
-> (verify this before Challenge 2 — a **0** count means the index wasn't seeded; re-run
-> `python src/scripts/seed_corpus.py`).
->
-> <img src="../images/challenge-01/steps/09-search-index.svg" alt="Screenshot slot: clm-corpus index" width="80%">
-
 > [!NOTE]
 > The entire corpus is **PDF** — Contoso-authored templates, the clause library and policies, the 5
 > executed contracts in `data/contracts/` (one per row seeded into Azure SQL) and the inbound
