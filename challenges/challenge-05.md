@@ -19,7 +19,7 @@ If something isn't working as expected, please let your coach know.
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
 > implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
-> it works**, then take it further with **🚀 Go Further**. Stuck? The code *is* the answer key.
+> it works**. Stuck? The code *is* the answer key.
 
 ## 🎯 Objective
 
@@ -175,6 +175,12 @@ Upcoming renewals (next 60 days):
 🔴 CT-6033 auto-renews soon (90-day notice) — HIGH risk. Send notice before the window closes; recommend legal review.
 ```
 
+> [!TIP]
+> **See it in the portal too:** `python src/agents/publish_agent.py` (Challenge 2) also publishes
+> `obligation-renewal-agent` (gpt-5.4-nano) to portal → **Agents**. Its `get_contract_status` /
+> `list_upcoming_renewals` **function tools run client-side**, so in the Playground the portal will
+> *request* each call and let you paste the result — use the script above for the full round-trip.
+
 ### Task 6 · (Optional) Capture a conversation reference (~10 min)
 
 Proactive alerts need a **saved conversation reference** (service URL + conversation id) for a real
@@ -214,13 +220,6 @@ python src/proactive_alerts.py --from-renewals --days 30
 - Your **`clm-contract-agent`** answers **live in Teams and M365 Copilot** with grounded, cited responses.
 - *(Optional · Tasks 5–7)* A **proactive renewal/risk alert** appears in a Teams channel/chat
   (e.g. the CT-4821 message) without the user prompting first.
-
-## 🚀 Go Further
-
-- **Scope access** with Entra (who can use the agent); add agent-store metadata + governance.
-- Schedule the renewal scan (GitHub Action / cron) so alerts fire daily and post an **Adaptive Card**
-  instead of plain text.
-- Add an **approval action** in the card ("Send renewal notice") that calls back into the workflow.
 
 ## 🛠️ Troubleshooting
 

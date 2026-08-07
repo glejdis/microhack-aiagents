@@ -21,7 +21,7 @@ If something isn't working as expected, please let your coach know.
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
 > implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
-> it works**, then take it further with **🚀 Go Further**. Stuck? The code *is* the answer key.
+> it works**. Stuck? The code *is* the answer key.
 
 ## 🎯 Objective
 
@@ -107,9 +107,9 @@ Then open the spans — **New Foundry:** **Build → your agent/model → `Monit
 > [!IMPORTANT]
 > **Tracing and Agent Monitoring are driven by telemetry — not by a registered agent.** The demos run
 > in-process and stream OpenTelemetry spans to Application Insights, so these views populate from
-> *running the demos*, **not** from anything in **Assets → Agents**. An empty Agents list is expected and
-> does not affect monitoring. (The optional Challenge 2 `publish_agent.py` step is unrelated: you don't
-> need a published agent here, and deleting one removes no telemetry.)
+> *running the demos*, **not** from anything in **Assets → Agents**. An empty Agents list is fine — and so
+> is a full one — monitoring is unaffected either way. (The optional Challenge 2 `publish_agent.py` step is
+> unrelated: you don't need published agents here, and publishing or deleting them adds/removes no telemetry.)
 
 > [!NOTE]
 > Spans take **1–2 minutes** to appear after a run — refresh if the timeline is empty at first. To
@@ -246,14 +246,6 @@ Docs: [Rubric evaluators](https://learn.microsoft.com/azure/foundry/concepts/eva
 - The **gpt-5.4-vs-gpt-5.4-nano** comparison is captured (quality + latency).
 - A **rubric evaluator** is built in the portal (or via `CLM_RUBRIC` in code) and run on the dataset.
 - The quality gate **fails** when you set a threshold above the measured score (try `--gate 5.0`).
-
-## 🚀 Go Further
-
-- Add **safety** evaluators (`ContentSafetyEvaluator`) — these take `azure_ai_project` + a credential
-  instead of a `model_config`.
-- Add a **`ToolCallAccuracyEvaluator`** for the `get_contract_status` tool rows.
-- Run **AI red teaming** against the agent and add adversarial rows to the dataset.
-- Wire `--gate` into a GitHub Action so PRs are blocked on a **CLM rubric** regression (see `ci-eval.yml`).
 
 ## 🛠️ Troubleshooting
 

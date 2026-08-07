@@ -18,7 +18,7 @@ If something isn't working as expected, please let your coach know.
 
 > 🧩 **How to use this challenge:** the code in this folder is a **complete, working reference
 > implementation** — you're not building it from a blank file. **Run it, read it, and understand *why*
-> it works**, then take it further with **🚀 Go Further**. Stuck? The code *is* the answer key.
+> it works**. Stuck? The code *is* the answer key.
 
 ## 🎯 Objective
 
@@ -99,6 +99,11 @@ Required approver: VP Legal (delegation-of-authority matrix)
 > 📸 **Screenshot slot:** the clause table + High-risk verdict with citations.
 >
 > <img src="../images/challenge-04/steps/01-clause-risk.svg" alt="Screenshot slot: Clause & Risk output" width="80%">
+
+> [!TIP]
+> **Want to see this agent in the Foundry portal?** `python src/agents/publish_agent.py` (from Challenge 2)
+> publishes **all** the specialists — including `clause-risk-agent` (gpt-5.6-sol) — so it shows up in
+> portal → **Agents** and opens in the **Playground**. Optional; the demo output above is the real evidence.
 
 ### Task 2 · Build the Orchestrator (~10 min)
 
@@ -233,7 +238,8 @@ server's own tools can call your models. It echoes what it discovered, then prin
 
 > [!NOTE]
 > For hack simplicity the endpoint is **public with no auth** — anyone with the URL can call the tools.
-> Securing it (key header, APIM, or a private endpoint) is in **🚀 Go Further**.
+> Securing it (add a key header, front it with APIM, or make the endpoint private on a dedicated MCP
+> subnet) is out of scope for this hack, but it's the recommended next step before any real use.
 
 #### Part B · Connect it to a Foundry agent (portal Playground)
 
@@ -242,16 +248,20 @@ at your URL. *(Task 2's orchestrator ran **in-process** from your terminal — n
 portal — so you create a fresh agent here whose **only** tool is the MCP server. The drafting & clause-risk
 grounding still runs, but **server-side**, behind that tool.)*
 
-1. Open your project → **Agents** → **+ New agent**. In the **Details** tab, set **Name** =
-   `clm-contract-agent` (the portal's default is `new-agent` — rename it so the screenshots make sense).
-   Then → **Tools** → **Add tool** → **Model Context Protocol (MCP)** / *Custom MCP server*.
-2. Set **Server label** = `clm-mcp` and **Server URL** = `https://<your-app>.azurecontainerapps.io/mcp`.
-   Authentication = **No authentication** (matches Part A). Save.
-3. Open the **Playground** and ask, e.g.:
+1. Open your project → **Agents** → **+ New agent** → pick **Build an agent**. In the **Create an agent**
+   dialog, set **Agent name** = `clm-contract-agent` and click **Create** (the portal used to drop you on a
+   `new-agent` default and a *Details* tab — the current UI names the agent up front).
+2. On the agent, go to **Tools** → **Connect a tool** → **Custom** tab → **Model Context Protocol (MCP)** →
+   **Create**.
+3. In the **Add Model Context Protocol tool** dialog set **Name** = `clm-mcp`, **Remote MCP Server
+   endpoint** = `https://<your-app>.azurecontainerapps.io/mcp`, and **Authentication** = **Unauthenticated**
+   (matches Part A), then click **Connect**.
+4. Open the **Playground** and ask, e.g.:
    *"Analyze this clause and score its risk: 'Contoso's liability shall be unlimited and the agreement
    auto-renews for 2-year terms unless cancelled 90 days in advance.'"*
-4. **Approve** the MCP tool call when prompted — the agent invokes `analyze_contract` on **your hosted
-   server** and returns the risk assessment.
+5. When prompted, **Approve** the MCP tool call — the **Approve** button is a dropdown (**Approve once** /
+   *Always approve this tool* / *Always approve all tools*); **Approve once** is fine for the hack. The agent
+   then invokes `analyze_contract` on **your hosted server** and returns the risk assessment.
 
 > 📸 **Screenshot slot — what you'll see:** the MCP tool/connection on the agent, then the Playground
 > running `analyze_contract` against your remote server.
@@ -288,12 +298,6 @@ With `CLM_MCP_URL` set, the client switches from `MCPStdioTool` (local subproces
 
 </details>
 
-### Task 5 · (Go Further) Secure & extend (~optional)
-
-You've now reached the workflow **in-process**, over **local stdio**, and over a **remote HTTPS**
-endpoint from Foundry (and, optionally, your own agent). To productionize, see **🚀 Go Further** below — add auth,
-lock the endpoint down to a **private** MCP subnet, and add **approval** before high-impact tools run.
-
 ## ✔️ Success criteria
 
 - One orchestrator thread runs **draft → extract → risk** by delegating to the two specialists.
@@ -302,24 +306,6 @@ lock the endpoint down to a **private** MCP subnet, and add **approval** before 
   `orchestrator_mcp.py`) **and** as a **remote** endpoint, returning the same results as the agents.
 - **(Task 4)** The server is **hosted on Azure Container Apps** and a **Foundry agent calls it by URL**
   from the Playground. *(Optional: the same URL also works from the local orchestrator via `CLM_MCP_URL`.)*
-
-## 🚀 Go Further
-
-- **Secure the remote endpoint.** Task 4 ships it **public with no auth** for speed. Add a **key header**
-  (set `CLM_MCP_KEY` on the app and pass it from clients / the Foundry MCP tool's *custom keys* auth),
-  front it with **APIM**, or make it **private**: put the Container App on a VNet and add a dedicated
-  MCP subnet delegated to `Microsoft.App/environments`, then reach it over a private endpoint.
-- **Use a Foundry-managed MCP tool with approvals.** Attach the remote server as a hosted
-  `MCPTool(server_label="clm-mcp", server_url=..., require_approval="always")` so high-impact tools
-  (e.g. `draft_contract`) prompt for human approval before they run.
-- Add the **Review & Negotiation** and **Signature & Repository** agents from the 5-agent vision as
-  more agent-as-tool specialists.
-- **Ground the Clause & Risk agent on the web** for external counterparty due-diligence (corporate
-  status, adverse-media, sanctions, public regulatory references). Provision a **Grounding with Bing
-  Search** resource, add it as a project connection, and set `AZURE_BING_CONNECTION_NAME` in `.env` —
-  `create_agent` then attaches the tool automatically (built in `build_web_search_tool()`, the single
-  place to later swap in **Web IQ**). The corpus stays the authority for Contoso standards; the web is
-  public context only, and Bing search data leaves the Azure compliance boundary.
 
 ## 🛠️ Troubleshooting
 
