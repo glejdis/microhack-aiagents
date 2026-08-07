@@ -223,10 +223,6 @@ the values shown on your lab dashboard:
 > paste the two **endpoints** and the **App Insights connection string**. Paste the model names too if
 > your dashboard shows different values.
 
-> 📸 **Screenshot slot — what you'll see:** your lab dashboard listing the resource endpoints and model names.
->
-> <img src="../images/challenge-01/steps/04b-lab-dashboard.png" alt="Screenshot slot: lab dashboard credentials" width="80%">
-
 ✅ **You'll know it worked when:** `.env` has real values for `AZURE_AI_PROJECT_ENDPOINT` and
 `AZURE_SEARCH_ENDPOINT` (not blank). Leave the `SHAREPOINT_*` and the Challenge 5 `MICROSOFT_APP_*` /
 `TEAMS_*` variables blank for now — you fill those later.
