@@ -126,13 +126,22 @@ Task 4 hardens **two different agents** — keep them straight:
 - **Content filters** — keep **Hate / Sexual / Self-harm / Violence** at **Medium** (default).
 - **Prompt Shields** — turn on both **jailbreak** and **indirect (XPIA) prompt injection** — the injection attacks the red team throws.
 - **Set each guardrail's Action to `Block`, not `Annotate`.** Ticking the checkbox only turns on *detection*; the **Action** dropdown decides *enforcement*. **Annotate** lets the content through with a severity label (the attack can still succeed, so the defect rate won't drop) — it's monitor-only. **Block** stops the response so the guardrail actually holds and the attack-success / defect rate falls.
-- **Protected materials** — text + code.
+- **Protected materials** — this control shows **two checkboxes**; tick **both**:
+  - **Protected material for text** — blocks the agent from reproducing copyrighted text (song lyrics, articles, recipes…).
+  - **Protected material for code** — blocks regurgitation of licensed source code (with its GitHub-repo citation).
+  For **each** box set **Intervention point = `Output`** (the risk is in what the agent *emits*, not the user's prompt) and **Action = `Block`**. The header should then read **Protected materials (2)** — the *(2)* confirms both are on.
 - **Sensitive data leakage → PII (Preview)** — you **must pick at least one** data type or the wizard blocks you (*"Please select at least one PII data type"*). For legal contracts:
   - **User information:** Name, Email, Phone number, Address — party/contact PII in NDAs & MSAs.
   - **Financial information:** Credit card, IBAN, SWIFT code, and the bank-account types for your regions (US / EU / Canada / Australia) — payment & banking clauses.
   - *Optional (defense-in-depth):* the **Azure / Database** connection-string & key types stop the agent ever echoing infra secrets — or just **Select All** for max coverage.
 
-Then **Review → Create guardrails**, **re-run Tasks 1–3**, and confirm the attack success / defect rate **drops**.
+Then click **Next** to reach **Select agents and models** (step 2 of 3):
+- **Pick at least one agent** — for this hack tick **`clm-contract-agent`** (your MCP-backed portal/Teams agent from Ch4 Task 4 Part B). That's the production surface this guardrail protects.
+- *Optional:* you can also tick **`intake-drafting-agent`**, but the **Task 1 red-team scan won't reflect it** — `red_team.py` builds that agent **in-process** via `create_agent()`, so it never hits the portal deployment. The code agent's defect rate moves by tightening its **instructions**, not this portal guardrail.
+- **Leave the Models list unchecked** — the guardrail rides on the *agent*; only check a raw model deployment if you want to guard a bare endpoint with no agent.
+- Heads-up: **applying the guardrail creates a new *version* of the selected agent(s)** (the wizard says so) — expected; your Teams-published agent simply picks up the new version.
+
+Then **Next → Review → Create guardrails**, **re-run Tasks 1–3**, and confirm the attack success / defect rate **drops**.
 
 > 📸 **What you'll see:** the Guardrails wizard — content filters plus **PII (Preview)** with its data-type picker (pick at least one).
 >
