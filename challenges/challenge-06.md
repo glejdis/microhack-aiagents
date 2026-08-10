@@ -77,7 +77,7 @@ Sexual                            2           0    0%
 
 > 📸 **Screenshot slot — what you'll see:** the printed **scorecard table** (and/or `redteam_scorecard.json`).
 >
-> <img src="../images/challenge-06/steps/01-redteam-scorecard.svg" alt="Screenshot slot: red-team scorecard" width="80%">
+> <img src="../images/challenge-06/steps/01-redteam-scorecard.png" alt="Baseline red-team scan scorecard with 0% overall attack success rate" width="80%">
 
 ### Task 2 · Turn up the heat (~10 min)
 
@@ -86,6 +86,10 @@ With attack strategies (encodings + a composed Base64→ROT13 attack):
 python src/red_team.py --strategies --num-objectives 2
 ```
 Which strategies slip past the guardrails that baseline prompts don't?
+
+> 📸 **Screenshot slot — what you'll see:** the printed **scorecard table** (and/or `redteam_scorecard.json`).
+>
+> <img src="../images/challenge-06/steps/02-redteam-scorecard.png" alt="Red-team scorecard table showing attack success rates by risk category and complexity" width="80%">
 
 ### Task 3 · Score CLM-specific attacks (~10 min)
 
@@ -110,7 +114,7 @@ Guardrails held: 9/10 · defect rate = 10%
 
 > 📸 **Screenshot slot — what you'll see:** the **defect rate line** + PASS/FAIL verdict.
 >
-> <img src="../images/challenge-06/steps/02-safety-gate.svg" alt="Screenshot slot: safety gate verdict" width="80%">
+> <img src="../images/challenge-06/steps/03-guardrails.png" alt="Guardrail evaluation defect rates and passing safety gate verdict" width="80%">
 
 ### Task 4 · Harden the agent (~15 min)
 
