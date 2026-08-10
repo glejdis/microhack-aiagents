@@ -114,7 +114,7 @@ Guardrails held: 9/10 · defect rate = 10%
 
 > 📸 **Screenshot slot — what you'll see:** the **defect rate line** + PASS/FAIL verdict.
 >
-> <img src="../images/challenge-06/steps/02-safety-gate.svg" alt="Screenshot slot: safety gate verdict" width="80%">
+> <img src="../images/challenge-06/steps/03-guardrails.png" alt="Guardrail evaluation defect rates and passing safety gate verdict" width="80%">
 
 ### Task 4 · Harden the agent (~15 min)
 
