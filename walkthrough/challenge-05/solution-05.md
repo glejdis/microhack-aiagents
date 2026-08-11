@@ -124,9 +124,10 @@ python src/proactive_alerts.py --from-renewals --days 30 --dry-run    # preview 
 🔴 CT-6033 auto-renews soon (90-day notice) — HIGH risk. Send notice before the window closes; recommend legal review.
 ```
 
-> 📸 **Screenshot slot:** the **renewal summary** (prioritized, emoji-tagged).
+> 📸 **What you'll see:** the **renewal summary** printed by `obligation_renewal_agent.py --days 60` — each
+> contract prioritized and emoji-tagged with days-to-renewal, auto-renew, notice window, and risk.
 >
-> <img src="../../images/challenge-05/steps/04-renewal-summary.svg" alt="Screenshot slot: renewal summary" width="80%">
+> <img src="../../images/challenge-05/steps/04-renewal-summary.png" alt="obligation_renewal_agent.py --days 60 terminal output: CT-6033 (Soylent Co) and CT-4821 (Acme Corp), both auto-renew Yes, 90-day notice window, Risk High, with an action to send a non-renew notice immediately" width="80%">
 
 ### Task 6 · (Optional) Capture a conversation reference
 A Foundry-published agent is **managed**, so you don't own its message handler. Use
