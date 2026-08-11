@@ -164,11 +164,19 @@ python src/evaluators.py --bakeoff
   mean latency (s)                         gpt-5.4=4.4   gpt-5.4-nano=1.4
 ```
 
-**How to read it.** Each row is one metric with both models next to each other. The top rows
-(**CLM rubric**, groundedness, relevance) are *quality* on a 1–5 scale; **mean latency (s)**
-is a *speed* number — and a stand-in for **cost**, since a smaller/faster model is also
-cheaper per call. In the sample above the flagship is marginally better on quality
-(groundedness 4.6 vs 4.2) but the nano model is **~3× faster** (1.1s vs 3.2s).
+<img src="../../images/challenge-03/steps/04-bakeoff-results.png" alt="Terminal bake-off comparing gpt-5.4 and gpt-5.4-nano across CLM rubric, coherence, fluency, groundedness, relevance, pass rates, and mean latency" width="85%">
+
+**How to read this run.** Each row places both models side by side. The flagship
+**gpt-5.4** scores higher on the overall CLM rubric (**3.76 vs 3.35**) and groundedness
+(**3.88 vs 3.38**), with a stronger groundedness pass rate (**81.25% vs 62.5%**).
+Coherence and fluency are nearly tied, while relevance is also close. This gives you
+evidence that the flagship is the safer drafting choice when citation quality matters.
+
+The observed mean latency is **7.0s for gpt-5.4** and **10.94s for gpt-5.4-nano**.
+That is a useful reminder not to assume the smaller model wins every individual run:
+service load, throttling, retries, and sample size can dominate a short benchmark.
+Repeat the bake-off and compare representative averages before making a production
+latency or cost decision.
 
 **Why it matters — the trade-off.** There is no universal "best model"; there's only the
 best model *for this task at an acceptable quality bar*. If gpt-5.4-nano lands within
