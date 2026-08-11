@@ -170,6 +170,14 @@ ORCHESTRATOR: [→ intake_drafting] Draft ready... [→ clause_risk] Acme draft 
 
 ### Task 3 · Verify the MCP server exposes its tools (~5 min)
 
+**What you're verifying — and why.** [`src/mcp_server/server.py`](../src/mcp_server/server.py) is the **same brain** as your orchestrator, repackaged as an open **MCP** server: it exposes the workflow's three capabilities as standard tools that *any* MCP client — VS Code, the Foundry Playground, another team's agent — can discover and call **without touching your code**. Each tool is a thin wrapper over a specialist you already built:
+
+| MCP tool | Wraps | Model |
+|---|---|---|
+| `draft_contract` | **Intake & Drafting** agent (Challenge 1/2) | gpt-5.4 |
+| `analyze_contract` | **Clause & Risk** agent (Task 1) | gpt-5.6-sol |
+| `get_contract_status` | Contract-status lookup (Azure SQL → seed fallback) | — |
+
 The server speaks **two transports** from the same code: **stdio** for local dev (what VS Code
 launches) and **streamable HTTP** for remote hosting (Task 4). Start locally here, then go remote next.
 

@@ -84,7 +84,10 @@ ORCHESTRATOR: [→ intake_drafting] Draft ready... [→ clause_risk] Acme draft 
 > <img src="../../images/challenge-04/steps/02-orchestrator.png" alt="Orchestrator (gpt-5.4) thread delegating each turn to the Intake & Drafting and Clause & Risk specialists" width="80%">
 
 ### Task 3 · Run the MCP server (local)
-[`src/mcp_server/server.py`](../../src/mcp_server/server.py) wraps the workflow as three MCP tools over stdio using FastMCP:
+
+**Why build this.** Tasks 1–2 gave you specialists and an orchestrator that only *your* Python can call. Wrapping the same capabilities as an **MCP server** turns them into an open standard any client — VS Code, the Foundry Playground, another team's agent — can discover and call **without your code**. Same brain as the orchestrator; only *where the tools live* changes (in-process → behind MCP).
+
+[`src/mcp_server/server.py`](../../src/mcp_server/server.py) wraps the workflow as three MCP tools over stdio using FastMCP — each tool is a thin wrapper over a specialist you already built (`draft_contract` → **Intake & Drafting** · `analyze_contract` → **Clause & Risk** · `get_contract_status` → status lookup):
 ```python
 # src/mcp_server/server.py
 mcp = FastMCP("clm-mcp")
