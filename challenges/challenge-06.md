@@ -144,10 +144,6 @@ Then click **Next** to reach **Select agents and models** (step 2 of 3):
 
 Then **Next → Review → Create guardrails**, **re-run Tasks 1–3**, and confirm the attack success / defect rate **drops**.
 
-> 📸 **What you'll see:** the Guardrails wizard — content filters plus **PII (Preview)** with its data-type picker (pick at least one).
->
-> <img src="../images/challenge-06/steps/04-guardrails-pii.png" alt="Foundry Guardrails wizard: content filters, Protected materials, and PII (Preview) data-type picker (User / Azure / Database / Financial information)" width="80%">
-
 ### Task 5 · Wire the gate into CI (~5 min)
 
 **Why this task:** a one-time scan proves your agent is safe *today*; a **CI gate keeps it safe on every future change**. [`.github/workflows/ci-eval.yml`](../.github/workflows/ci-eval.yml) re-runs the Challenge 3 **quality gate** (`evaluators.py --gate 3.0`) and the Challenge 6 **safety gate** (`safety_eval.py --gate 0.1 --safety-evals`) **automatically** — **nightly** (weekdays 06:00 UTC) and **on demand** — so a regression **fails the build** before it can merge. It runs on **GitHub-hosted runners** (not your Codespace) and, in this lab, cleanly **no-ops to a green check** because no Azure secrets are configured — which is all you need here: proof the gate is wired into CI and will block a bad merge once a team turns it on. *(Wiring real Azure sign-in so the gates execute live is intentionally **out of scope** — it depends on your tenant/org identity policy and isn't needed to pass this challenge.)*
