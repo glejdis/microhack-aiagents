@@ -38,11 +38,15 @@ server** — locally over stdio, then **hosted on Azure Container Apps** and cal
   and call it from a **Foundry agent** by URL — same tools, now a network service.
 
 > [!NOTE]
-> **Orchestration vs MCP — why both?** They're different layers, not alternatives. **Orchestration**
-> (`agent.as_tool`) is the *reasoning brain* that routes each request to the right specialist. **MCP** is
-> a *packaging standard* that exposes those same capabilities so clients **outside your code** (VS Code,
-> the Foundry Playground, another team's agent) can call them. `orchestrator.py` and `orchestrator_mcp.py`
-> are the **same brain** — only *where the tools live* changes (in-process vs. behind MCP).
+> **Orchestration vs MCP — why both, if the orchestrator already calls the specialists?** They solve
+> *different* problems and stack. **Orchestration** (`agent.as_tool`) is the *reasoning brain* that decides
+> *which* specialist to call and when — but it only runs **inside your Python process**, so only *your* code
+> can reuse it. **MCP** is a *packaging standard* that publishes those same capabilities as a service **any**
+> client can call **by URL, with zero coupling to your code** (VS Code, the Foundry Playground, another
+> team's agent). `orchestrator.py` and `orchestrator_mcp.py` are the **same brain** — only *where the tools
+> live* changes (in-process vs. behind MCP). **Task 4 is the payoff:** a *Foundry-hosted* agent — **not** your
+> orchestrator — calls your server by URL and returns the same risk result, reusing the whole workflow
+> without touching your code.
 
 ```
         ┌────────────── Orchestrator (GPT-5.4) ──────────────┐
@@ -180,6 +184,11 @@ ORCHESTRATOR: [→ intake_drafting] Draft ready... [→ clause_risk] Acme draft 
 
 The server speaks **two transports** from the same code: **stdio** for local dev (what VS Code
 launches) and **streamable HTTP** for remote hosting (Task 4). Start locally here, then go remote next.
+
+> [!NOTE]
+> **"But the orchestrator already calls these agents — why MCP?"** The orchestrator is the *brain*, and it
+> only runs inside *your* code. MCP *publishes* the same tools so **anything** can call them by URL with zero
+> coupling — in **Task 4** a **Foundry** agent (not your orchestrator) does exactly that.
 
 **Verify the tools are registered** — this needs no client and exits on its own:
 ```bash
