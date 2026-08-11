@@ -120,13 +120,10 @@ call if prompted).
 
 > 📸 **Open in Teams / Microsoft 365 Copilot — what you'll see:** once published, the agent's **Publish**
 > dropdown gains the entries **Open in Teams** and **Open in Microsoft 365 Copilot** (plus **Edit display
-> details** and **Unpublish**) — use these to launch the live agent for testing.
+> details** and **Unpublish**). Launch it and your agent answers **live in a Teams chat** with grounded,
+> cited output:
 >
-> <img src="../images/challenge-05/steps/05-publish-menu.png" alt="Publish dropdown after publishing: Open in Teams and Open in Microsoft 365 Copilot" width="60%">
-
-> 📸 **Screenshot slot — what you'll see:** your agent answering **live in a Teams chat** with cited output.
->
-> <img src="../images/challenge-05/steps/02-teams-live.svg" alt="Screenshot slot: agent live in Teams" width="80%">
+> <img src="../images/challenge-05/steps/02-teams-live.png" alt="clm-contract-agent answering live in a Teams chat: Overall risk score High, extracted clauses with risk levels, and a follow-up status prompt" width="80%">
 
 ✅ **You'll know publishing worked when:** you can chat with the agent inside Teams and it returns the
 same grounded, cited answers you saw in the terminal in Challenges 2 & 4.
