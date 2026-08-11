@@ -355,9 +355,6 @@ layer on now.
 4. **Review → Create guardrails**, then re-send the legal-advice prompt (and an injection attempt) and
    watch it get blocked at the service layer.
 
-**No portal agent yet?** Just **discuss where the guardrails would sit** — that's a valid way to
-complete this optional task.
-
 ➡️ **Full walkthrough** (every PII data-type pick, screenshots, and re-testing against the red-team scan):
 **[Challenge 6 · Task 4 — Harden the agent](challenge-06.md#task-4--harden-the-agent-15-min)**.
 

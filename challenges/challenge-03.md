@@ -78,28 +78,25 @@ python src/tracing_setup.py
 Run an agent now, then view spans in the Foundry portal — New Foundry: Build → your agent/model → Monitor; classic: project → Tracing.
 ```
 
-> 📸 **Screenshot slot:** the "Tracing enabled" confirmation.
->
-> <img src="../images/challenge-03/steps/01-tracing-on.png" alt="Screenshot slot: tracing enabled" width="75%">
-
 ### Task 2 · Generate traffic (~15 min)
 
-**One-time — connect Application Insights to your project.** The portal's tracing/monitoring views only
-render spans from an App Insights resource that is *connected to the project*; provisioning the
-resource in Challenge 1 is not enough on its own. The click-path depends on which portal you're in:
+Three steps: **connect** Application Insights once, **run** a demo, then **open** the spans.
 
-- **New Foundry** (the **New Foundry** toggle is **on** — the redesigned UI most people now land in): there is **no** project-level *Tracing* menu item. Open **Build → your agent or model → the `Monitor` tab** and, if prompted, connect Application Insights. Tip: you can jump straight there by typing **"Tracing"** or **"Monitor"** in the portal **search bar** (this is how you reach it when the left nav has no Tracing entry).
-- **Classic Foundry**: open your **project → Tracing** (or **Observability → Tracing**) and click **Connect**, then pick `clm-appinsights`.
+**1 · Connect Application Insights to your project (one-time).** The portal only renders spans from an
+App Insights resource *connected to the project* — provisioning it in Challenge 1 isn't enough on its
+own. In the Foundry portal, open **Build → your agent/model → the `Monitor` tab** and connect
+**`clm-appinsights`** if prompted. *(Shortcut: type **"Monitor"** or **"Tracing"** in the portal
+**search bar** — the redesigned UI has no project-level *Tracing* menu.)*
 
-*(Fresh `azd up` / `deploy.ps1` / `deploy.sh` deployments now create this connection for you — this step is only needed if the view still shows "connect a resource".)*
-
-Then run any agent demo — each one enables tracing itself, so a normal run emits spans:
+**2 · Run any agent demo.** Each demo enables tracing itself, so a normal run emits spans:
 ```bash
 python src/agents/intake_drafting_agent.py     # or orchestrator.py / clause_risk_agent.py
 ```
-Then open the spans — **New Foundry:** **Build → your agent/model → `Monitor`** (or search **"Tracing"** in the search bar); **classic:** **project → Tracing**. Inspect the **prompt / retrieval / tool** spans and token counts.
 
-> 📸 **Screenshot slot — what you'll see:** a run's span timeline (in **Tracing** / the **Monitor** tab) and the **Agent Monitoring** dashboard.
+**3 · Open the spans** in that same **`Monitor`** tab. Inspect the **prompt / retrieval / tool** spans
+and token counts.
+
+> 📸 **Screenshot slot — what you'll see:** a run's span timeline (in the **Monitor** tab) and the **Agent Monitoring** dashboard.
 >
 > <img src="../images/challenge-03/steps/02-portal-tracing.png" alt="Screenshot slot: Foundry Tracing" width="75%">
 > <img src="../images/challenge-03/steps/03-agent-monitoring.png" alt="Screenshot slot: Agent Monitoring" width="75%">
@@ -153,15 +150,27 @@ You'll get a scorecard for the gpt-5.4 drafting agent.
 
 > 📸 **Screenshot slot:** the evaluation scorecard in the terminal.
 >
-> <img src="../images/challenge-03/steps/04-scorecard.png" alt="Screenshot slot: evaluation scorecard" width="75%">
+> <img src="../images/challenge-03/steps/04-scorecard.png" alt="Screenshot slot: evaluation scorecard" width="55%">
 
 ### Task 4 · Run the bake-off (~10 min)
 
-gpt-5.4 (flagship) vs gpt-5.4-nano (lightweight) on the same scorecard:
+A **bake-off** is a head-to-head A/B test: run the **same evaluation you built in Task 3**
+(same dataset, same judges, same scorecard) on **two different models** and compare the
+results. Only the model changes — the agent, prompt, tools and grounding stay identical —
+so any difference in the scores is down to the **model alone**:
+
+- **gpt-5.4** — the *flagship*: higher quality, but slower and more expensive.
+- **gpt-5.4-nano** — the *lightweight* model: cheaper and much faster, possibly lower quality.
+
+The goal is a **data-driven model choice**: is the cheaper/faster model *good enough* for
+contract drafting & QA, or is the flagship's extra quality worth the added latency/cost?
+
 ```bash
 python src/evaluators.py --bakeoff
 ```
-Compare the **CLM rubric** + groundedness/relevance vs mean latency. Which model wins for *this* task?
+Read each row as one metric with both models side by side — **CLM rubric +
+groundedness/relevance** measure *quality*, **mean latency** is a *speed/cost* proxy.
+Which model wins for *this* task?
 
 ✅ **You should see** a side-by-side block:
 ```text
@@ -201,7 +210,7 @@ Quality gate: CLM rubric=3.8 (groundable rows) threshold=5.0
 
 > 📸 **Screenshot slot:** the gate failing on a too-strict threshold.
 >
-> <img src="../images/challenge-03/steps/05-gate-fail.png" alt="Screenshot slot: quality gate fails" width="75%">
+> <img src="../images/challenge-03/steps/05-gate-fail.png" alt="Screenshot slot: quality gate fails" width="55%">
 
 ### Task 6 · (Portal) Build the rubric evaluator + continuous evaluation (~15 min)
 
@@ -252,6 +261,7 @@ Docs: [Rubric evaluators](https://learn.microsoft.com/azure/foundry/concepts/eva
 | Symptom | Fix |
 |---------|-----|
 | No spans in the portal | **(1)** Make sure you ran an **agent demo** (`intake_drafting_agent.py`, `orchestrator.py`, …) or `evaluators.py` — these enable tracing per-process. Running `python src/tracing_setup.py` alone only prints the confirmation and exits, so a demo launched separately still traces because each demo now calls `enable_tracing()` itself. **(2)** The portal's tracing/monitoring view needs App Insights *connected to the project*. In **New Foundry** there is **no** project-level *Tracing* menu — connect it from **Build → your agent/model → `Monitor`** (or type **"Tracing"** in the **search bar**); in **classic Foundry** open **project → Tracing → Connect**. Pick `clm-appinsights` (Task 2). **(3)** Confirm `APPLICATIONINSIGHTS_CONNECTION_STRING` is set in `.env`; allow 1–2 min for ingestion. To check data independently, query `dependencies` in **Azure portal → clm-appinsights → Logs**. |
+| **Monitor** tab stuck on *"Setup incomplete: Verifying access"* (or an authorization error) even though App Insights shows **Connected** | This is an **RBAC read-access gap**, not an ingestion delay — it never self-heals, so it "stays like this for a while." The connection exists, but the portal separately checks whether **your signed-in account** can *read* the telemetry, and the lab historically granted only AI/Search roles. **Fix:** in the **Azure portal**, open **`clm-appinsights-<token>`** → **Access control (IAM)** → **Add role assignment** → **Monitoring Reader** → your account; then open the workspace **`clm-logs-<token>`** (App Insights here is workspace-based, so trace/dependency data lives there) → **IAM** → **Log Analytics Reader** → your account. Wait 2–5 min for propagation, then click **Check now**. *(Optional: the greyed-out "Estimated cost" tile needs **Cost Management Reader** on the subscription.)* New deployments grant these automatically. |
 | Evaluator auth error | The judge is an **Azure OpenAI** deployment. Set `AZURE_OPENAI_ENDPOINT`/`AZURE_OPENAI_DEPLOYMENT` (or rely on the derived project endpoint + AAD). |
 | Gate can't read the `clm_rubric` (or `groundedness`) key | Print `result["metrics"]` and adjust the key — SDK versions name it `<metric>` or `<metric>.<metric>` (e.g. `clm_rubric.clm_rubric`). |
 | `ImportError: Blocked import of regex / defusedxml / … from current working directory …` when running `evaluators.py` (or `safety_eval.py` / `red_team.py`) | This is **NLTK's import guard** (`nltk/inisec.py`, pulled in by `azure-ai-evaluation`), *not* an eval error — it fires before any row is scored. It blocks its helper libs (`regex`, `defusedxml`, …) whenever they resolve to a path **inside the current working directory**, and because the hack's virtualenv lives **inside the repo** (`./.venv`) every site-package counts as "inside cwd". **`-P` / `PYTHONSAFEPATH` do _not_ help** — the guard checks `Path.cwd()`, not `sys.path`. `git pull` the latest scripts: they now pre-import the eval SDK from a throwaway temp directory, so the guard is bypassed automatically. If you can't pull, just run from **any directory outside the repo**, e.g. `cd /tmp && python /workspaces/microhack-aiagents/src/evaluators.py` (the scripts resolve their data/paths absolutely, so a different cwd is safe). |
