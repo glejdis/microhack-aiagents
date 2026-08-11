@@ -70,6 +70,27 @@ This challenge is about **composition** — specialists behind one orchestrator,
 
 ### Task 1 · Build the Clause & Risk agent (~10 min)
 
+**Why it matters — the business case.** Contract review is the bottleneck in every deal: a lawyer
+manually reads each counterparty redline, compares it clause-by-clause to the company's approved
+positions, and decides what's safe to sign — slow, expensive, and inconsistent across reviewers. The
+**Clause & Risk agent** does that first pass in seconds. It extracts the key clauses from an inbound
+draft, compares each to **Contoso Global's** standard clause library and contracting policy, flags
+every deviation (e.g. uncapped liability, 60-day auto-renew), and returns a **Low / Medium / High**
+risk score with the top issues and the **required approver** per the delegation-of-authority matrix.
+The human still signs off — the agent just ensures nothing risky slips through and keeps reviewers
+focused only where it matters (**human-in-the-loop**).
+
+**How it works — the tech.** It's a **Microsoft Agent Framework** `Agent` running on **GPT-5.6 Sol**
+(chosen for structured legal reasoning), grounded on the `clm-corpus` — the clause library,
+contracting policy, negotiation playbook and delegation-of-authority matrix — through the same
+**Foundry IQ / Azure AI Search** knowledge tool you wired in Challenge 2, so it *cites* the standard
+it compares against instead of inventing one. Its instructions pin the workflow deterministically —
+**extract → compare → classify → score**, always cite sources, escalate High-risk items, and never
+give legal advice or self-approve. When an optional **Grounding-with-Bing-Search** connection is set
+(`AZURE_BING_CONNECTION_NAME`), it also attaches a web-search tool for *public* counterparty
+due-diligence (corporate status, adverse-media, sanctions) — never sending the confidential draft to
+the web.
+
 Analyze the (deliberately red-flag) sample drafts. By
 default it analyzes **both** inbound drafts (`acme_msa_draft.pdf` and `globex_nda_redline.pdf`),
 reusing one agent:
@@ -106,6 +127,25 @@ Required approver: VP Legal (delegation-of-authority matrix)
 > portal → **Agents** and opens in the **Playground**. Optional; the demo output above is the real evidence.
 
 ### Task 2 · Build the Orchestrator (~10 min)
+
+**Why it matters — the business case.** A real contract request is rarely one step — *"draft this NDA,
+then review their redline, then tell me the renewal date"* is three jobs for three different
+specialists. Forcing the Contract Manager to know which agent does what is friction. The
+**Orchestrator** is the single front door: the user asks in plain language and it decides *which*
+specialist handles each step, calls them in the right order, combines the results, and centrally
+enforces the guardrails — recommending **human review** for anything High-risk or any final document,
+and never giving legal advice itself. Governance stops depending on the user remembering to ask the
+right agent.
+
+**How it works — the tech.** It's a **Microsoft Agent Framework** `Agent` on **GPT-5.4** (chosen for
+fast, deterministic tool-calling and routing) that wraps each specialist as a callable tool via
+**`agent.as_tool(...)`** — the framework's multi-agent primitive. `intake_drafting` and `clause_risk`
+become ordinary tools the orchestrator invokes like functions, each keeping its own model and
+instructions. That's **multi-model composition in one Foundry project**: a GPT-5.4 brain coordinating
+gpt-5.4 drafting and **GPT-5.6 Sol** clause/risk — only the `model` id on each agent's chat client
+changes. It runs as a single **session** so context carries across turns (the draft it just produced
+is available when you ask it to analyze the counterparty's redline), and both specialists share one
+**Azure AI Search** connection resolved once at startup.
 
 With both specialists connected, run a multi-step thread
 (draft → analyze → status):
