@@ -183,6 +183,8 @@ Which model wins for *this* task?
 
 ### Task 5 · Add a quality gate (~10 min)
 
+The quality gate converts your evaluation score into an automated CI release rule, blocking prompt, model, retrieval, or corpus changes that make the CLM agent measurably worse even when the code still builds.
+
 This is what a CI job would run:
 ```bash
 python src/evaluators.py --gate 3.0   # exit code 3 if the CLM rubric score < 3.0

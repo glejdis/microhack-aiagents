@@ -188,6 +188,21 @@ that decision into **evidence** instead of a hunch — and it's exactly the sign
 evaluation (Task 6) keeps watching as models and prompts change.
 
 ### Task 5 · Add a quality gate (for CI)
+An evaluation report is useful only if somebody reads it; a quality gate turns that report into
+an **automatic release decision**. Agent quality can regress even when the code still builds and
+unit tests pass — for example after changing a prompt, model deployment, retrieval configuration,
+knowledge corpus, or SDK version. In a CLM workflow, shipping that regression could mean missed
+clause deviations, unsupported answers, weak citations, or recommendations beyond delegated
+authority.
+
+The gate establishes the minimum evidence required to ship. CI runs the fixed labelled dataset,
+compares the domain-specific **CLM rubric** with your accepted threshold, and blocks the release
+with a non-zero exit code when the score falls below it. It is not a claim that the agent is
+perfect, nor a substitute for legal review; it is a repeatable regression guard that stops a
+known-good baseline from silently getting worse. Calibrate the threshold from representative
+runs, keep the dataset versioned, and investigate failures rather than lowering the bar just to
+make CI green.
+
 The gate reads the **CLM rubric** over the **groundable rows** and **exits 3** if it's below the threshold — the crux from `main()`:
 ```python
 # src/evaluators.py
