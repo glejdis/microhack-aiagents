@@ -78,10 +78,6 @@ python src/tracing_setup.py
 Run an agent now, then view spans in the Foundry portal — New Foundry: Build → your agent/model → Monitor; classic: project → Tracing.
 ```
 
-> 📸 **Screenshot slot:** the "Tracing enabled" confirmation.
->
-> <img src="../images/challenge-03/steps/01-tracing-on.png" alt="Screenshot slot: tracing enabled" width="75%">
-
 ### Task 2 · Generate traffic (~15 min)
 
 **One-time — connect Application Insights to your project.** The portal's tracing/monitoring views only
