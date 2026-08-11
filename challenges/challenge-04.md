@@ -260,13 +260,6 @@ bash deploy/mcp-server/deploy.sh            # Codespaces / Linux / macOS / Cloud
 ./deploy/mcp-server/deploy.ps1              # Windows PowerShell ONLY — not for Codespaces/bash
 ```
 
-> [!IMPORTANT]
-> **In GitHub Codespaces (and Azure Cloud Shell) you're in a Linux `bash` shell — run the
-> `bash deploy/mcp-server/deploy.sh` line.** The `.ps1` is **Windows PowerShell only**; running
-> `./deploy/mcp-server/deploy.ps1` in bash fails with
-> `bash: ./deploy/mcp-server/deploy.ps1: Permission denied`. Both lines run the *same* deploy with
-> the same auto-discovery — just pick the one for your shell.
-
 The script builds the image, creates the Container App with **external HTTPS ingress**, turns on a
 **system-assigned managed identity**, and grants it a data-plane role on your Foundry account so the
 server's own tools can call your models. It echoes what it discovered, then prints your endpoint:
@@ -281,22 +274,18 @@ server's own tools can call your models. It echoes what it discovered, then prin
      https://clm-mcp.<region>.azurecontainerapps.io/mcp
 ```
 
-> [!TIP]
-> Everything is still overridable if the auto-discovery guesses wrong (e.g. multiple AI accounts in the
-> subscription) — just set the value on the command line: `RESOURCE_GROUP=<rg>
-> FOUNDRY_ACCOUNT_ID=<id> bash deploy/mcp-server/deploy.sh` (or `-ResourceGroup`/`-FoundryAccountId` for
-> the `.ps1`). Prereq: `az login` on your lab subscription. See
-> [`deploy/mcp-server/README.md`](../deploy/mcp-server/README.md) for the full override list.
-
 > [!IMPORTANT]
 > The server's tools **call Foundry agents themselves**, so the container needs its **own** Foundry
-> access — that's the managed identity + role the script sets up. Without it the MCP endpoint answers but
-> the tools return auth errors. Role propagation can take ~1 minute after assignment.
+> access — the managed identity + role the script sets up. Without it the MCP endpoint answers but the
+> tools return auth errors; role propagation can take ~1 minute after assignment.
 
-> [!NOTE]
-> For hack simplicity the endpoint is **public with no auth** — anyone with the URL can call the tools.
-> Securing it (add a key header, front it with APIM, or make the endpoint private on a dedicated MCP
-> subnet) is out of scope for this hack, but it's the recommended next step before any real use.
+**Auto-discovery guessed wrong** (e.g. multiple AI accounts)? Override on the command line —
+`RESOURCE_GROUP=<rg> FOUNDRY_ACCOUNT_ID=<id> bash deploy/mcp-server/deploy.sh` (or
+`-ResourceGroup`/`-FoundryAccountId` for the `.ps1`); full list in
+[`deploy/mcp-server/README.md`](../deploy/mcp-server/README.md). Prereq: `az login` on your lab subscription.
+
+**Security:** for hack simplicity the endpoint is **public with no auth** — fine for the lab; add a key
+header/APIM or a private endpoint before any real use.
 
 #### Part B · Connect it to a Foundry agent (portal Playground)
 
