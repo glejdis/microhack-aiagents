@@ -3,30 +3,33 @@
 WHY THIS EXISTS
     Proactive alerts (``proactive_alerts.py``) need a *saved conversation
     reference* — the **service URL** + **conversation id** of a real Teams chat
-    with your bot. A Foundry-published agent is a **managed** bot, so you don't
-    own a message handler that could save that reference the first time a user
-    writes to it. Without it, ``TEAMS_SERVICE_URL`` / ``TEAMS_CONVERSATION_ID``
-    stay empty and ``proactive_alerts.py`` can't post anything.
+    with a bot **whose identity you own**. The Foundry-published agent is a
+    **managed** bot: its app registration lives in another tenant, so you can't
+    create a client secret for it and can't authenticate a local handler as it.
 
-    This tiny aiohttp bot fills the gap. Point your Azure Bot's messaging
-    endpoint at it *temporarily*, send it **one** message from Teams, and it
-    writes ``TEAMS_SERVICE_URL`` + ``TEAMS_CONVERSATION_ID`` into your ``.env``.
-    Then revert the endpoint and run ``proactive_alerts.py``.
+    So you stand up your **own** throwaway single-tenant Azure Bot and message
+    *that* one. This tiny aiohttp bot, built with YOUR ``MICROSOFT_APP_ID`` /
+    ``MICROSOFT_APP_PASSWORD`` / ``MICROSOFT_APP_TENANT_ID``, validates the
+    inbound Teams token against your app id, then writes ``TEAMS_SERVICE_URL`` +
+    ``TEAMS_CONVERSATION_ID`` into your ``.env`` so ``proactive_alerts.py`` can
+    post through the same bot.
 
 RUN (see challenges/challenge-05.md · Task 6)
     1. pip install -r requirements.txt        # botbuilder-integration-aiohttp, aiohttp
-    2. In .env set MICROSOFT_APP_ID / MICROSOFT_APP_PASSWORD / MICROSOFT_APP_TENANT_ID
-       (Azure portal -> your Bot -> Configuration; create a client secret for the
-       app registration if you don't have the password).
-    3. python src/capture_reference_bot.py    # listens on http://localhost:3978/api/messages
-    4. Expose it publicly with a dev tunnel:
+    2. Register your OWN single-tenant app: Entra ID -> App registrations ->
+       New registration (this org only) -> Certificates & secrets -> new client
+       secret. Put MICROSOFT_APP_ID / MICROSOFT_APP_PASSWORD /
+       MICROSOFT_APP_TENANT_ID in .env.
+    3. Create an Azure Bot that reuses it (Type of App = Single Tenant, Use
+       existing app registration) and enable Channels -> Microsoft Teams.
+    4. python src/capture_reference_bot.py    # listens on http://localhost:3978/api/messages
+    5. Expose it publicly with a dev tunnel:
          devtunnel host -p 3978 --allow-anonymous       # or:  ngrok http 3978
-    5. Azure portal -> your Bot -> Configuration -> Messaging endpoint =
+    6. Your Bot -> Configuration -> Messaging endpoint =
          https://<tunnel-host>/api/messages   -> Apply
-    6. In Teams, send your published agent ANY message ("hi"). This bot captures
-       the reference, writes it to .env, and replies to confirm.
-    7. Revert the messaging endpoint to the one Foundry set (so the agent keeps
-       answering), then send the alert:
+    7. Message YOUR bot ANY text ("hi") via Channels -> Teams -> Open in Teams.
+       This bot captures the reference, writes it to .env, and replies to
+       confirm. Then send the alert:
          python src/proactive_alerts.py --from-renewals --days 30
 """
 from __future__ import annotations
@@ -95,7 +98,7 @@ async def _on_turn(turn_context: TurnContext) -> None:
     print("\n✓ Captured Teams conversation reference — written to .env:")
     print(f"    TEAMS_SERVICE_URL={service_url}")
     print(f"    TEAMS_CONVERSATION_ID={conversation_id}")
-    print("  You can stop this bot (Ctrl+C), revert the messaging endpoint, and run:")
+    print("  You can stop this bot (Ctrl+C) and run:")
     print("    python src/proactive_alerts.py --from-renewals --days 30\n")
 
     await turn_context.send_activity(
