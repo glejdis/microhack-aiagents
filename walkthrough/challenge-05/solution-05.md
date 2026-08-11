@@ -67,6 +67,30 @@ Select **Publish** → **Publish to Teams and Microsoft 365 Copilot** → **Cont
 
 <img src="../../images/challenge-05/steps/04-live-teams-analysis.png" alt="Teams: clm-contract-agent returns Overall risk score High with extracted clauses and top 3 issues" width="80%">
 
+### Troubleshooting Teams deployment
+
+**Can't find the agent in Teams (after direct publish):**
+- Check **Apps → Your agents** in Teams.
+- Wait 1–2 minutes for it to appear after publishing.
+- Verify publishing completed successfully in the Foundry portal.
+
+**Can't upload the app (manual / Download & customize):**
+- Ensure the `manifest.zip` isn't corrupted (re-download, or re-zip `src/manifest/`).
+- Check your Teams admin hasn't disabled **custom app uploads** (sideloading) — many corp tenants do; use a coach-provided tenant.
+- Verify the icons are the correct sizes (**192×192** and **32×32**).
+
+**Agent doesn't respond:**
+- Wait ~30 s after installation for the bot to initialize.
+- Confirm the **Azure Bot Service** was created (shown during publishing).
+- Test the agent in the Foundry **Playground** first.
+
+**Responses are generic (missing your data or tools):**
+- Unlike a simple file-search agent, this one is grounded through its **MCP tool** (Ch4) — confirm the
+  **MCP endpoint from Challenge 4 is still deployed** and reachable, and **approve the tool call** if
+  Teams prompts you.
+- Re-test the same prompt in the Foundry **Playground**; if it's grounded there but generic in Teams,
+  it's a channel / tool-approval issue, not a grounding one.
+
 ### Task 5 · (Optional) Build the Obligation & Renewal agent
 [`src/agents/obligation_renewal_agent.py`](../../src/agents/obligation_renewal_agent.py) is a small, cheap GPT-5.4-nano agent with two function tools:
 ```python

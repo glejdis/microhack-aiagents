@@ -120,40 +120,13 @@ call if prompted).
 
 > 📸 **Open in Teams / Microsoft 365 Copilot — what you'll see:** once published, the agent's **Publish**
 > dropdown gains the entries **Open in Teams** and **Open in Microsoft 365 Copilot** (plus **Edit display
-> details** and **Unpublish**) — use these to launch the live agent for testing.
+> details** and **Unpublish**). Launch it and your agent answers **live in a Teams chat** with grounded,
+> cited output:
 >
-> <img src="../images/challenge-05/steps/05-publish-menu.png" alt="Publish dropdown after publishing: Open in Teams and Open in Microsoft 365 Copilot" width="60%">
-
-> 📸 **Screenshot slot — what you'll see:** your agent answering **live in a Teams chat** with cited output.
->
-> <img src="../images/challenge-05/steps/02-teams-live.svg" alt="Screenshot slot: agent live in Teams" width="80%">
+> <img src="../images/challenge-05/steps/02-teams-live.png" alt="clm-contract-agent answering live in a Teams chat: Overall risk score High, extracted clauses with risk levels, and a follow-up status prompt" width="80%">
 
 ✅ **You'll know publishing worked when:** you can chat with the agent inside Teams and it returns the
 same grounded, cited answers you saw in the terminal in Challenges 2 & 4.
-
-### Troubleshooting Teams deployment
-
-**Can't find the agent in Teams (after direct publish):**
-- Check **Apps → Your agents** in Teams.
-- Wait 1–2 minutes for it to appear after publishing.
-- Verify publishing completed successfully in the Foundry portal.
-
-**Can't upload the app (manual / Download & customize):**
-- Ensure the `manifest.zip` isn't corrupted (re-download, or re-zip `src/manifest/`).
-- Check your Teams admin hasn't disabled **custom app uploads** (sideloading) — many corp tenants do; use a coach-provided tenant.
-- Verify the icons are the correct sizes (**192×192** and **32×32**).
-
-**Agent doesn't respond:**
-- Wait ~30 s after installation for the bot to initialize.
-- Confirm the **Azure Bot Service** was created (shown during publishing).
-- Test the agent in the Foundry **Playground** first.
-
-**Responses are generic (missing your data or tools):**
-- Unlike a simple file-search agent, this one is grounded through its **MCP tool** (Ch4) — confirm the
-  **MCP endpoint from Challenge 4 is still deployed** and reachable, and **approve the tool call** if
-  Teams prompts you.
-- Re-test the same prompt in the Foundry **Playground**; if it's grounded there but generic in Teams,
-  it's a channel / tool-approval issue, not a grounding one.
 
 ### Task 5 · (Optional) Build the Obligation & Renewal agent (~10 min)
 
