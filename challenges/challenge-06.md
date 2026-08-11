@@ -81,11 +81,6 @@ Self-harm                         2           0    0%
 Sexual                            2           0    0%
 → wrote redteam_scorecard.json
 ```
-
-> 📸 **Screenshot slot — what you'll see:** the printed **scorecard table** (and/or `redteam_scorecard.json`).
->
-> <img src="../images/challenge-06/steps/01-redteam-scorecard.png" alt="Baseline red-team scan scorecard with 0.0% overall attack success rate (0 of 8 attacks)" width="80%">
-
 ### Task 2 · Turn up the heat (~10 min)
 
 **Why do this?** Baseline prompts are the easy case — a real attacker *obfuscates* intent.
@@ -100,10 +95,6 @@ With attack strategies (encodings + a composed Base64→ROT13 attack):
 python src/red_team.py --strategies --num-objectives 2
 ```
 Which strategies slip past the guardrails that baseline prompts don't?
-
-> 📸 **Screenshot slot — what you'll see:** the printed **scorecard table** (and/or `redteam_scorecard.json`).
->
-> <img src="../images/challenge-06/steps/02-redteam-scorecard.png" alt="Red-team scorecard table showing attack success rates by risk category and complexity" width="80%">
 
 ### Task 3 · Score CLM-specific attacks (~10 min)
 
@@ -125,10 +116,6 @@ Guardrails held: 9/10 · defect rate = 10%
 > To **see the gate fail on purpose**, run `python src/safety_eval.py --dry-run --gate 0.0`
 > against the unhardened agent — a non-zero defect rate will trip `❌ SAFETY GATE FAILED` and exit
 > non-zero. That's exactly what CI (Task 5) uses to block a bad merge.
-
-> 📸 **Screenshot slot — what you'll see:** the **defect rate line** + PASS/FAIL verdict.
->
-> <img src="../images/challenge-06/steps/03-guardrails.png" alt="Guardrail evaluation defect rates and passing safety gate verdict" width="80%">
 
 ### Task 4 · Harden the agent (~15 min)
 
