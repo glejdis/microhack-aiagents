@@ -159,6 +159,28 @@ Upcoming renewals (next 60 days):
 
 ### Task 6 · (Optional) Capture a conversation reference (~10 min)
 
+> **🧠 The core problem — why this dance exists.** To send a **proactive** message (a ping *nobody asked for*), your code must tell Teams **which chat to post into**. That address is a **conversation reference** = `TEAMS_SERVICE_URL` + `TEAMS_CONVERSATION_ID`. Normally a bot saves it the first time you message it — but a **Foundry-managed** agent owns its own message handler, so you never see those values. **Task 6 grabs them once** (temporarily point the bot at a local helper); **Task 7 uses them** to fire the alert.
+>
+> ```mermaid
+> sequenceDiagram
+>     participant You as You (Teams)
+>     participant Bot as Azure Bot resource
+>     participant Cap as capture_reference_bot.py (local + tunnel)
+>     participant Env as .env
+>     participant Alert as proactive_alerts.py
+>     Note over Bot,Cap: TASK 6 — capture (temporary)
+>     You->>Bot: send "hi"
+>     Bot->>Cap: routes to your tunnel endpoint
+>     Cap->>Env: writes TEAMS_SERVICE_URL + TEAMS_CONVERSATION_ID
+>     Cap-->>You: "✅ Saved this conversation"
+>     Note over Bot: revert endpoint back to Foundry's
+>     Note over Alert,You: TASK 7 — fire (uses saved .env)
+>     Alert->>Bot: continue_conversation(reference)
+>     Bot-->>You: 🔴 CT-4821 renewal alert (unprompted)
+> ```
+>
+> ⚠️ The endpoint swap in step 3 is **temporary** — step 5 *must* revert it, or the published agent goes silent. And the password in step 1 isn't shown anywhere: create a fresh **client secret** on the bot's app registration.
+
 Proactive alerts need a **saved conversation reference** (service URL + conversation id) for a real
 Teams chat with your bot. A Foundry-published agent is **managed**, so you don't own its message
 handler — use the helper bot [`src/capture_reference_bot.py`](../src/capture_reference_bot.py) to grab
