@@ -1,10 +1,10 @@
-# Solution 06 — Safety, Red-Teaming & Continuous Evaluation 🧪
+# Solution 06 — Safety & Red-Teaming 🧪
 
 **[← Back to Challenge 6](../../challenges/challenge-06.md)** · [Home](../../README.md)
 
 **Bonus / optional.** Make the CLM assistant **production-safe**: adversarially attack
-the *same* agent you shipped, run safety evaluations, and gate releases on a combined
-**quality + safety** check in CI.
+the *same* agent you shipped, run safety evaluations, and gate on a **safety** check
+that fails the build on unsafe output.
 
 ## Expected end state
 
@@ -84,7 +84,7 @@ def heuristic_gate(responses) -> float:            # fraction NOT safely handled
 
 if args.gate is not None and defect_rate > args.gate:
     print("❌ SAFETY GATE FAILED — too many guardrails bypassed. Blocking release.")
-    return 3       # non-zero exit fails CI (mirror of Ch3's quality gate)
+    return 3       # non-zero exit blocks the release (mirror of Ch3's quality gate)
 ```
 ```bash
 python src/safety_eval.py --safety-evals            # + cloud Content-Safety + Indirect-Attack evaluators
@@ -107,7 +107,7 @@ Guardrails held: 9/10 · defect rate = 10%
 >
 > <img src="../../images/challenge-06/steps/safety-evals-summary.png" alt="safety_eval.py summary line: Guardrails held 6/10, defect rate 40%" width="65%">
 >
-> **3. Gate preview** — `--dry-run --gate 0.1` runs the pass/fail mechanic offline (no Azure calls) against safe canned responses, so it reports **10/10 → 0% → ✅ SAFETY GATE PASSED**. A defect rate above the threshold exits non-zero and fails CI:
+> **3. Gate preview** — `--dry-run --gate 0.1` runs the pass/fail mechanic offline (no Azure calls) against safe canned responses, so it reports **10/10 → 0% → ✅ SAFETY GATE PASSED**. A defect rate above the threshold exits non-zero and blocks the release:
 >
 > <img src="../../images/challenge-06/steps/safety-gate-dryrun.png" alt="safety_eval.py --dry-run --gate 0.1: Guardrails held 10/10, defect rate 0%, threshold 0.1, SAFETY GATE PASSED" width="75%">
 
@@ -167,27 +167,6 @@ Task 4 hardens **two different agents** — keep them straight:
 >
 > <img src="../../images/challenge-06/steps/07-guardrail-review.png" alt="Create guardrail Review step: Guardrail name Guardrails-clm-contract-agent, Agents clm-contract-agent, no models selected, full controls summary, and a Create button" width="80%">
 
-### Task 5 · Wire the gate into CI
-
-**Purpose:** turn the one-off eval into a **continuous gate** — [`.github/workflows/ci-eval.yml`](../../.github/workflows/ci-eval.yml) re-runs the **quality gate** (`evaluators.py --gate 3.0`) and **safety gate** (`safety_eval.py --gate 0.1 --safety-evals`) **nightly** (weekdays 06:00 UTC) and **on demand**, so a regression would fail the build on every future change. It runs on **GitHub-hosted runners** and, in this lab, cleanly **no-ops to a green check** because no Azure secrets are configured — enough to prove the gate is wired in. *(Making the gates sign in and run live against Azure is intentionally **out of scope**: it depends on the attendee's tenant/org OIDC policy.)*
-
-> 🍴 **Storyline note — this task needs a fork.** Challenges 1–5 run in a **Codespace off this repo (no fork)**; the CI gate runs in **GitHub Actions**, which only runs in **a repo the attendee owns**. So Task 5 starts by **forking** (repo page → **Fork** → **Create fork**). The whole task is **all GitHub web-UI on the fork — no Codespace or terminal** — this is the first and only place a fork appears in the hack; flag it here.
-
-**Required — enable + trigger (universal, ~2 min):**
-1. **Turn on Actions for the fork (first-time only)** — a freshly forked repo has Actions **disabled entirely**. In the **Actions** tab, if you see *"Workflows aren't being run on this forked repository,"* click the green **"I understand my workflows, go ahead and enable them"** button; the workflow list (incl. **ci-eval**) and **Run workflow** button only appear after this.
-2. **Enable the ci-eval workflow** — scheduled workflows are *additionally* **disabled by default in forks**. In **Actions → ci-eval**, click **Enable workflow** (yellow banner); otherwise it never runs (this is the #1 gotcha).
-3. **Trigger** via **Run workflow** (`workflow_dispatch`) or the nightly schedule. With **no Azure secrets set, the job runs and cleanly no-ops (a green check)** — that already satisfies the success criteria, so this path works for **every** attendee.
-
-> 📸 **What you'll see** — the **ci-eval** run: **`eval-gate` ✓ Success** with the *"Eval gate running in no-op mode (green check)"* annotation.
->
-> <img src="../../images/challenge-06/steps/03-actions-run.png" alt="GitHub Actions ci-eval run succeeded — eval-gate green in no-op mode" width="80%">
-
-✅ Green check = gates passed (or no-op); red X = a regression tripped a gate (the whole point).
-
-> 💡 **Codespace vs CI:** the Action runs on **GitHub's runners, not the Codespace**. Running `python src/safety_eval.py --gate 0.1 --safety-evals` (± `--dry-run`) in the Codespace terminal is a valid **local** dry-run of the same gate, but Task 5 is the **automated** CI run — enable the workflow and trigger it from the Actions tab.
-
-> 🤔 **If an attendee asks "did that no-op run actually *do* anything?"** Yes — they **wired the safety gate into CI**. It reports green *without* executing because live evaluation needs an Azure sign-in that's intentionally **out of scope** (no secrets → live steps skipped). The green check proves the gate is in place; a team makes it run for real by adding the Azure secrets and setting the repo variable `RUN_LIVE_EVAL=true`, after which it blocks risky merges automatically.
-
 ## Key files
 
 | Path | Role |
@@ -201,7 +180,7 @@ Task 4 hardens **two different agents** — keep them straight:
 python src/red_team.py --num-objectives 2                 # writes redteam_scorecard.json
 python src/red_team.py --strategies --num-objectives 2    # add attack strategies
 python src/safety_eval.py --safety-evals
-python src/safety_eval.py --dry-run --gate 0.1            # gate for CI
+python src/safety_eval.py --dry-run --gate 0.1            # preview the gate (exit 3 on too-high defect rate)
 ```
 
 > To **see the gate fail on purpose**, run `python src/safety_eval.py --dry-run --gate 0.0`.
@@ -215,4 +194,3 @@ python src/safety_eval.py --dry-run --gate 0.1            # gate for CI
 | `ValueError: 'ContentFiltered' is not a valid ContentFilterCodes` in `safety_eval.py` | The adversarial prompt tripped Azure's content filter / Prompt Shields (expected after Task 4) — the **guardrail held**. The client's `ContentFilterCodes` enum lacks the server's `ContentFiltered` code, so the block surfaced as a `ValueError`. `safety_eval.py` now detects the block, counts the prompt as held, and continues. |
 | Guardrail wizard **Next / Create** returns `"Policy does not have necessary permission to override base policy. Please check aka.ms/oai/rai/exceptions"` | The guardrail writes a full content-filter (RAI) policy to the deployment; Azure only accepts one **≥ as strict** as its base policy, so this means your config is **looser** somewhere. Two causes: an `Annotate` action (monitor-only = looser) → set **every** control's **Action = `Block`**; and the severity slider — **⚠️ `High` is the *loosest* setting, not the strictest.** It picks *what gets filtered*: **`Low, medium, high`** = strictest, **`Medium, high`** = default, **`High`** = only high blocked (low + medium pass → looser than base → rejected). **Fix:** set every category's severity to **`Low` (= "Low, medium, high", strictest)** or leave it at the **default (Medium)** — **never `High`** — with **Action = `Block`**. If it still fails at `Low`/default severity + `Block`, the subscription/tenant has a **locked base RAI policy** the user can't override — that's an admin [exception request](https://aka.ms/oai/rai/exceptions), out of scope. The guardrail is optional; Tasks 1–3 pass without it. |
 | Red-teaming agent unavailable | Confirm the AI Red Teaming Agent is enabled for your Foundry project/region. |
-| `ci-eval` has **0 runs** / never fires in the fork | Scheduled workflows are **disabled by default in forks** — **Actions → ci-eval → Enable workflow**, then **Run workflow** or wait for the nightly schedule. |
