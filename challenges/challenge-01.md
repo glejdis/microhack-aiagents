@@ -283,7 +283,7 @@ your **`clm-project`** → **Models + endpoints**. Confirm the deployments show 
 
 > 📸 **Screenshot slot — what you'll see:** the three model deployments, all "Succeeded".
 >
-> <img src="../images/challenge-01/steps/08-foundry-deployments.png" alt="Screenshot slot: model deployments" width="80%">
+> <img src="../images/challenge-01/steps/08-foundry-deployments-dark.png" alt="Screenshot slot: model deployments" width="80%">
 
 **4c — Your `.env` file.** In the Codespace file explorer, open **`.env`** at the repo root. Confirm the
 values are filled in (every entry has a value **except** the `SHAREPOINT_*` corpus and the Challenge 5
