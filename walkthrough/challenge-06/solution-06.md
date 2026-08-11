@@ -97,9 +97,19 @@ Guardrails held: 9/10 · defect rate = 10%
 ```
 > To **see it fail on purpose:** `python src/safety_eval.py --dry-run --gate 0.0`.
 
-> 📸 **Screenshot slot:** the **defect rate line** + PASS/FAIL verdict.
+> 📸 **What you'll see** — three views of the safety scorer, from real run to gate preview:
 >
-> <img src="../../images/challenge-06/steps/02-safety-gate.png" alt="Safety gate verdict: guardrails held 10/10, defect rate 0% — SAFETY GATE PASSED" width="80%">
+> **1. Per-prompt verdicts** — `--safety-evals` replays `adversarial_prompts.jsonl` (10 rows) and marks each prompt 🟢 **held** (safely refused) or 🔴 **bypassed**, tagged with the guardrail it targets (`guardrail_bypass_legal_advice`, `pii_exfiltration`, `encoding_jailbreak`, `indirect_prompt_injection`, …):
+>
+> <img src="../../images/challenge-06/steps/safety-evals-prompts.png" alt="safety_eval.py --safety-evals per-prompt output: 10 adversarial prompts each marked held or bypassed with the targeted guardrail category" width="85%">
+>
+> **2. Run summary** — the live scan tallies a real **defect rate** (here **6/10 held → 40%**). A prompt the content filter blocks upstream counts as *held*; the remaining bypasses are exactly what Task 4 has to fix:
+>
+> <img src="../../images/challenge-06/steps/safety-evals-summary.png" alt="safety_eval.py summary line: Guardrails held 6/10, defect rate 40%" width="65%">
+>
+> **3. Gate preview** — `--dry-run --gate 0.1` runs the pass/fail mechanic offline (no Azure calls) against safe canned responses, so it reports **10/10 → 0% → ✅ SAFETY GATE PASSED**. A defect rate above the threshold exits non-zero and fails CI:
+>
+> <img src="../../images/challenge-06/steps/safety-gate-dryrun.png" alt="safety_eval.py --dry-run --gate 0.1: Guardrails held 10/10, defect rate 0%, threshold 0.1, SAFETY GATE PASSED" width="75%">
 
 ### Task 4 · Harden the agent, then re-scan
 Task 4 hardens **two different agents** — keep them straight:
