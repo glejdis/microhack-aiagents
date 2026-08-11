@@ -130,6 +130,8 @@ python src/scripts/seed_corpus.py          # → "uploaded 14/14 local PDF(s) in
 python src/scripts/seed_sql.py             # optional — only if you deployed Azure SQL
 ```
 
+<img src="../../images/challenge-01/steps/10-seed-corpus-success.png" alt="Terminal output showing 14 local PDFs uploaded successfully into the clm-corpus index" width="80%">
+
 <details>
 <summary><strong>Path A — SharePoint corpus (optional · advanced · tenant admins only)</strong></summary>
 
