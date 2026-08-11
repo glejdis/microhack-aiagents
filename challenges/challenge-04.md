@@ -346,32 +346,6 @@ at your URL.
 ✅ **You'll know it worked when:** the Playground shows an **MCP tool call to `clm-mcp`** and returns the
 **same** risk result as Task 1 — a Foundry-hosted agent just consumed your *remote* server by URL.
 
-<details>
-<summary>💻 <b>Part C <i>(optional)</i> · Point your own agent at the remote server — click to expand</b></summary>
-
-Same `orchestrator_mcp.py`, but now over the **network** instead of stdio — just set `CLM_MCP_URL`:
-
-```bash
-CLM_MCP_URL=https://<your-app>.azurecontainerapps.io/mcp python src/orchestrator_mcp.py
-```
-
-With `CLM_MCP_URL` set, the client switches from `MCPStdioTool` (local subprocess) to
-`MCPStreamableHTTPTool` (remote HTTPS) with **no code change** — the same Orchestrator now drives your
-**hosted** tools. *(If you protect the endpoint with a key, also set `CLM_MCP_KEY`.)* This is the
-"same brain, swappable transport" idea from the Context note, taken all the way to a hosted endpoint.
-
-> [!TIP]
-> **`MCP server failed to initialize: Cancelled via cancel scope`?** Your `CLM_MCP_URL` is pointing at a
-> server that isn't ready. Check it directly — `curl -s -o /dev/null -w '%{http_code}\n' "$CLM_MCP_URL"`.
-> A **421** means the container is running an **old image**: redeploy with `bash deploy/mcp-server/deploy.sh`
-> and retry. (`orchestrator_mcp.py` now prints this diagnosis for you automatically.)
-
-> 📸 **What you'll see:** `orchestrator_mcp.py` printing that it's calling `clm-mcp` **via your remote `/mcp` URL**.
->
-> <img src="../images/challenge-04/steps/07-orchestrator-remote.png" alt="Local orchestrator (gpt-5.4) calling the remote clm-mcp server by URL as an MCP client" width="80%">
-
-</details>
-
 ## ✔️ Success criteria
 
 - One orchestrator thread runs **draft → extract → risk** by delegating to the two specialists.
@@ -379,7 +353,7 @@ With `CLM_MCP_URL` set, the client switches from `MCPStdioTool` (local subproces
 - The MCP server is **discoverable and callable** from an MCP client — locally (VS Code/Copilot or
   `orchestrator_mcp.py`) **and** as a **remote** endpoint, returning the same results as the agents.
 - **(Task 4)** The server is **hosted on Azure Container Apps** and a **Foundry agent calls it by URL**
-  from the Playground. *(Optional: the same URL also works from the local orchestrator via `CLM_MCP_URL`.)*
+  from the Playground.
 
 ## 🛠️ Troubleshooting
 
