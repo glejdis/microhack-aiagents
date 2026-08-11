@@ -279,11 +279,6 @@ server's own tools can call your models. It echoes what it discovered, then prin
 > access — the managed identity + role the script sets up. Without it the MCP endpoint answers but the
 > tools return auth errors; role propagation can take ~1 minute after assignment.
 
-**Auto-discovery guessed wrong** (e.g. multiple AI accounts)? Override on the command line —
-`RESOURCE_GROUP=<rg> FOUNDRY_ACCOUNT_ID=<id> bash deploy/mcp-server/deploy.sh` (or
-`-ResourceGroup`/`-FoundryAccountId` for the `.ps1`); full list in
-[`deploy/mcp-server/README.md`](../deploy/mcp-server/README.md). Prereq: `az login` on your lab subscription.
-
 **Security:** for hack simplicity the endpoint is **public with no auth** — fine for the lab; add a key
 header/APIM or a private endpoint before any real use.
 
