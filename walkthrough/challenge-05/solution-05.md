@@ -157,6 +157,26 @@ def _conversation_reference():
     )
 ```
 
+**Register your own single-tenant app + secret (the concrete clicks):**
+
+1. **Entra ID → App registrations → + New registration.**
+
+   <img src="../../images/challenge-05/steps/task6-app-registration-new.png" alt="Azure portal App registrations blade with the + New registration button highlighted; the Owned applications tab lists no apps yet" width="80%">
+
+2. **Name it** (e.g. `clm-contract-agent-app`) and set **Supported account types = Single tenant only**, then **Register**. Single-tenant matters — the capture bot scopes token validation to *your* tenant via `MICROSOFT_APP_TENANT_ID`.
+
+   <img src="../../images/challenge-05/steps/task6-register-app-form.png" alt="Register an application form with Name set to clm-contract-agent-app and Supported account types set to Single tenant only - Contoso, Register button at the bottom" width="70%">
+
+3. **Copy the two IDs** from the app's **Overview**: **Application (client) ID** → `MICROSOFT_APP_ID`, **Directory (tenant) ID** → `MICROSOFT_APP_TENANT_ID`.
+
+   <img src="../../images/challenge-05/steps/task6-app-overview-ids.png" alt="App registration Overview with the Application (client) ID and Directory (tenant) ID boxed in red; Supported account types reads My organization only" width="80%">
+
+4. **Certificates & secrets → Client secrets → + New client secret.** Copy the generated **Value** immediately (it's shown only once) → that's `MICROSOFT_APP_PASSWORD`.
+
+   <img src="../../images/challenge-05/steps/task6-new-client-secret.png" alt="Certificates and secrets blade on the Client secrets tab with the + New client secret button highlighted and no secrets created yet" width="80%">
+
+Drop all three values into `.env`, then create an **Azure Bot** that reuses this app (**Type of App = Single Tenant → Use existing app registration**) and enable **Channels → Microsoft Teams** — that's the bot you message to capture the reference.
+
 ### Task 7 · (Optional) Fire a proactive alert
 The send path uses `adapter.continue_conversation(...)` to post into the saved conversation unprompted:
 ```python
