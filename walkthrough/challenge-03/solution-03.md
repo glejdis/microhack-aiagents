@@ -57,6 +57,11 @@ Tracing is **per-process** — running `python src/tracing_setup.py` once does *
 python src/agents/intake_drafting_agent.py     # or orchestrator.py / clause_risk_agent.py
 ```
 
+> 📸 **Screenshot slot:** a completed run (the **Traces** link on the response) and its expanded **trace trajectory** — `invoke_agent`, `execute_tool`, and `chat` spans.
+>
+> <img src="../../images/challenge-03/steps/02-run-traces-button.png" alt="Screenshot slot: run with Traces link" width="75%">
+> <img src="../../images/challenge-03/steps/02-trace-trajectory.png" alt="Screenshot slot: trace trajectory spans" width="75%">
+
 **3 · Open the spans** in that same **`Monitor`** tab. Inspect the **prompt / retrieval / tool** spans and token counts. Spans take **1–2 min** to appear — refresh if empty. To confirm data is flowing independently of the portal, query `dependencies` in **Azure portal → `clm-appinsights` → Logs**.
 
 > 📸 **Screenshot slot:** a run's span timeline in the **Monitor** tab, and the **Agent Monitoring** dashboard.
