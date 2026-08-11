@@ -119,6 +119,28 @@ That's why **Task 4**'s scorecard shows a `clm_rubric` line and **Task 6**'s gat
 
 > <img src="../../images/challenge-03/steps/03-rubric-evaluator-saved.png" alt="Saved ClmRubricEvaluator detail page showing version 2, Rubric-based type, evaluator configuration with score ranges and target agent intake-drafting-agent, all 8 dimensions with weight bars, and a Create evaluation button" width="85%">
 
+**Run it against the agent (New Foundry).** That **Create evaluation** button opens a wizard — and instead of uploading `evaluation_dataset.jsonl`, you can score the **live agent** over the traces it already produced in Task 2:
+
+1. From the saved evaluator (or **Evaluations → Create**), start a new evaluation.
+
+> <img src="../../images/challenge-03/steps/03-eval1-create.png" alt="Evaluations hub with the Create button highlighted" width="80%">
+
+2. **Target: Agent** → select **`intake-drafting-agent`** at the version you published in Challenge 2 (here **v3**) → **Next**.
+
+> <img src="../../images/challenge-03/steps/03-eval2-target-agent.png" alt="Create evaluation — select the intake-drafting-agent target" width="80%">
+
+3. **Data → Existing traces.** Score the runs the agent already produced in Task 2 — no dataset upload. Set the **Number of traces**, a **Time range** (e.g. `7D`) and **Intelligent sampling**, then **Next**. *(Telemetry takes a few minutes to land, so pad the end of your window by ~10 min.)*
+
+> <img src="../../images/challenge-03/steps/03-eval3-existing-traces.png" alt="Create evaluation — choose Existing traces as the data source" width="80%">
+
+4. **Criteria → Add evaluators.** Scroll to the **Custom** group and tick the **`ClmRubricEvaluator`** you just saved. Add the built-ins (Groundedness, Relevance, Coherence, Fluency…) alongside it for the full scorecard.
+
+> <img src="../../images/challenge-03/steps/03-eval4-add-rubric.png" alt="Add evaluators dialog — the custom ClmRubricEvaluator under the Custom group" width="80%">
+
+5. **Review → name the run** (e.g. `eval-intake-drafting-agent`) → **Submit.** Foundry scores each selected trace and the run lands in the **Evaluations** list; open it for the per-dimension `clm_rubric` scores and the judge's reasons.
+
+> <img src="../../images/challenge-03/steps/03-eval5-review-submit.png" alt="Review step — evaluators listed, run named, ready to Submit" width="80%">
+
 **Continuous evaluation (optional).** Once the rubric reflects your bar, enable **continuous/scheduled evaluation** in **Monitor settings** so live agent traffic is scored automatically and you catch regressions in production. Portal preview today — the `--gate` flag is the code-first equivalent for CI (wired in `ci-eval.yml`).
 
 Docs: [Rubric evaluators](https://learn.microsoft.com/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators) · [Custom evaluators](https://learn.microsoft.com/azure/foundry/concepts/evaluation-evaluators/custom-evaluators)
