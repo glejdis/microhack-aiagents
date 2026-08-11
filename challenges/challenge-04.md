@@ -172,7 +172,7 @@ ORCHESTRATOR: [→ intake_drafting] Draft ready... [→ clause_risk] Acme draft 
 >
 > <img src="../images/challenge-04/steps/02-orchestrator.png" alt="Orchestrator (gpt-5.4) thread delegating each turn to the Intake & Drafting and Clause & Risk specialists" width="80%">
 
-### Task 3 · Verify the MCP server exposes its tools (~5 min)
+### Task 3 · Build & verify the MCP server (~5 min)
 
 **What you're verifying — and why.** [`src/mcp_server/server.py`](../src/mcp_server/server.py) is the **same brain** as your orchestrator, repackaged as an open **MCP** server: it exposes the workflow's three capabilities as standard tools that *any* MCP client — VS Code, the Foundry Playground, another team's agent — can discover and call **without touching your code**. Each tool is a thin wrapper over a specialist you already built:
 
@@ -181,6 +181,31 @@ ORCHESTRATOR: [→ intake_drafting] Draft ready... [→ clause_risk] Acme draft 
 | `draft_contract` | **Intake & Drafting** agent (Challenge 1/2) | gpt-5.4 |
 | `analyze_contract` | **Clause & Risk** agent (Task 1) | gpt-5.6-sol |
 | `get_contract_status` | Contract-status lookup (Azure SQL → seed fallback) | — |
+
+**How it's built — the MCP pattern.** The server is a thin slice of
+[`server.py`](../src/mcp_server/server.py) on the official **FastMCP** SDK: name a server, decorate each
+capability as a tool, and run it over a transport. You hand-write **no schema** — the function's
+**docstring becomes the tool's description** and its **type-hinted parameters become the input schema**
+that a client discovers:
+
+```python
+# src/mcp_server/server.py
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("clm-mcp")                        # 1 · name the server
+
+@mcp.tool()                                     # 2 · expose a function as an MCP tool
+async def analyze_contract(draft_text: str) -> str:
+    """Extract clauses from a counterparty draft, compare to standard, return a risk score."""
+    from clause_risk_agent import create_agent  # the Clause & Risk agent from Task 1
+    return await _run_agent(create_agent, draft_text)
+
+if __name__ == "__main__":                      # 3 · serve it over a transport
+    mcp.run(transport="stdio")                  # stdio locally · streamable-http when hosted (Task 4)
+```
+
+Three `@mcp.tool()` functions → the three tools above, each just forwarding to a specialist you already
+built. Going remote in Task 4 changes **one line** — `stdio` → `streamable-http`.
 
 The server speaks **two transports** from the same code: **stdio** for local dev (what VS Code
 launches) and **streamable HTTP** for remote hosting (Task 4). Start locally here, then go remote next.
