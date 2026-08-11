@@ -31,6 +31,16 @@ RUN (see challenges/challenge-05.md · Task 6)
        This bot captures the reference, writes it to .env, and replies to
        confirm. Then send the alert:
          python src/proactive_alerts.py --from-renewals --days 30
+
+NO LOCAL RUN / NO TUNNEL (alternative to steps 4-6)
+    Deploy this bot to Azure Container Apps instead (builds in the cloud, no local
+    Docker); it reads MICROSOFT_APP_ID / MICROSOFT_APP_PASSWORD /
+    MICROSOFT_APP_TENANT_ID from .env:
+     bash deploy/capture-bot/deploy.sh      # or: pwsh deploy/capture-bot/deploy.ps1
+    Point your Azure Bot's messaging endpoint at the printed
+    https://<app>.azurecontainerapps.io/api/messages, then message it once in Teams.
+    The bot echoes TEAMS_SERVICE_URL + TEAMS_CONVERSATION_ID back in the chat — paste
+    those two lines into your local .env, then run proactive_alerts.py.
 """
 from __future__ import annotations
 
@@ -54,6 +64,9 @@ except Exception:  # noqa: BLE001 — dotenv is optional
 
 _ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
 _PORT = int(os.environ.get("CAPTURE_BOT_PORT", "3978"))
+# Local runs bind localhost; the container (deploy/capture-bot) sets 0.0.0.0 so
+# the Container Apps ingress can reach it.
+_HOST = os.environ.get("CAPTURE_BOT_HOST", "localhost")
 
 
 def _adapter() -> BotFrameworkAdapter:
@@ -101,9 +114,15 @@ async def _on_turn(turn_context: TurnContext) -> None:
     print("  You can stop this bot (Ctrl+C) and run:")
     print("    python src/proactive_alerts.py --from-renewals --days 30\n")
 
+    # Echo the two values back into the chat as well. When this bot runs in Azure
+    # (deploy/capture-bot) it writes to the *container's* .env, not yours — so the
+    # reply is how you retrieve them: copy these lines into your local .env.
     await turn_context.send_activity(
-        "✅ Saved this conversation for proactive CLM alerts. "
-        "You can close this and expect renewal/risk pings here."
+        "✅ Saved this conversation for proactive CLM alerts.\n\n"
+        "If this bot is running in Azure (not on your laptop), copy these two lines "
+        "into your local `.env`, then run "
+        "`python src/proactive_alerts.py --from-renewals --days 30`:\n\n"
+        f"```\nTEAMS_SERVICE_URL={service_url}\nTEAMS_CONVERSATION_ID={conversation_id}\n```"
     )
 
 
@@ -121,10 +140,11 @@ def main() -> None:
         print("⚠ MICROSOFT_APP_ID is not set. Set the bot's app id/password/tenant in .env first.")
     app = web.Application(middlewares=[aiohttp_error_middleware])
     app.router.add_post("/api/messages", messages)
-    print(f"Capture bot listening on http://localhost:{_PORT}/api/messages")
-    print("Expose it (devtunnel host -p 3978 --allow-anonymous), point your Azure Bot's")
-    print("messaging endpoint at https://<tunnel>/api/messages, then message the agent in Teams.")
-    web.run_app(app, host="localhost", port=_PORT)
+    print(f"Capture bot listening on http://{_HOST}:{_PORT}/api/messages")
+    print("Local: expose it with `devtunnel host -p 3978 --allow-anonymous`, then point your")
+    print("Azure Bot's messaging endpoint at https://<tunnel>/api/messages.")
+    print("No local run/tunnel? Deploy it instead:  bash deploy/capture-bot/deploy.sh")
+    web.run_app(app, host=_HOST, port=_PORT)
 
 
 if __name__ == "__main__":
