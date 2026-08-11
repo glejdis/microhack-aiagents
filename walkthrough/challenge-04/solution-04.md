@@ -130,6 +130,18 @@ The script reads the repo-root `.env` and auto-discovers the resource group, Fou
 managed identity** and grants it a data-plane role on the Foundry account so the server's own tools can
 call your models.
 
+Watch the tail of the output — it prints the exact endpoint to paste into **Part B** (and to export as
+`CLM_MCP_URL` for **Part C**):
+
+<img src="../../images/challenge-04/steps/parta-01-deploy.png" alt="deploy.sh output: image built and pushed to ACR, Container App clm-mcp created, system-assigned managed identity enabled, ending with the live MCP endpoint URL" width="90%">
+
+The run builds and pushes the image (`…azurecr.io/clm-mcp`), creates the **`clm-mcp`** Container App, and
+turns on its **system-assigned managed identity** — finishing with the banner
+`clm-mcp is live. Use this MCP endpoint in Foundry / CLM_MCP_URL: https://clm-mcp.<random>.<region>.azurecontainerapps.io/mcp`.
+**Copy that `…/mcp` URL** — it's what Part B step 4 and Part C consume. *(The `Azure AI User` role grant near
+the end can print a transient `ERROR: Role … doesn't exist` / propagation notice; it's non-fatal — identity
+propagation takes ~1 min, so just re-run the script or wait if a later model call returns 401.)*
+
 **Part B — Foundry Playground.** In [ai.azure.com](https://ai.azure.com):
 
 1. **Agents → + New agent → Build an agent.**
