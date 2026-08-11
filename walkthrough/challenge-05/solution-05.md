@@ -21,21 +21,27 @@ contracts auto-renew — driven by the **Obligation & Renewal** agent.
 
 ## 🛠️ Task-by-task walkthrough
 
-### Part A · Publish to Teams & M365 Copilot (portal)
-1. In the **Foundry portal**, open the **`clm-contract-agent`** you published in **Challenge 4 (Task 4 Part B)** — the MCP-backed portal agent. *(The `clm-orchestrator` from Ch4 Task 2 was in-process and isn't in the portal.)*
-2. Select **Publish** → **Publish to Teams and Microsoft 365 Copilot** → **Continue** (provisions an **Azure Bot Service**; first time: `az provider register --namespace Microsoft.BotService`). Leave the **Azure bot services** dropdown on *auto*; delete any stale bot from earlier attempts to avoid an **App ID collision**.
-3. **Fill the app details.** Most fields are **pre-filled from the agent** — **Agent name** (`clm-contract-agent`), **Publish version** (`1.0.0`), **Short description**, **Description**, and **Azure bot services** (auto-generated). The one required (`*`) field you must type yourself is **Developer** — enter your name or team (e.g. `Contoso Global CLM Team`); expand **More** for the **Developer website / Terms of use / Privacy statement** URLs (`https://example.com` placeholders are fine). Select **Next: Publish options** (older portal builds label this button **Prepare Agent**). In **Publish options** (**Direct publish** tab) choose **Just you** — *Available immediately* (*People in your organization* would need your **Microsoft 365 admin** to approve) → **Publish**. Find it in Teams under **Apps → Your agents**. The form auto-packages icons; only the **Download & customize** route needs the **192×192** + **32×32** placeholders in [`src/manifest/`](../../src/manifest/). *(If direct publish returns a **400**, use the **Download & customize** tab and sideload the zip.)*
+### Task 1 · Open your CLM agent
+In the **Foundry portal**, open the **`clm-contract-agent`** you published in **Challenge 4 (Task 4 Part B)** — the MCP-backed portal agent. *(The `clm-orchestrator` from Ch4 Task 2 was in-process and isn't in the portal.)*
 
-   <img src="../../images/challenge-05/steps/partA-publish-details.png" alt="Publish to Teams and Microsoft 365: app details — Developer is the one mandatory field you must fill in" width="80%">
+### Task 2 · Publish to Teams & M365 Copilot
+Select **Publish** → **Publish to Teams and Microsoft 365 Copilot** → **Continue** (provisions an **Azure Bot Service**; first time: `az provider register --namespace Microsoft.BotService`). Leave the **Azure bot services** dropdown on *auto*; delete any stale bot from earlier attempts to avoid an **App ID collision**.
 
-   <img src="../../images/challenge-05/steps/partA-publish-options.png" alt="Publish options: Direct publish → choose Just you → Publish" width="80%">
-4. **Test live** in Teams and M365 Copilot: ask it to draft an NDA and review the Acme draft. ✅ Part A worked when the agent returns the **same grounded, cited answers** you saw in the terminal in Ch2 & Ch4.
+### Task 3 · Fill the publish details & submit
+**Fill the app details.** Most fields are **pre-filled from the agent** — **Agent name** (`clm-contract-agent`), **Publish version** (`1.0.0`), **Short description**, **Description**, and **Azure bot services** (auto-generated). The one required (`*`) field you must type yourself is **Developer** — enter your name or team (e.g. `Contoso Global CLM Team`); expand **More** for the **Developer website / Terms of use / Privacy statement** URLs (`https://example.com` placeholders are fine). Select **Next: Publish options** (older portal builds label this button **Prepare Agent**). In **Publish options** (**Direct publish** tab) choose **Just you** — *Available immediately* (*People in your organization* would need your **Microsoft 365 admin** to approve) → **Publish**. Find it in Teams under **Apps → Your agents**. The form auto-packages icons; only the **Download & customize** route needs the **192×192** + **32×32** placeholders in [`src/manifest/`](../../src/manifest/). *(If direct publish returns a **400**, use the **Download & customize** tab and sideload the zip.)*
+
+<img src="../../images/challenge-05/steps/partA-publish-details.png" alt="Publish to Teams and Microsoft 365: app details — Developer is the one mandatory field you must fill in" width="80%">
+
+<img src="../../images/challenge-05/steps/partA-publish-options.png" alt="Publish options: Direct publish → choose Just you → Publish" width="80%">
+
+### Task 4 · Test the agent live
+**Test live** in Teams and M365 Copilot: ask it to draft an NDA and review the Acme draft. ✅ This works when the agent returns the **same grounded, cited answers** you saw in the terminal in Ch2 & Ch4.
 
 > 📸 **Screenshot slot:** the agent answering **live in a Teams chat** with cited output.
 >
 > <img src="../../images/challenge-05/steps/02-teams-live.svg" alt="Screenshot slot: agent live in Teams" width="80%">
 
-### Part B, Task 5 · Build the Obligation & Renewal agent
+### Task 5 · (Optional) Build the Obligation & Renewal agent
 [`src/agents/obligation_renewal_agent.py`](../../src/agents/obligation_renewal_agent.py) is a small, cheap GPT-5.4-nano agent with two function tools:
 ```python
 # src/agents/obligation_renewal_agent.py
@@ -72,7 +78,7 @@ python src/proactive_alerts.py --from-renewals --days 30 --dry-run    # preview 
 >
 > <img src="../../images/challenge-05/steps/04-renewal-summary.svg" alt="Screenshot slot: renewal summary" width="80%">
 
-### Task 6 · Capture a conversation reference
+### Task 6 · (Optional) Capture a conversation reference
 A Foundry-published agent is **managed**, so you don't own its message handler. Use
 [`src/capture_reference_bot.py`](../../src/capture_reference_bot.py) — a tiny aiohttp bot that, on
 **any** inbound activity, calls `TurnContext.get_conversation_reference(activity)` and writes
@@ -98,7 +104,7 @@ def _conversation_reference():
     )
 ```
 
-### Task 7 · Fire a proactive alert
+### Task 7 · (Optional) Fire a proactive alert
 The send path uses `adapter.continue_conversation(...)` to post into the saved conversation unprompted:
 ```python
 # src/proactive_alerts.py
