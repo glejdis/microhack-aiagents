@@ -10,6 +10,14 @@ contracts from approved templates and answers policy questions **with sources**.
 takes the *exact same code* as grounding it on any other — because Foundry is a **model-agnostic control
 plane**.
 
+**Why the business cares:** at Contoso, intake is the slow, risky front door of every contract.
+Managers redraft the same NDAs and MSAs by hand, dig through SharePoint for the approved clause, and
+re-answer the same policy questions — a big chunk of the **~17-day** contract cycle, with real
+exposure when someone reaches for the wrong clause. This agent removes that friction *safely*: it
+drafts from approved templates, answers **with citations**, looks up contract facts with a tool
+instead of guessing, and stays firmly out of legal advice — a faster intake cycle the business can
+actually trust.
+
 If something isn't working as expected, please let your coach know.
 
 > **⏱️ Duration:** ~60 min
@@ -26,7 +34,8 @@ If something isn't working as expected, please let your coach know.
 
 ## 🎯 Objective
 
-Build the **Intake & Drafting agent** on **gpt-5.4** and make it:
+Build the **Intake & Drafting agent** on **gpt-5.4**. These four properties aren't academic — each
+one is what makes the agent's output *safe for a contract manager to act on*:
 
 - **Grounded** — every substantive answer is drawn from the CLM corpus via **Azure AI Search**, not the
   model's parametric memory.
@@ -106,11 +115,23 @@ in Challenge 4's orchestrator) with no other changes.
 
 ### Guardrails at the prompt layer
 
+**Why this matters:** for a contract assistant, a confident *wrong* answer is worse than a slow one.
+An agent that invents a liability cap, cites a clause that doesn't exist, or opines on whether a
+contract is enforceable stops being a productivity tool and becomes **legal and financial exposure**
+for Contoso. The guardrails are what keep it a **drafting-and-lookup assistant, not a lawyer** — so a
+contract manager can safely act on its output.
+
 The `INSTRUCTIONS` block encodes Contoso's policy: never invent legal terms, always cite, call the
 tool for contract facts, and **refuse legal advice** (recommend qualified counsel instead). That's
 the first line of defense; content-safety policies (Challenge 6) add a second, independent one.
 
 ### The knowledge base — what actually grounds the agent
+
+**Why this matters:** grounding means the agent drafts from **Contoso's own approved documents**, not
+a model's generic memory. That's what makes a draft **enforceable and on-policy** — real templates
+legal already signed off on, the clause positions the business actually takes, the true approval
+thresholds — instead of plausible-sounding text no one approved. It's how you cut the **~17-day**
+cycle *without* trading speed for clause drift.
 
 Everything the agent "knows" comes from the corpus you seeded in Challenge 1:
 
