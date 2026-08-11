@@ -179,20 +179,26 @@ Upcoming renewals (next 60 days):
 >     Bot-->>You: 🔴 CT-4821 renewal alert (unprompted)
 > ```
 >
-> ⚠️ The endpoint swap in step 3 is **temporary** — step 5 *must* revert it, or the published agent goes silent. And the password in step 1 isn't shown anywhere: create a fresh **client secret** on the bot's app registration.
+> ⚠️ The endpoint swap in step 4 is **temporary** — step 6 *must* revert it, or the published agent goes silent. And the password in step 1 isn't shown anywhere: create a fresh **client secret** on the bot's app registration.
 
 Proactive alerts need a **saved conversation reference** (service URL + conversation id) for a real
 Teams chat with your bot. A Foundry-published agent is **managed**, so you don't own its message
 handler — use the helper bot [`src/capture_reference_bot.py`](../src/capture_reference_bot.py) to grab
-it:
+it.
 
-1. Set `MICROSOFT_APP_ID` / `MICROSOFT_APP_PASSWORD` / `MICROSOFT_APP_TENANT_ID` in `.env` (Azure
-   portal → your Bot → **Configuration**; create a client secret if you don't have the password).
-2. `python src/capture_reference_bot.py`, then expose it: `devtunnel host -p 3978 --allow-anonymous`.
-3. Temporarily point your Azure Bot's **Messaging endpoint** at `https://<tunnel>/api/messages`.
-4. Message the agent **once** in Teams — the helper writes `TEAMS_SERVICE_URL` +
-   `TEAMS_CONVERSATION_ID` to `.env` and replies to confirm.
-5. **Revert** the messaging endpoint (so the agent keeps answering).
+> **💡 Do I need to create an Azure Bot? No.** Publishing to Teams in **Task 2** already
+> **auto-provisioned** one for you (that's the "Azure Bot Service" the publish flow created). You don't
+> build a bot — you just **find the existing one**: Azure portal → your lab **resource group** (or search
+> *Azure Bot*) → open the bot named after your agent. Everything below configures *that* resource.
+
+**Capture the reference (do this once):**
+
+1. **Get the bot's credentials.** Azure portal → your Bot → **Configuration**. Copy `MICROSOFT_APP_ID` (labelled *Microsoft App ID*) + the tenant into `.env`; under **Manage password** (opens the app registration) create a **client secret** → that value is `MICROSOFT_APP_PASSWORD`. Also set `MICROSOFT_APP_TENANT_ID`.
+2. **Run the capture bot:** `python src/capture_reference_bot.py` (listens on `localhost:3978`).
+3. **Expose it publicly:** `devtunnel host -p 3978 --allow-anonymous` → copy the `https://<tunnel>` URL.
+4. **Redirect the bot to your laptop:** Azure portal → Bot → **Configuration** → **Messaging endpoint** = `https://<tunnel>/api/messages` → **Apply**. *(You're temporarily hijacking where Teams delivers messages.)*
+5. **Message the agent once** in Teams — type anything (`hi`). The capture bot writes `TEAMS_SERVICE_URL` + `TEAMS_CONVERSATION_ID` into `.env` and replies "✅ Saved…".
+6. **Revert** the Messaging endpoint back to the URL Foundry had set — otherwise your agent stops answering normally. Then stop the capture bot (`Ctrl+C`).
 
 ### Task 7 · (Optional) Fire a proactive alert (~10 min)
 
