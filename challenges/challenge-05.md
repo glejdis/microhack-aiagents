@@ -189,7 +189,16 @@ Proactive alerts need a **saved conversation reference** (service URL + conversa
 1. **Register your own app.** Entra ID → **App registrations → New registration** → *Accounts in this organizational directory only* (single tenant). Copy the **Application (client) ID** + **Directory (tenant) ID**, then **Certificates & secrets → + New client secret** → copy the **Value**. Set `MICROSOFT_APP_ID` / `MICROSOFT_APP_PASSWORD` / `MICROSOFT_APP_TENANT_ID` in `.env`.
 2. **Create an Azure Bot that reuses it:** portal → **Create a resource → Azure Bot** → **Type of App = Single Tenant**, **Creation type = Use existing app registration** (paste your App ID + tenant) → **Create**. Then enable **Channels → Microsoft Teams**.
 3. **Run the capture bot:** `python src/capture_reference_bot.py` (listens on `localhost:3978`).
-4. **Expose it publicly:** `devtunnel host -p 3978 --allow-anonymous` → copy the `https://<tunnel>` URL.
+4. **Install the Dev Tunnels CLI (one-time), sign in, then expose the bot publicly.** Codespaces don't ship the `devtunnel` CLI — installing it is what fixes `bash: devtunnel: command not found`:
+   ```bash
+   # Codespaces / Linux / macOS — installs to ~/bin and adds it to PATH
+   curl -sL https://aka.ms/DevTunnelCliInstall | bash
+   source ~/.bashrc                              # or open a new terminal so the shell finds ~/bin/devtunnel
+   # Windows (PowerShell): winget install Microsoft.devtunnel
+   devtunnel user login                          # required to host — sign in with your Microsoft or GitHub account
+   devtunnel host -p 3978 --allow-anonymous      # copy the https://<tunnel> URL it prints
+   ```
+   Run this in a **second terminal** (leave the capture bot from step 3 running); the `https://<tunnel>` URL is the public forward of `localhost:3978`.
 5. **Point your bot at your laptop:** your Bot → **Configuration** → **Messaging endpoint** = `https://<tunnel>/api/messages` → **Apply**.
 6. **Message your bot once:** your Bot → **Channels → Teams → Open in Teams**, type anything (`hi`). The capture bot validates the token against **your** App ID, writes `TEAMS_SERVICE_URL` + `TEAMS_CONVERSATION_ID` to `.env`, and replies "✅ Saved…". Stop it (`Ctrl+C`).
 
@@ -222,6 +231,7 @@ python src/proactive_alerts.py --from-renewals --days 30
 
 | Symptom | Fix |
 |---------|-----|
+| `bash: devtunnel: command not found` | The Dev Tunnels CLI isn't preinstalled in the Codespace. Install it and re-load PATH: `curl -sL https://aka.ms/DevTunnelCliInstall \| bash && source ~/.bashrc` (Windows: `winget install Microsoft.devtunnel`). It installs to `~/bin`, so open a new terminal if the shell still can't find it. Hosting also requires `devtunnel user login` first. |
 | Publish option missing | Ensure `Microsoft.BotService` is registered and you have rights to create an Azure Bot. |
 | Bot responds in Teams but not Copilot | Confirm the app is approved for M365 Copilot and the manifest scopes include it. |
 | *Manage password* 404s / bot's App ID isn't under **App registrations → All applications** | Expected — the Foundry-published bot is **managed** and its app lives outside your tenant, so no secret is creatable. Register **your own** single-tenant app + Azure Bot (Task 6) and use those creds. |
