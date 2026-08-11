@@ -289,20 +289,6 @@ your **`clm-project`** → **Models + endpoints**. Confirm the deployments show 
 values are filled in (every entry has a value **except** the `SHAREPOINT_*` corpus and the Challenge 5
 `MICROSOFT_APP_*` / `TEAMS_*` variables, which you fill later).
 
-✅ **`.env` should look like this** (values will differ):
-
-```bash
-AZURE_AI_PROJECT_ENDPOINT=https://clmfoundryab12c.services.ai.azure.com/api/projects/clm-project
-MODEL_ORCHESTRATOR=gpt-5.4
-MODEL_DRAFTING=gpt-5.4
-MODEL_CLAUSE_RISK=gpt-5.6-sol
-MODEL_RENEWAL=gpt-5.4-nano
-AZURE_SEARCH_ENDPOINT=https://clmsearchab12c.search.windows.net
-AZURE_SEARCH_INDEX=clm-corpus
-AZURE_SEARCH_CONNECTION_NAME=clm-search
-APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=...
-```
-
 > [!CAUTION]
 > For convenience, this hackathon keeps secrets (e.g. the SharePoint app secret) in `.env` and uses
 > public network access. **Never commit `.env`** — it's already in [`.gitignore`](../.gitignore). In
