@@ -175,7 +175,17 @@ def _conversation_reference():
 
    <img src="../../images/challenge-05/steps/task6-new-client-secret.png" alt="Certificates and secrets blade on the Client secrets tab with the + New client secret button highlighted and no secrets created yet" width="80%">
 
-Drop all three values into `.env`, then create an **Azure Bot** that reuses this app (**Type of App = Single Tenant → Use existing app registration**) and enable **Channels → Microsoft Teams** — that's the bot you message to capture the reference.
+Drop all three values into `.env`. Now give that app a bot that can receive Teams messages:
+
+5. **Create an Azure Bot that reuses the app.** Portal → **Create a resource → Azure Bot**. Set a **Bot handle**, pick your **Resource group**, then under **Microsoft App ID** choose **Type of App = Single Tenant** and **Creation type = Use existing app registration**, and paste the **App ID** + **App tenant ID** from step 3 → **Review + create**.
+
+   <img src="../../images/challenge-05/steps/task6-create-azure-bot.png" alt="Create an Azure Bot Basics tab: Bot handle clm-contract-agent-bot, Resource group rg-clm-microhack, Type of App set to Single Tenant, Creation type set to Use existing app registration, with the App ID and App tenant ID fields populated" width="70%">
+
+6. **Enable the Teams channel.** Open the new bot → **Channels** → under *Available Channels* pick **Microsoft Teams** and save. This is the channel Teams uses to route your "hi" to the capture bot.
+
+   <img src="../../images/challenge-05/steps/task6-enable-teams-channel.png" alt="Azure Bot Channels blade with Microsoft Teams highlighted in the Available Channels list; Direct Line and Web Chat already show a Healthy status" width="80%">
+
+That bot — **not** `clm-contract-agent` — is the one you point at your dev tunnel (its **Messaging endpoint**) and message to capture the conversation reference.
 
 ### Task 7 · (Optional) Fire a proactive alert
 The send path uses `adapter.continue_conversation(...)` to post into the saved conversation unprompted:
