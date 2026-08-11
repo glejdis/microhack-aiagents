@@ -39,6 +39,20 @@ Select **Publish** → **Publish to Teams and Microsoft 365 Copilot** → **Cont
 ### Task 4 · Test the agent live
 **Test live** in Teams and M365 Copilot: ask it to draft an NDA and review the Acme draft. ✅ This works when the agent returns the **same grounded, cited answers** you saw in the terminal in Ch2 & Ch4.
 
+**Try these prompts** — each exercises one of the three `clm-mcp` tools the agent calls (status prompts use the real seeded contract IDs):
+
+| Tool it triggers | Prompt to paste into the chat |
+| --- | --- |
+| `draft_contract` | `Draft an NDA between Contoso Global and Acme Corp for a 2-year term.` |
+| `draft_contract` | `Draft an MSA with Globex Ltd for a 3-year term.` |
+| `analyze_contract` | `Analyze this clause and score its risk: "Contoso's liability shall be unlimited and the agreement auto-renews for 2-year terms unless cancelled 90 days in advance."` |
+| `analyze_contract` | `Review this counterparty draft and flag deviations from our standard: "Either party may terminate for convenience with 15 days' notice. Payment due Net 90. Governing law is the State of Delaware."` |
+| `get_contract_status` | `What's the status of contract CT-4821?` *(Acme MSA — Active, High risk)* |
+| `get_contract_status` | `When does CT-6033 renew and who owns it?` *(Soylent MSA — auto-renews soon)* |
+| End-to-end (chains tools) | `Draft an MSA with Acme Corp for 2 years, then analyze it for risky clauses.` |
+
+**What "working" looks like:** grounded answers with **cited clauses**, a numeric **risk score**, and structured **status fields** (status / renewal date / risk / owner). An ID that isn't seeded (e.g. `CT-9999`) should return a clean *not found*.
+
 > 📸 **Screenshot slot:** the agent answering **live in a Teams chat** with cited output.
 >
 > <img src="../../images/challenge-05/steps/02-teams-live.svg" alt="Screenshot slot: agent live in Teams" width="80%">
