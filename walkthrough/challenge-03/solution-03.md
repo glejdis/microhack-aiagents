@@ -223,9 +223,9 @@ Quality gate: CLM rubric=3.8 (groundable rows) threshold=5.0
 ❌ GATE FAILED — CLM rubric below threshold. Blocking release.
 ```
 
-> 📸 **Screenshot slot:** the gate failing on a too-strict threshold.
+> 📸 **What you'll see:** the full scorecard with the gate's verdict on the last line. Here the CLM rubric over the groundable rows is **3.949**, above the **3.0** threshold, so the run prints `✅ GATE PASSED.` and exits 0 — CI proceeds. A score below the threshold would print `❌ GATE FAILED` and exit 3, blocking the release.
 >
-> <img src="../../images/challenge-03/steps/05-gate-fail.png" alt="Screenshot slot: quality gate fails" width="75%">
+> <img src="../../images/challenge-03/steps/05-quality-gate-passed.png" alt="Terminal scorecard for the Intake & Drafting agent ending with CLM rubric 3.949 over groundable rows above the 3.0 threshold and a GATE PASSED message" width="75%">
 
 ## Key files
 
