@@ -330,7 +330,7 @@ grounded, cited answer, now in the portal UI.
 
 > 📸 **Screenshot slot — what you'll see:** the Foundry **Playground** with the agent giving a grounded, cited answer.
 >
-> <img src="../images/challenge-02/steps/03-portal-playground.png" alt="Screenshot slot: Foundry Playground" width="80%">
+> <img src="../images/challenge-02/steps/03-foundry-iq-playground.png" alt="Foundry Playground showing the intake-drafting agent grounded by the clm-contracts-kb Foundry IQ knowledge base" width="80%">
 
 ### Task 6 · (Optional) Add content safety (~10 min)
 
