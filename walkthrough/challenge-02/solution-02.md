@@ -103,7 +103,7 @@ The demo agent runs **in-process** (`FoundryChatClient`), so it does not appear 
 
 > 📸 **Screenshot slot:** the Foundry **Playground** with the agent giving a grounded, cited answer.
 >
-> <img src="../../images/challenge-02/steps/03-portal-playground.png" alt="Screenshot slot: Foundry Playground" width="80%">
+> <img src="../../images/challenge-02/steps/03-foundry-iq-playground.png" alt="Foundry Playground showing the intake-drafting agent grounded by the clm-contracts-kb Foundry IQ knowledge base" width="80%">
 
 ### Task 5 · (Optional) Content safety
 Attach **Prompt Shields / PII** to the agent in the portal — a second, model-independent guardrail layer on top of the prompt-level refusal (built out in Challenge 6).
