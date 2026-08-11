@@ -176,28 +176,6 @@ CLM_MCP_URL=https://…/mcp python src/orchestrator_mcp.py   # MCPStreamableHTTP
 >
 > <img src="../../images/challenge-04/steps/07-orchestrator-remote.png" alt="Local orchestrator (gpt-5.4) calling the remote clm-mcp server by URL as an MCP client" width="80%">
 
-### Task 5 · (Optional) One client, two transports
-[`src/orchestrator_mcp.py`](../../src/orchestrator_mcp.py) is the mirror of Task 2, but the tools come
-over MCP. It picks the transport from `CLM_MCP_URL` — `MCPStdioTool` (spawns `server.py`) when unset,
-`MCPStreamableHTTPTool` (remote) when set:
-```python
-# src/orchestrator_mcp.py
-def build_mcp_tool():
-    url = os.getenv("CLM_MCP_URL")
-    if url:                                           # remote streamable HTTP
-        return MCPStreamableHTTPTool(name="clm-mcp", url=url, headers=_headers())
-    return MCPStdioTool(name="clm-mcp", command=sys.executable,   # local stdio
-                        args=[str(SERVER_PATH)], env={"PYTHONPATH": str(SRC_DIR)})
-
-async with build_mcp_tool() as mcp_tool:              # local subprocess *or* remote URL
-    orchestrator = build_orchestrator(mcp_tool)       # gpt-5.4, tools=[mcp_tool]
-    ...
-```
-```bash
-python src/orchestrator_mcp.py                        # local: you don't start the server yourself
-CLM_MCP_URL=https://…/mcp python src/orchestrator_mcp.py   # remote: same run, over HTTPS
-```
-
 ## Key files
 
 | Path | Role |
