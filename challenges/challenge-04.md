@@ -290,9 +290,17 @@ header/APIM or a private endpoint before any real use.
 #### Part B · Connect it to a Foundry agent (portal Playground)
 
 In the **[Foundry portal](https://ai.azure.com)**, create an agent and give it the **MCP tool** pointing
-at your URL. *(Task 2's orchestrator ran **in-process** from your terminal — nothing was published to the
-portal — so you create a fresh agent here whose **only** tool is the MCP server. The drafting & clause-risk
-grounding still runs, but **server-side**, behind that tool.)*
+at your URL.
+
+> [!NOTE]
+> **Why a *new* agent — didn't we already build the orchestrator?** That *is* the point. Task 2's
+> orchestrator ran **in-process** in your terminal — nothing was ever published to Foundry — so there's no
+> portal agent to attach the tool to. More importantly, this fresh agent is an **arbitrary external
+> consumer**, your stand-in for "another team's agent": you create it by *clicking in the portal* (no code,
+> no access to your repo) and its **only** tool is the MCP server. It has no drafting or clause-risk ability
+> of its own — the real work still runs **server-side**, behind the tool. When it returns the **same** risk
+> result as Task 1, you've proven the MCP payoff: any agent, anywhere, can reuse your whole workflow by URL
+> with **zero coupling** to your code.
 
 1. Open your project → **Agents** → **+ New agent** → pick **Build an agent**. In the **Create an agent**
    dialog, set **Agent name** = `clm-contract-agent` and click **Create** (the portal used to drop you on a
