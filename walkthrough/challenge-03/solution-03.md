@@ -36,7 +36,7 @@ python src/tracing_setup.py
 ✅ **You should see:**
 ```text
 ✓ Tracing enabled → Application Insights (content recording ON).
-Run an agent now; open Foundry portal → Tracing to see spans.
+Run an agent now, then view spans in the Foundry portal — New Foundry: Build → your agent/model → Monitor; classic: project → Tracing.
 ```
 
 > 📸 **Screenshot slot:** the "Tracing enabled" confirmation.
@@ -44,12 +44,22 @@ Run an agent now; open Foundry portal → Tracing to see spans.
 > <img src="../../images/challenge-03/steps/01-tracing-on.png" alt="Screenshot slot: tracing enabled" width="75%">
 
 ### Task 2 · Generate traffic, inspect spans
-Each agent demo now calls `tracing_setup.enable_tracing()` at start-up (tracing is **per-process**, so running `python src/tracing_setup.py` once does *not* leave it on for a separately-launched demo). Just run any agent — e.g. `python src/agents/intake_drafting_agent.py` — then open **Foundry portal → Tracing**. Inspect the **prompt / retrieval / tool** spans and token counts. Spans take **1–2 min** to appear — refresh if empty.
+Tracing is **per-process** — running `python src/tracing_setup.py` once does *not* leave it on for a separately-launched demo. Every agent demo calls `tracing_setup.enable_tracing()` at start-up, so **just run a demo** and it emits spans. Three steps: **connect** Application Insights once, **run** a demo, then **open** the spans.
 
-> [!IMPORTANT]
-> The portal **Tracing** tab only renders spans once **Application Insights is connected to the project** — the Challenge 1 resource must be linked, not just created. Fresh `azd up` / `deploy.ps1` / `deploy.sh` runs now create this connection (`clm-appinsights`, category `AppInsights`) automatically; on an older deployment, connect it once via **project → Tracing → Connect**. To verify data independently of the portal, query `dependencies` in **Azure portal → clm-appinsights → Logs**.
+**1 · Connect Application Insights to the project (one-time).** The portal only renders spans from an App Insights resource *connected to the project* — the Challenge 1 resource must be **linked**, not just created. In the Foundry portal open **Build → your agent/model → the `Monitor` tab → Settings**, and confirm **`clm-appinsights`** shows **Connected** under **App. Insights resource** (connect it if prompted). Fresh `azd up` / `deploy.ps1` / `deploy.sh` runs wire this automatically. *(Shortcut: type **"Monitor"** or **"Tracing"** in the portal **search bar** — the redesigned UI has no project-level *Tracing* menu.)*
 
-> 📸 **Screenshot slot:** a run's span timeline in **Tracing**, and the **Agent Monitoring** dashboard.
+> 📸 **Screenshot slot:** the **Monitor → Settings** dialog with `clm-appinsights` **Connected**.
+>
+> <img src="../../images/challenge-03/steps/02-appinsights-connected.png" alt="Screenshot slot: Monitor settings — App Insights connected" width="75%">
+
+**2 · Run any agent demo.** Each demo enables tracing itself, so a normal run emits spans:
+```bash
+python src/agents/intake_drafting_agent.py     # or orchestrator.py / clause_risk_agent.py
+```
+
+**3 · Open the spans** in that same **`Monitor`** tab. Inspect the **prompt / retrieval / tool** spans and token counts. Spans take **1–2 min** to appear — refresh if empty. To confirm data is flowing independently of the portal, query `dependencies` in **Azure portal → `clm-appinsights` → Logs**.
+
+> 📸 **Screenshot slot:** a run's span timeline in the **Monitor** tab, and the **Agent Monitoring** dashboard.
 >
 > <img src="../../images/challenge-03/steps/02-portal-tracing.png" alt="Screenshot slot: Foundry Tracing" width="75%">
 > <img src="../../images/challenge-03/steps/03-agent-monitoring.png" alt="Screenshot slot: Agent Monitoring" width="75%">
@@ -156,7 +166,7 @@ python src/evaluators.py --workers 1         # throttle concurrency if 429s appe
 | Symptom | Cause / fix |
 |---------|-------------|
 | No traces in App Insights | Confirm `APPLICATIONINSIGHTS_CONNECTION_STRING` is set in `.env` (Challenge 1 sets it), and that you ran an **agent demo** or `evaluators.py` (each enables tracing per-process) — not just `tracing_setup.py`, which prints the confirmation and exits. Check ingestion via `dependencies` in **Azure portal → clm-appinsights → Logs**. |
-| Spans in App Insights but not in the Foundry **Tracing** tab | App Insights isn't **connected to the project**. Connect it once via **project → Tracing → Connect** (pick `clm-appinsights`); fresh deployments now wire this automatically. |
+| Spans in App Insights but not in the Foundry **Monitor** tab | App Insights isn't **connected to the project**. Open **Build → your agent/model → the `Monitor` tab → Settings** and connect `clm-appinsights` under **App. Insights resource** (fresh deployments now wire this automatically). |
 | **Monitor** tab stuck on *"Setup incomplete: Verifying access"* / authorization error (App Insights already **Connected**) | RBAC read-access gap — the portal checks that **your account** can read the telemetry, and the lab historically granted only AI/Search roles, so it never self-heals. Grant yourself **Monitoring Reader** on `clm-appinsights-<token>` and **Log Analytics Reader** on `clm-logs-<token>` (Azure portal → resource → **Access control (IAM)**), wait 2–5 min, then **Check now**. New deployments (`resources.bicep`/`azuredeploy.json` user-role block + `deploy-lab.ps1` multi-user loop) now grant these automatically. |
 | Gate never fails | Try `--gate 5.0` to see it trip; exit code 3 signals a failed gate for CI. |
 | `429` / `cannot schedule new futures after shutdown` | Judge or agent deployment is rate-limited. Re-run with `--workers 1` (or set `PF_WORKER_COUNT`); target 429s are retried with backoff automatically. |
