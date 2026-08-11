@@ -1,4 +1,4 @@
-# Solution 02 — Grounded Agent with Azure AI Search + Tools
+# Solution 02 — Grounded Agent with Foundry IQ + Tools
 
 **[← Back to Challenge 2](../../challenges/challenge-02.md)** · [Home](../../README.md)
 
@@ -9,7 +9,7 @@ GPT deployments — Foundry is a model-agnostic control plane.
 
 ## Expected end state
 
-- Azure AI Search grounding tool built over the `clm-corpus` index by
+- Foundry IQ MCP grounding tool built over `clm-contracts-kb` by
   [`src/kb_setup.py`](../../src/kb_setup.py) (also reports the web-grounding tool).
 - The agent drafts an NDA/MSA from an **approved template** and answers policy
   questions **with citations**.
@@ -18,30 +18,25 @@ GPT deployments — Foundry is a model-agnostic control plane.
 ## 🛠️ Task-by-task walkthrough
 
 ### Task 1 · Verify the knowledge connection
-[`src/kb_setup.py`](../../src/kb_setup.py) resolves the project's default Azure AI Search connection and builds the Foundry grounding tool over `clm-corpus`. The two functions that matter:
+[`src/kb_setup.py`](../../src/kb_setup.py) builds the Foundry IQ MCP tool. Challenge 1's
+`seed_corpus.py` already created `clm-corpus-ks` and `clm-contracts-kb`; the agent is allowed to call
+only `knowledge_base_retrieve`:
 ```python
 # src/kb_setup.py
-def get_search_connection_id(project) -> str:
-    conn = project.connections.get_default(ConnectionType.AZURE_AI_SEARCH)
-    return conn.id
-
 def build_knowledge_tool(*, connection_id=None, project=None):
-    # …resolve connection_id if not supplied…
-    return FoundryChatClient.get_azure_ai_search_tool(
-        index_connection_id=connection_id,
-        index_name=settings.search_index,   # clm-corpus
-        query_type="semantic",
-        top_k=5,
-    )
+    if settings.foundry_iq_enabled:
+        return MCPTool(**mcp_tool_kwargs())
+    # Existing environments without FOUNDRY_IQ_KNOWLEDGE_BASE retain the
+    # direct Azure AI Search compatibility path.
 ```
 ```bash
 python src/kb_setup.py
 ```
 ✅ **You should see** (ids will differ):
 ```text
-✓ Default Azure AI Search connection: /subscriptions/.../connections/clm-search
 ✓ Index: clm-corpus
-✓ Built Foundry Azure AI Search grounding tool (semantic, top_k=5).
+✓ Foundry IQ knowledge base: clm-contracts-kb
+✓ Built Foundry IQ MCP tool (knowledge_base_retrieve).
 ```
 
 > 📸 **Screenshot slot:** the terminal confirming the `clm-search` connection and `clm-corpus` index.
@@ -53,7 +48,7 @@ The whole agent is ~15 lines — grounding tool **plus** a function tool, with t
 ```python
 # src/agents/intake_drafting_agent.py
 def create_agent(model=None, *, connection_id=None):
-    knowledge = build_knowledge_tool(connection_id=connection_id)   # grounding over clm-corpus
+    knowledge = build_knowledge_tool(connection_id=connection_id)   # Foundry IQ over clm-contracts-kb
     return Agent(
         client=build_chat_client(model or settings.model_drafting),  # ← "gpt-5.4"; swap for another GPT deployment id, nothing else changes
         name=AGENT_NAME,
@@ -118,14 +113,15 @@ Attach **Prompt Shields / PII** to the agent in the portal — a second, model-i
 | Path | Role |
 |------|------|
 | [`src/agents/intake_drafting_agent.py`](../../src/agents/intake_drafting_agent.py) | The grounded, tool-using, guard-railed drafting agent (gpt-5.4) |
-| [`src/kb_setup.py`](../../src/kb_setup.py) | Builds the Azure AI Search grounding tool + optional web-grounding tool over `clm-corpus` |
+| [`src/kb_setup.py`](../../src/kb_setup.py) | Builds the Foundry IQ MCP grounding tool + optional web-grounding tool |
+| [`src/clm_common/foundry_iq.py`](../../src/clm_common/foundry_iq.py) | Defines and provisions the knowledge source/base |
 | [`src/sample_prompts.md`](../../src/sample_prompts.md) | Prompts to exercise drafting, grounded Q&A, and the guardrails |
 | [`src/clm_common/`](../../src/clm_common/) | Shared config + Foundry client helpers reused by every agent |
 
 ## Run it
 
 ```bash
-python src/kb_setup.py                       # prints the Search connection id + clm-corpus index
+python src/kb_setup.py                       # verifies clm-contracts-kb + knowledge_base_retrieve
 python src/agents/intake_drafting_agent.py   # drafts + answers with citations
 ```
 
@@ -133,5 +129,5 @@ python src/agents/intake_drafting_agent.py   # drafts + answers with citations
 
 | Symptom | Cause / fix |
 |---------|-------------|
-| No citations returned | Confirm the `clm-corpus` index is populated (Challenge 1's `seed_corpus.py`). |
+| No citations returned | Re-run Challenge 1's `seed_corpus.py`; confirm it populated `clm-corpus` and created `clm-contracts-kb`. |
 | Web-grounding tool missing | Ensure `AZURE_BING_CONNECTION_NAME` matches a project connection; `kb_setup.py` reports whether it built. |
