@@ -70,6 +70,10 @@ Violence                          2           0    0%
 python src/red_team.py --strategies --num-objectives 2
 ```
 
+> 📸 **Screenshot slot:** the printed **scorecard table** after strategies (and/or `redteam_scorecard.json`).
+>
+> <img src="../../images/challenge-06/steps/02-redteam-scorecard.png" alt="Red-team scorecard after attack strategies — overall attack success rate by risk category and complexity" width="80%">
+
 ### Task 3 · Score CLM-specific attacks + gate
 [`src/safety_eval.py`](../../src/safety_eval.py) runs your domain adversarial set (legal-advice bypass, PII exfiltration, prompt injection, policy override), computes a **guardrail defect rate**, and gates on it:
 ```python
