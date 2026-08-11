@@ -53,9 +53,19 @@ Select **Publish** → **Publish to Teams and Microsoft 365 Copilot** → **Cont
 
 **What "working" looks like:** grounded answers with **cited clauses**, a numeric **risk score**, and structured **status fields** (status / renewal date / risk / owner). An ID that isn't seeded (e.g. `CT-9999`) should return a clean *not found*.
 
-> 📸 **Screenshot slot:** the agent answering **live in a Teams chat** with cited output.
->
-> <img src="../../images/challenge-05/steps/02-teams-live.svg" alt="Screenshot slot: agent live in Teams" width="80%">
+**Both surfaces call the exact same MCP tools** you tested in Ch4 — Teams and M365 Copilot are just two front-ends over the one published `clm-contract-agent`.
+
+**1. The agent is live and reachable.** Opening it shows the agent's landing page in M365 Copilot / Teams (`clm-contract-agent`, *Created by glejdis*) with a ready chat box — proof the publish from Task 3 succeeded.
+
+<img src="../../images/challenge-05/steps/04-live-agent-landing.png" alt="clm-contract-agent landing page in M365 Copilot with an empty Message Copilot box" width="80%">
+
+**2. In M365 Copilot** — the `analyze_contract` prompt returns a structured **Overall risk score: High** with a *Clause / Risk / Key concern* table (Intellectual Property → *High/Unacceptable*, Confidentiality → *Medium*, Indemnification → *High*). *(A brief "No text was streamed" bubble can appear first — a benign streaming artifact; the full grounded answer renders right below it.)*
+
+<img src="../../images/challenge-05/steps/04-live-m365-analysis.png" alt="M365 Copilot: clm-contract-agent returns Overall risk score High with a clause/risk/key-concern table" width="80%">
+
+**3. In Teams** — the same prompt returns the full cited breakdown: **Overall risk score: High — "not auto-approved, route to Legal"**, each **Extracted clause** quoted with a recommended counter-position, and a **Top 3 issues** summary. The composer shows the end-to-end follow-up (`Check the status of CT-4821…`) that chains a status lookup onto the analysis.
+
+<img src="../../images/challenge-05/steps/04-live-teams-analysis.png" alt="Teams: clm-contract-agent returns Overall risk score High with extracted clauses and top 3 issues" width="80%">
 
 ### Task 5 · (Optional) Build the Obligation & Renewal agent
 [`src/agents/obligation_renewal_agent.py`](../../src/agents/obligation_renewal_agent.py) is a small, cheap GPT-5.4-nano agent with two function tools:
