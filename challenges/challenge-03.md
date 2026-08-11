@@ -114,9 +114,9 @@ and token counts.
 > `clm-appinsights` → Logs** and run `dependencies | order by timestamp desc` (or `union traces,
 > dependencies`) — Agent Framework spans land as `dependencies`.
 
-### The `clm_rubric` evaluator — define "good" before you measure (~15 min)
+### Task 3 · The `clm_rubric` evaluator — define "good" before you measure (~15 min)
 
-Before the scorecard in Task 3 makes sense, meet the metric this challenge is really about:
+Before the scorecard in Task 4 makes sense, meet the metric this challenge is really about:
 **`clm_rubric`**. A **rubric evaluator** is Foundry's *recommended primary measure* of agent
 quality: an LLM judge scores each response against weighted, domain-specific **dimensions you
 define**, so "good" means what it means for *your* use case — whether the agent cited the
@@ -149,7 +149,7 @@ automatically and you catch quality regressions in production. (Portal preview �
 Docs: [Rubric evaluators](https://learn.microsoft.com/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators)
 · [Custom evaluators](https://learn.microsoft.com/azure/foundry/concepts/evaluation-evaluators/custom-evaluators)
 
-### Task 3 · Run the evaluation (~10 min)
+### Task 4 · Run the evaluation (~10 min)
 
 Run it over the 16-row dataset (`src/data/evaluation/evaluation_dataset.jsonl`):
 ```bash
@@ -177,8 +177,8 @@ You'll get a scorecard for the gpt-5.4 drafting agent.
 ```
 
 > ℹ️ The four generic judges (`groundedness`, `relevance`, `coherence`, `fluency`) are
-> dataset-wide means over **all 16** rows. **`clm_rubric`** is the domain rubric you built
-> above (before Task 3). The two **`… (groundable rows)`** lines average only the `grounded_qa` +
+> dataset-wide means over **all 16** rows. **`clm_rubric`** is the domain rubric you built in
+> Task 3. The two **`… (groundable rows)`** lines average only the `grounded_qa` +
 > `clause_risk` rows — where the correct answer is drawn from the corpus. The 3
 > `refusal` + 2 `tool_call` rows are graded by *behaviour*, so they're excluded there —
 > and the **quality gate uses the `CLM rubric (gate: groundable rows)` number**.
@@ -187,9 +187,9 @@ You'll get a scorecard for the gpt-5.4 drafting agent.
 >
 > <img src="../images/challenge-03/steps/04-scorecard.png" alt="Screenshot slot: evaluation scorecard" width="55%">
 
-### Task 4 · Run the bake-off (~10 min)
+### Task 5 · Run the bake-off (~10 min)
 
-A **bake-off** is a head-to-head A/B test: run the **same evaluation you built in Task 3**
+A **bake-off** is a head-to-head A/B test: run the **same evaluation you built in Task 4**
 (same dataset, same judges, same scorecard) on **two different models** and compare the
 results. Only the model changes — the agent, prompt, tools and grounding stay identical —
 so any difference in the scores is down to the **model alone**:
@@ -216,7 +216,7 @@ Which model wins for *this* task?
   mean latency (s)                         gpt-5.4=4.4   gpt-5.4-nano=1.5
 ```
 
-### Task 5 · Add a quality gate (~10 min)
+### Task 6 · Add a quality gate (~10 min)
 
 The quality gate converts your evaluation score into an automated CI release rule, blocking prompt, model, retrieval, or corpus changes that make the CLM agent measurably worse even when the code still builds.
 
@@ -226,7 +226,7 @@ python src/evaluators.py --gate 3.0   # exit code 3 if the CLM rubric score < 3.
 ```
 The gate blocks on the **CLM rubric** averaged over the **groundable rows**
 (`grounded_qa` + `clause_risk`) — the `CLM rubric (gate: groundable rows)` line from
-Task 3. A domain rubric is a better gate than a single generic metric: it fails a build
+Task 4. A domain rubric is a better gate than a single generic metric: it fails a build
 for the reasons that matter to a contract team (wrong clause, missed deviation, no
 fallback, self-approval), not just raw grounding.
 

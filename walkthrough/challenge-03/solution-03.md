@@ -70,7 +70,7 @@ python src/agents/intake_drafting_agent.py     # or orchestrator.py / clause_ris
 > <img src="../../images/challenge-03/steps/02-portal-tracing.png" alt="Screenshot slot: Foundry Tracing" width="75%">
 > <img src="../../images/challenge-03/steps/03-agent-monitoring.png" alt="Screenshot slot: Agent Monitoring" width="75%">
 
-### The `clm_rubric` evaluator — how "good" is defined (read this first)
+### Task 3 · The `clm_rubric` evaluator — define "good" before you measure
 
 Before the scorecard makes sense, meet the metric this challenge is really about: **`clm_rubric`**. A *rubric evaluator* is Foundry's **recommended primary measure** of agent quality — an LLM judge scores each response against **weighted, domain-specific dimensions you define**, so "good" means what it means for *your* use case. A single generic score (groundedness) can't tell you whether the agent cited the **right** clause, flagged the deviation, recommended the standard fallback, or deferred authority to a human — but those are exactly the rubric's dimensions.
 
@@ -99,7 +99,7 @@ return {
 }
 ```
 
-That's why **Task 3**'s scorecard shows a `clm_rubric` line and **Task 5**'s gate blocks on it — no extra setup for the code path.
+That's why **Task 4**'s scorecard shows a `clm_rubric` line and **Task 6**'s gate blocks on it — no extra setup for the code path.
 
 **Build the same rubric in the Foundry portal (no code).** This is the UI twin of `CLM_RUBRIC` — how a non-engineer on the team owns the quality bar:
 
@@ -114,7 +114,7 @@ That's why **Task 3**'s scorecard shows a `clm_rubric` line and **Task 5**'s gat
 
 Docs: [Rubric evaluators](https://learn.microsoft.com/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators) · [Custom evaluators](https://learn.microsoft.com/azure/foundry/concepts/evaluation-evaluators/custom-evaluators)
 
-### Task 3 · Run the evaluation
+### Task 4 · Run the evaluation
 [`src/evaluators.py`](../../src/evaluators.py) builds a *target* that runs the agent per row, then scores each response with the **five evaluators above** over `evaluation_dataset.jsonl`:
 ```python
 result = evaluate(data=str(DATASET), target=target, evaluators=evaluators_dict(), ...)
@@ -144,9 +144,9 @@ python src/evaluators.py
 >
 > <img src="../../images/challenge-03/steps/04-scorecard.png" alt="Screenshot slot: evaluation scorecard" width="75%">
 
-### Task 4 · Run the bake-off
+### Task 5 · Run the bake-off
 A **bake-off** is a controlled A/B comparison: `--bakeoff` runs the **same** evaluation
-target — the same labelled dataset and the same judges from Task 3 — twice, once per model,
+target — the same labelled dataset and the same judges from Task 4 — twice, once per model,
 and prints quality vs latency/cost side by side. In code it's deliberately minimal: only the
 model deployment swaps (`settings.model_drafting` → `settings.model_renewal`), while the
 agent definition, instructions, tools and Foundry IQ grounding are untouched. That isolation
@@ -185,9 +185,9 @@ pick: the same job for a fraction of the latency and spend. If the quality gap i
 the rows that matter (e.g. it misses clause deviations or fumbles citations), you keep the
 flagship for drafting and perhaps reserve nano for cheaper sub-tasks. The bake-off turns
 that decision into **evidence** instead of a hunch — and it's exactly the signal continuous
-evaluation (Task 6) keeps watching as models and prompts change.
+evaluation (Task 3) keeps watching as models and prompts change.
 
-### Task 5 · Add a quality gate (for CI)
+### Task 6 · Add a quality gate (for CI)
 An evaluation report is useful only if somebody reads it; a quality gate turns that report into
 an **automatic release decision**. Agent quality can regress even when the code still builds and
 unit tests pass — for example after changing a prompt, model deployment, retrieval configuration,
@@ -226,6 +226,10 @@ Quality gate: CLM rubric=3.8 (groundable rows) threshold=5.0
 > 📸 **What you'll see:** the full scorecard with the gate's verdict on the last line. Here the CLM rubric over the groundable rows is **3.949**, above the **3.0** threshold, so the run prints `✅ GATE PASSED.` and exits 0 — CI proceeds. A score below the threshold would print `❌ GATE FAILED` and exit 3, blocking the release.
 >
 > <img src="../../images/challenge-03/steps/05-quality-gate-passed.png" alt="Terminal scorecard for the Intake & Drafting agent ending with CLM rubric 3.949 over groundable rows above the 3.0 threshold and a GATE PASSED message" width="75%">
+
+> 📸 **…and what a failure looks like:** run `python src/evaluators.py --gate 5.0` to set an intentionally high bar. The same Intake & Drafting (gpt-5.4) agent scores **CLM rubric = 3.919** over the groundable rows — below the **5.0** threshold — so the run prints `❌ GATE FAILED — CLM rubric below threshold. Blocking release.` and **exits 3**, which fails the CI job. Read the hint on the last line: the agent *is* grounding, but individual rows still miss rubric dimensions (wrong clause, missed deviation, no fallback, or self-approval). Run `python src/evaluators.py --explain` to see exactly which rows fell short and the judge's reasoning, then fix the agent (or, deliberately, recalibrate the threshold) — don't just lower the bar to make CI green.
+>
+> <img src="../../images/challenge-03/steps/05-gate-fail.png" alt="Terminal scorecard for the Intake & Drafting agent (gpt-5.4) ending with CLM rubric 3.919 over the groundable rows below the 5.0 threshold, a GATE FAILED / Blocking release message, and a hint to run evaluators.py --explain" width="75%">
 
 ## Key files
 
