@@ -27,6 +27,8 @@ In the **Foundry portal**, open the **`clm-contract-agent`** you published in **
 ### Task 2 · Publish to Teams & M365 Copilot
 Select **Publish** → **Publish to Teams and Microsoft 365 Copilot** → **Continue** (provisions an **Azure Bot Service**; first time: `az provider register --namespace Microsoft.BotService`). Leave the **Azure bot services** dropdown on *auto*; delete any stale bot from earlier attempts to avoid an **App ID collision**.
 
+<img src="../../images/challenge-05/steps/task2-publish-menu.png" alt="Foundry portal: the Publish dropdown on clm-contract-agent with Teams & Microsoft 365 Copilot selected" width="80%">
+
 ### Task 3 · Fill the publish details & submit
 **Fill the app details.** Most fields are **pre-filled from the agent** — **Agent name** (`clm-contract-agent`), **Publish version** (`1.0.0`), **Short description**, **Description**, and **Azure bot services** (auto-generated). The one required (`*`) field you must type yourself is **Developer** — enter your name or team (e.g. `Contoso Global CLM Team`); expand **More** for the **Developer website / Terms of use / Privacy statement** URLs (`https://example.com` placeholders are fine). Select **Next: Publish options** (older portal builds label this button **Prepare Agent**). In **Publish options** (**Direct publish** tab) choose **Just you** — *Available immediately* (*People in your organization* would need your **Microsoft 365 admin** to approve) → **Publish**. Find it in Teams under **Apps → Your agents**. The form auto-packages icons; only the **Download & customize** route needs the **192×192** + **32×32** placeholders in [`src/manifest/`](../../src/manifest/). *(If direct publish returns a **400**, use the **Download & customize** tab and sideload the zip.)*
 
