@@ -61,39 +61,98 @@ def create_agent(model=None, *, connection_id=None):
         tools=[knowledge, function_tool(get_contract_status)],       # unstructured grounding + structured lookup
     )
 ```
-The guardrail lives in `INSTRUCTIONS` (prompt layer):
+The guardrail and grounding rules aren't buried in code — they're the **entire `INSTRUCTIONS` block** the agent runs with (the prompt layer *is* the policy). This is the real answer key for "how is it grounded and guard-railed":
 ```text
-GUARDRAILS (must follow)
-- You are NOT a lawyer and must NOT provide legal advice … refuse briefly and
-  recommend review by qualified counsel.
-GROUNDING & CITATIONS
-- Base every substantive answer on retrieved corpus content … ALWAYS cite the source documents.
-```
+You are the Intake & Drafting agent for Contoso Global's Legal & Procurement team.
 
-### Task 3 · Run the agent end-to-end
+WHAT YOU DO
+- Draft NDAs, MSAs and SOWs using ONLY the approved templates and clause library in your knowledge
+  base. Fill placeholders with the details the user provides; never invent legal terms.
+- Answer questions about clauses, policies and standards using your knowledge base, and ALWAYS cite
+  the source documents you used.
+- When asked about a specific contract's status, renewal date, risk or owner, call the
+  `get_contract_status` tool. Do not guess these facts.
+
+NEGOTIATION FALLBACKS
+- When a requested term deviates from an approved template or standard clause, consult the
+  negotiation playbook in your knowledge base and offer the approved fallback positions IN ORDER
+  (from the preferred position down to the walk-away position). Always cite the negotiation playbook.
+
+APPROVAL AUTHORITY (delegation of authority)
+- When a draft or requested term needs sign-off — e.g. a liability cap above a threshold, a
+  non-standard or off-template term, or an unusual commercial commitment — consult the
+  delegation-of-authority matrix in your knowledge base and state WHO must approve it by
+  role/threshold. Cite the matrix. Never self-approve.
+
+GROUNDING & CITATIONS
+- Base every substantive answer on retrieved corpus content. If the corpus does not contain the
+  answer, say so plainly rather than speculating.
+
+GUARDRAILS (must follow)
+- You are NOT a lawyer and must NOT provide legal advice, legal opinions, or predictions about
+  litigation/enforceability. If asked, refuse briefly and recommend review by qualified counsel.
+- Do not disclose personal data or content outside the approved corpus.
+- Keep a professional, concise tone. Flag anything that deviates from company policy for human review.
+```
+Every behavior you'll verify below traces to one of these clauses: template-only drafting, mandatory citations, tool calls for contract facts, **ordered** negotiation fallbacks, approval routing via the delegation-of-authority matrix, and the no-legal-advice refusal.
+
+### Task 3 · Run the agent end-to-end — and what "correct" looks like
 ```bash
 python src/agents/intake_drafting_agent.py
 ```
-The four built-in prompts cover **draft · cited Q&A · function-tool lookup · refusal**:
+The demo runs **six prompts in one shared session**, exercising every capability. The model's exact wording changes every run — **the structure and the citations are what matter.** Here is what a *correct* run looks like, and the tell for each:
+
+**1 · Grounded drafting** — NDA from the approved template
 ```text
-✓ Built intake-drafting-agent on model 'gpt-5.4'
-
-USER: Draft a mutual NDA between Contoso Global and Northwind Traders...
-AGENT: MUTUAL NON-DISCLOSURE AGREEMENT ... [approved template, no invented terms]
-
-USER: What is our standard limitation-of-liability position?
-AGENT: Our standard position caps liability at ... [CL-04] (cited from the clause library)
-
-USER: What's the status of contract CT-4821?
-AGENT: CT-4821 (Acme Corp, MSA) is Active, renews 2026-09-01... [from get_contract_status]
-
-USER: Should we accept this indemnity clause? What's your legal opinion?
-AGENT: I can't provide legal advice. Please consult qualified counsel... [refusal guardrail]
+MUTUAL NON-DISCLOSURE AGREEMENT
+This Agreement is entered into as of [Effective Date] by and between Contoso Global, Inc.
+("Contoso") and Acme Corp ("Counterparty").
+  1. Definition of Confidential Information …
+  3. Term. Two (2) years from the Effective Date …
 ```
+✅ *Tell:* follows the template's **numbered section structure**, leaves `[placeholders]` for the user, and invents no clauses.
 
-> 📸 **Screenshot slot:** the 4-prompt demo (draft · cited Q&A · tool call · refusal).
+**2 · Cited Q&A** — standard limitation-of-liability
+```text
+Our standard position caps each party's aggregate liability (with the usual carve-outs for
+confidentiality, IP infringement and indemnities). [CL-04, clause_library]
+```
+✅ *Tell:* names a **specific source id** (`[CL-04]`). A plausible answer with **no bracketed citation** means grounding didn't fire.
+
+**3 · Negotiation fallback** — counterparty demands unlimited liability
+```text
+Per the negotiation playbook, offer these in order:
+  1. Preferred  — mutual cap at our standard formula.
+  2. Fallback   — a higher multiple for strategic deals.
+  3. Walk-away  — never accept unlimited liability beyond the standard carve-outs.  [negotiation_playbook]
+```
+✅ *Tell:* **ordered** positions (preferred → walk-away), cited to the playbook — not generic advice.
+
+**4 · Approval routing** — a $5M MSA with an above-standard cap
+```text
+That cap is above the standard threshold, so it needs sign-off. Per the delegation-of-authority
+matrix, approval sits with the approver named for that role/threshold — I can't approve it myself;
+route it to them. [delegation_of_authority]
+```
+✅ *Tell:* names **WHO must approve by role/threshold**, cites the matrix, and **never self-approves**.
+
+**5 · Function tool** — CT-4821 status
+```text
+CT-4821 (Acme Corp, MSA) is Active, renews in ~55 days, auto-renew on, risk High,
+owner legal@contoso.com.  [get_contract_status]
+```
+✅ *Tell:* concrete fields from the **tool call**, not a guessed date (see the raw JSON in Task 4).
+
+**6 · Refusal** — a request for a legal opinion
+```text
+I can't provide legal advice or predict how a court would rule. Please have qualified counsel
+review the matter.
+```
+✅ *Tell:* **brief refusal + recommends counsel**, with no opinion or litigation prediction offered.
+
+> 📸 **Screenshot slot:** the demo run (draft · cited Q&A · fallback · approval · tool call · refusal).
 >
-> <img src="../../images/challenge-02/steps/02-agent-demo.png" alt="Screenshot slot: 4-prompt demo" width="80%">
+> <img src="../../images/challenge-02/steps/02-agent-demo.png" alt="Screenshot slot: agent demo run" width="80%">
 
 ### Task 4 · Exercise every capability
 Work through [`src/sample_prompts.md`](../../src/sample_prompts.md). The `get_contract_status` tool returns real, structured fields (dates computed relative to today, so yours differ):
@@ -112,6 +171,19 @@ The demo agent runs **in-process** (`FoundryChatClient`), so it does not appear 
 
 ### Task 5 · (Optional) Content safety
 Attach **Prompt Shields / PII** to the agent in the portal — a second, model-independent guardrail layer on top of the prompt-level refusal (built out in Challenge 6).
+
+## ✅ How to tell each capability truly passed
+
+Use this to judge a participant's run (or your own). The point is distinguishing a **genuinely grounded** answer from a plausible-sounding hallucination:
+
+| Capability | ✅ Pass signal | ❌ Fail signal → fix |
+|------------|---------------|----------------------|
+| **Grounded drafting** | Output follows the template's numbered sections; `[placeholders]` left for the user; no invented clauses | A free-form contract with clauses not in the template → the model isn't using the corpus. Confirm `clm-corpus` is populated (Challenge 1's `seed_corpus.py`). |
+| **Cited Q&A** | Answer carries a **bracketed source** (e.g. `[CL-04]`, a policy/template name) | Confident answer with **no citation** → grounding didn't fire. Re-run `python src/kb_setup.py`; check the index doc count in the portal. |
+| **Negotiation fallback** | **Ordered** positions (preferred → walk-away) citing the negotiation playbook | Generic "try to negotiate" advice, no ordered list / no playbook citation → the playbook PDF isn't in the corpus. |
+| **Approval routing** | Names **who approves** by role/threshold and cites the delegation-of-authority matrix; never self-approves | Agent says a term is "approved" on its own authority → grounding/guardrail gap; confirm the matrix PDF is in the corpus. |
+| **Function tool** | Concrete `CT-4821` fields returned via `get_contract_status` | Model **makes up** a date/owner instead of calling the tool → confirm the tool is in `tools=[...]` with `approval_mode="never_require"`. |
+| **Refusal** | Brief refusal + "consult qualified counsel"; no opinion given | Any substantive legal opinion or litigation prediction → guardrail failed; confirm `INSTRUCTIONS` is the one passed to the agent. |
 
 ## Key files
 
