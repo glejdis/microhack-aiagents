@@ -151,17 +151,21 @@ Task 4 hardens **two different agents** — keep them straight:
   **Attach it:** **Build → Agents → `clm-contract-agent`** → expand **Guardrails** → **Manage guardrail**. Keep **Hate / Sexual / Self-harm / Violence** at **Medium**; enable **Prompt Shields** (jailbreak + indirect/XPIA), **Protected materials**, and **Sensitive data leakage → PII (Preview)**. **Set each guardrail's Action to `Block`, not `Annotate`** — the checkbox only enables *detection*; `Annotate` labels the content but still lets it through (defect rate won't drop), while `Block` stops the response so the guardrail actually holds. **Protected materials** has **two checkboxes — tick both**: **Protected material for text** (copyrighted prose) and **Protected material for code** (licensed source), each with **Intervention point = `Output`** and **Action = `Block`**; the header then reads **Protected materials (2)**.   PII requires **≥ 1 data type** — for contracts pick **User information** (Name, Email, Phone, Address) and **Financial information** (Credit card, IBAN, SWIFT, regional bank-account numbers); the **Azure / Database** connection-string types are optional defense-in-depth, or **Select All**. Then **Next → Select agents and models** (step 2): tick **`clm-contract-agent`** (the MCP-backed portal/Teams agent) — you must pick ≥ 1 agent; leave the **Models** list unchecked (the guardrail rides on the agent). You *can* also tick **`intake-drafting-agent`**, but the Task 1 scan won't change from it — `red_team.py` builds that agent in-process via `create_agent()`, so its defect rate moves via **instructions**, not this portal guardrail. Applying **creates a new agent version** (expected). Then **Review → Create guardrails**.
 - Re-run Tasks 1–3 and confirm the attack-success / defect rate **drops**.
 
-> 📸 **What you'll see:** the Guardrails wizard — content filters plus **PII (Preview)** with its data-type picker (pick at least one).
+> 📸 **Open the wizard:** on the agent, expand **Guardrail**, then **Manage guardrail → Create guardrail**.
 >
-> <img src="../../images/challenge-06/steps/04-guardrails-pii.png" alt="Foundry Guardrails wizard: content filters, Protected materials, and PII (Preview) data-type picker" width="80%">
+> <img src="../../images/challenge-06/steps/04-guardrail-create-menu.png" alt="clm-contract-agent Playground with the Guardrail section highlighted and the Manage guardrail menu open showing Create guardrail, Reassign guardrail, and Guided guardrail setup" width="80%">
 
-> 📸 **Protected materials — tick both boxes:** each row (**Protected material for code** and **Protected material for text**) set to **Intervention point = `Output`** and **Action = `Block`**, so the header reads **Protected materials (2)**.
+> 📸 **PII (Preview) — pick ≥ 1 data type:** open the data-type picker and tick what matters for contracts — **User information** (Name, Email, Phone, Address) and **Financial information** (Credit card, IBAN, SWIFT, regional bank accounts); the Azure/Database connection-string types are optional defense-in-depth, or **Select All**.
 >
-> <img src="../../images/challenge-06/steps/05-guardrails-protected-materials.png" alt="Foundry Guardrails wizard: Protected materials with 'Protected material for code' and 'Protected material for text' both checked, Intervention point set to Output and Action set to Block" width="80%">
+> <img src="../../images/challenge-06/steps/05-guardrail-pii-datatypes.png" alt="Create guardrail PII data-type picker expanded: User information (Name, Phone, Address, Email, IP address, Age), Azure information, Financial information, and Government information categories with checkboxes" width="80%">
 
-> 📸 **Select agents and models (step 2):** tick **`clm-contract-agent`** (pick ≥ 1 agent); models stay unchecked. Applying creates a new agent version.
+> 📸 **The full control set** — set every row's **Action = `Block`** (not `Annotate`): **Jailbreak**, **Indirect prompt injections** (+ **Spotlighting**), **Content harms** (Hate/Sexual/Self-harm/Violence at **Medium**), **Protected materials (2)** at **Output**, and **Sensitive data leakage → PII (Preview)**.
 >
-> <img src="../../images/challenge-06/steps/06-guardrails-select-agents.png" alt="Foundry Guardrails wizard step 2: Select agents and models — clm-contract-agent checked, model deployments left unchecked, Back/Next footer" width="80%">
+> <img src="../../images/challenge-06/steps/06-guardrail-controls.png" alt="Create guardrail controls list: Jailbreak (1) Block, Indirect prompt injections (2) with Spotlighting On, Content harms (4) Hate/Sexual/Self-harm/Violence at Medium blocking, Protected materials (2) for code and text at Output/Block, and Sensitive data leakage PII (Preview)" width="85%">
+
+> 📸 **Review → Create:** name it (e.g. `Guardrails-clm-contract-agent`) and confirm **Agents = `clm-contract-agent`** with **no models selected** (the guardrail rides on the agent), then **Create**.
+>
+> <img src="../../images/challenge-06/steps/07-guardrail-review.png" alt="Create guardrail Review step: Guardrail name Guardrails-clm-contract-agent, Agents clm-contract-agent, no models selected, full controls summary, and a Create button" width="80%">
 
 ### Task 5 · Wire the gate into CI
 
