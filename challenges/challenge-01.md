@@ -128,7 +128,6 @@ text at crawl time); regenerate the PDFs with `python src/scripts/make_corpus_pd
 
 **Before you begin — tick these off:**
 
-- [ ] You can sign in to [github.com](https://github.com).
 - [ ] You can sign in to the [Azure Portal](https://portal.azure.com) with the account your lab was provisioned for (or, if self-hosting, one that can **create resources**).
 - [ ] *(Self-hosting only)* Your Azure subscription can deploy **GPT** models (ask your coach if unsure).
 - [ ] You have ~30 minutes and a stable connection (provisioning takes 5–10 min on its own).
