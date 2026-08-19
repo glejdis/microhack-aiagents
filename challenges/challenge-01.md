@@ -141,7 +141,7 @@ always gets the latest fixes. *(The **one exception** is the optional **Challeng
 1. Open the folder in **VS Code** (e.g. `code microhack-aiagents`). When VS
    Code prompts **"Reopen in Container"**, click it — or run **Dev Containers: Reopen in Container** from
    the Command Palette (**F1**). Requires the **Dev Containers** extension and **Docker Desktop**.
-2. Wait for the container to build — it installs dependencies with `pip install -r requirements.txt`
+2. Wait for the container to build — it installs dependencies with `pip install -r src/requirements.txt`
    automatically. When the terminal stops scrolling and shows a prompt, it's ready.
 
 ✅ **You'll know it worked when:** a **VS Code** window opens (locally or in the browser) with a **Terminal** panel showing a
@@ -244,6 +244,7 @@ everything. First pick a region that offers **all three** models — this repo's
 > old template is what triggers `DeploymentModelNotSupported` / `ServiceModelDeprecating`.
 
 ```bash
+cd src                  # azure.yaml (the azd project) lives here
 azd auth login          # separate from az login above
 azd up                  # answer: environment name (e.g. clm-microhack), your subscription, region = Sweden Central
 ```
