@@ -149,7 +149,7 @@ always gets the latest fixes. *(The **one exception** is the optional **Challeng
 ready prompt (e.g. `@your-username ➜ /workspaces/microhack-aiagents (main) $`).
 
 > [!NOTE]
-> **Prefer the browser? Use GitHub Codespaces instead.** On the repo's GitHub page, click **`< > Code` → Codespaces → Create codespace on `main`** — the same dev container builds in the cloud, so you need no local Docker. If Codespaces isn't enabled in your org, see [enabling Codespaces](https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/enabling-or-disabling-github-codespaces-for-your-organization) or use a [free personal account](https://github.com/signup) (120 core-hours/month free).
+> **Prefer the browser? Use GitHub Codespaces instead.** On the repo's GitHub page, click **`< > Code` → Codespaces → Create codespace on `main`** — the same dev container builds in the cloud, so you need no local Docker.
 >
 > While it builds, skim the [scenario & architecture](../README.md#the-scenario--contoso-global) so the pieces you deploy here make sense.
 
