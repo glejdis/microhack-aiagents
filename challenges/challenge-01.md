@@ -145,7 +145,7 @@ always gets the latest fixes. *(The **one exception** is the optional **Challeng
    automatically. When the terminal stops scrolling and shows a prompt, it's ready.
 
 ✅ **You'll know it worked when:** a **VS Code** window opens (locally or in the browser) with a **Terminal** panel showing a
-ready prompt (e.g. `@your-username ➜ /workspaces/microhack-aiagents (main) $`).
+ready prompt.
 
 > [!NOTE]
 > **Prefer the browser? Use GitHub Codespaces instead.** On the repo's GitHub page, click **`< > Code` → Codespaces → Create codespace on `main`** — the same dev container builds in the cloud, so you need no local Docker.
