@@ -60,6 +60,16 @@ cp src/.env.example .env
 | **AppInsightsConnectionString** | `APPLICATIONINSIGHTS_CONNECTION_STRING` |
 | **ModelOrchestrator / Drafting / ClauseRisk / Renewal** | `MODEL_ORCHESTRATOR` / `MODEL_DRAFTING` / `MODEL_CLAUSE_RISK` / `MODEL_RENEWAL` |
 
+**Where to copy the two endpoints from** — if you'd rather read them straight off the portal than the dashboard, these are the two values you actually have to paste:
+
+**1 · `AZURE_AI_PROJECT_ENDPOINT`** — Foundry portal ([ai.azure.com](https://ai.azure.com)) → your **`clm-project`** → **Home**. Use the copy button on **Project endpoint** (`https://<foundry>.services.ai.azure.com/api/projects/clm-project`) — **not** the *Azure OpenAI endpoint* next to it.
+
+<img src="../../images/challenge-01/steps/endpoint-foundry-project.png" alt="Foundry portal Home with the Project endpoint field and its copy button highlighted" width="80%">
+
+**2 · `AZURE_SEARCH_ENDPOINT`** — Azure Portal → your resource group → the **Search service (Foundry IQ)** (`clmsearch****`) → **Overview** → copy the **Url** (`https://clmsearch****.search.windows.net`).
+
+<img src="../../images/challenge-01/steps/endpoint-azure-search.png" alt="Azure Portal Search service Overview with the Url endpoint highlighted" width="80%">
+
 The model names + `AZURE_SEARCH_INDEX` (`clm-corpus`) / `AZURE_SEARCH_CONNECTION_NAME` (`clm-search`) already default in `src/.env.example`, so at minimum paste the two **endpoints** + the **App Insights** string. Leave `SHAREPOINT_*` and the Challenge 5 `MICROSOFT_APP_*` / `TEAMS_*` blank for now.
 
 <details>
