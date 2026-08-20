@@ -137,15 +137,7 @@ text at crawl time); regenerate the PDFs with `python src/scripts/make_corpus_pd
 Code**, and create a Python **virtual environment** for the dependencies; because you work off the source repo, `git pull`
 always gets the latest fixes. *(The **one exception** is the optional **Challenge 6** CI bonus — it runs in **GitHub Actions**, so it needs **your own fork**; you'll create it there, not now.)*
 
-1. **Clone the repo and open it in VS Code:**
-
-   ```bash
-   git clone https://github.com/glejdis/microhack-aiagents.git
-   cd microhack-aiagents
-   code .
-   ```
-
-2. **Create and activate a virtual environment** in a **VS Code Terminal** (`` Ctrl+` ``), from the repo root:
+1. **Create and activate a virtual environment** in a **VS Code Terminal** (`` Ctrl+` ``), from the repo root:
 
    ```bash
    python -m venv .venv
@@ -163,7 +155,7 @@ always gets the latest fixes. *(The **one exception** is the optional **Challeng
 
    Your prompt should now start with `(.venv)`.
 
-3. **Install the dependencies** into the venv:
+2. **Install the dependencies** into the venv:
 
    ```bash
    python -m pip install --upgrade pip
@@ -172,7 +164,7 @@ always gets the latest fixes. *(The **one exception** is the optional **Challeng
 
    When the terminal stops scrolling and shows a prompt, it's ready.
 
-4. **Point VS Code at the venv:** open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) → **Python: Select Interpreter** → choose the interpreter under **`.venv`**. This makes the editor, terminal, and later tasks use the same environment.
+3. **Point VS Code at the venv:** open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) → **Python: Select Interpreter** → choose the interpreter under **`.venv`**. This makes the editor, terminal, and later tasks use the same environment.
 
 ✅ **You'll know it worked when:** the terminal prompt shows **`(.venv)`**, `pip install` finishes with no red errors, and **Python: Select Interpreter** shows `.venv` selected.
 
