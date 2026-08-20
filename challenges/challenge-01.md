@@ -138,11 +138,8 @@ text at crawl time); regenerate the PDFs with `python src/scripts/make_corpus_pd
 Code** using the **Dev Containers** extension (a prebuilt container with Python, Azure CLI, `azd`, and Node — no manual installs); because you work off the source repo, `git pull`
 always gets the latest fixes. *(The **one exception** is the optional **Challenge 6** CI bonus — it runs in **GitHub Actions**, so it needs **your own fork**; you'll create it there, not now.)*
 
-1. Open the folder in **VS Code** (e.g. `code microhack-aiagents`). When VS
-   Code prompts **"Reopen in Container"**, click it — or run **Dev Containers: Reopen in Container** from
-   the Command Palette (**F1**). Requires the **Dev Containers** extension and **Docker Desktop**.
-2. Wait for the container to build — it installs dependencies with `pip install -r src/requirements.txt`
-   automatically. When the terminal stops scrolling and shows a prompt, it's ready.
+1. Open the folder in **VS Code** 
+2. Installs dependencies with `pip install -r src/requirements.txt`. When the terminal stops scrolling and shows a prompt, it's ready.
 
 ✅ **You'll know it worked when:** a **VS Code** window opens (locally or in the browser) with a **Terminal** panel showing a
 ready prompt.
